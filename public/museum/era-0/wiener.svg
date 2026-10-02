@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <rect width="640" height="360" fill="#E4E7EA"/>
+  <g fill="none" stroke="#1E2430" stroke-width="4">
+    <rect x="250" y="130" width="140" height="80"/>
+    <path d="M80 170 H250"/>
+    <path d="M390 170 H540"/>
+    <path d="M540 170 V270 H80 V170"/>
+  </g>
+  <g fill="#1E2430" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">
+    <text x="286" y="176">Effector</text>
+    <text x="250" y="300">Return path</text>
+    <text x="80" y="150">Sense</text>
+  </g>
+</svg>

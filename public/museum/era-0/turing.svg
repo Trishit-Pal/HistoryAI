@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <rect width="640" height="360" fill="#E4E7EA"/>
+  <g stroke="#1E2430" stroke-width="2" fill="none">
+    <rect x="48" y="48" width="544" height="264"/>
+    <path d="M48 112 H592 M184 48 V312 M328 48 V312 M472 48 V312"/>
+  </g>
+  <g fill="#1E2430" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">
+    <text x="70" y="88">State</text>
+    <text x="210" y="88">Read 0</text>
+    <text x="350" y="88">Read 1</text>
+    <text x="500" y="88">Move</text>
+    <text x="78" y="168">q1</text>
+    <text x="78" y="248">q2</text>
+  </g>
+  <g fill="none" stroke="#A6843D" stroke-width="4">
+    <path d="M210 160 H290 M210 240 H290 M360 160 H430"/>
+  </g>
+</svg>

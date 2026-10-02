@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <rect width="640" height="360" fill="#E4E7EA"/>
+  <path d="M40 300 H120 V250 H200 V210 H280 V160 H360 V110 H440 V70 H560" fill="none" stroke="#A6843D" stroke-width="8"/>
+  <g fill="#1E2430" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">
+    <text x="48" y="328">1843</text>
+    <text x="128" y="278">1854</text>
+    <text x="208" y="238">1936</text>
+    <text x="288" y="188">1938</text>
+    <text x="368" y="138">1943</text>
+    <text x="468" y="98">1948</text>
+  </g>
+</svg>

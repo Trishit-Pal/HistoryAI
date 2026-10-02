@@ -1,16 +1,21 @@
-import { lintProse } from "../domain/linter.js";
-import type { ClaimStatus, ProseFlag, Role, Violation } from "../domain/types.js";
-import { validateWrite } from "../domain/validator.js";
+import { lintProse } from "../domain/linter";
+import type { ClaimStatus, ProseFlag, Role, Violation } from "../domain/types";
+import { validateWrite } from "../domain/validator";
 
-export type { ClaimRole, ClaimStatus, PublicationState, SourceKind } from "../domain/types.js";
+export type { ClaimRole, ClaimStatus, PublicationState, SourceKind } from "../domain/types";
 
 import type {
+  Citation,
   ClaimRole,
+  Confidence,
+  EraId,
   EvolutionType,
+  Figure,
   Kind,
+  Layer,
   PublicationState,
   SourceKind,
-} from "../domain/types.js";
+} from "../domain/types";
 
 export type ExhibitWrite = {
   id: string;
@@ -25,6 +30,14 @@ export type ExhibitWrite = {
   noPredecessorInScope?: boolean;
   previousId?: string;
   updatedAt?: string;
+  layer?: Layer;
+  eraId?: EraId;
+  confidence?: Confidence;
+  citations?: Citation[];
+  tags?: string[];
+  editorialNote?: string;
+  officialPrimary?: boolean;
+  figure?: Figure;
 };
 
 export type ClaimWrite = {
@@ -61,7 +74,26 @@ export type Write = {
   expectedUpdatedAt?: string;
 };
 
-type ExhibitRecord = ExhibitWrite & { proseFlags: ProseFlag[]; updatedAt: string };
+type ExhibitRecord = ExhibitWrite & {
+  proseFlags: ProseFlag[];
+  updatedAt: string;
+  version: number;
+  layer: Layer;
+};
+
+export type VersionRecord = {
+  nodeId: string;
+  version: number;
+  at: string;
+  blob: ExhibitWrite;
+};
+
+export type ChangelogLine = {
+  at: string;
+  nodeId: string;
+  version: number;
+  reason: string;
+};
 
 type AuditRecord = { at: string; by: Role; change: string };
 
@@ -73,6 +105,8 @@ export class MemoryStore {
   private evolution: EvolutionLink[] = [];
   private contradicts: { fromClaimId: string; toClaimId: string }[] = [];
   private audits: AuditRecord[] = [];
+  private versionLog: VersionRecord[] = [];
+  private changeLog: ChangelogLine[] = [];
 
   getExhibit(id: string): ExhibitRecord | undefined {
     return this.exhibits.get(id);
@@ -110,6 +144,20 @@ export class MemoryStore {
     return this.exhibits.get(id)?.proseFlags ?? [];
   }
 
+  versions(id: string): VersionRecord[] {
+    return this.versionLog.filter((entry) => entry.nodeId === id);
+  }
+
+  changelog(): ChangelogLine[] {
+    return [...this.changeLog];
+  }
+
+  publicExhibits(): ExhibitRecord[] {
+    return [...this.exhibits.values()].filter(
+      (exhibit) => exhibit.publicationState === "canon" || exhibit.publicationState === "provisional",
+    );
+  }
+
   snapshot(): unknown {
     return {
       exhibits: [...this.exhibits.values()],
@@ -119,6 +167,8 @@ export class MemoryStore {
       evolution: this.evolution,
       contradicts: this.contradicts,
       audits: this.audits,
+      versions: this.versionLog,
+      changelog: this.changeLog,
     };
   }
 
@@ -133,17 +183,41 @@ export class MemoryStore {
     const now = new Date().toISOString();
     if (write.exhibit) {
       const existing = this.exhibits.get(write.exhibit.id);
-      const texts = [
-        write.exhibit.publicStory,
-        write.exhibit.technicalAccount ?? "",
-        ...(write.claims ?? []).map((claim) => claim.statement),
-      ];
+      const layer = write.exhibit.layer ?? existing?.layer ?? "technical";
+      const texts =
+        layer === "technical"
+          ? [
+              write.exhibit.publicStory,
+              write.exhibit.technicalAccount ?? "",
+              ...(write.claims ?? []).map((claim) => claim.statement),
+            ]
+          : [];
       const proseFlags = texts.flatMap((text) => lintProse(text));
-      this.exhibits.set(write.exhibit.id, {
+      const version = (existing?.version ?? 0) + 1;
+      const incoming = Object.fromEntries(
+        Object.entries(write.exhibit).filter(([, value]) => value !== undefined),
+      ) as ExhibitWrite;
+      const next: ExhibitRecord = {
         ...existing,
-        ...write.exhibit,
+        ...incoming,
+        layer,
         proseFlags,
         updatedAt: now,
+        version,
+      };
+      this.exhibits.set(write.exhibit.id, next);
+      const blob = structuredClone(next);
+      this.versionLog.push({
+        nodeId: next.id,
+        version,
+        at: now,
+        blob,
+      });
+      this.changeLog.push({
+        at: now,
+        nodeId: next.id,
+        version,
+        reason: blob.publicStory.slice(0, 140),
       });
     }
     for (const claim of write.claims ?? []) this.claims.set(claim.id, claim);

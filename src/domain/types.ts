@@ -28,6 +28,51 @@ export type EvolutionType = "INFLUENCED_BY" | "SUPERSEDED_BY" | "EVALUATED_ON" |
 
 export type Role = "editor" | "agent";
 
+export type Layer = "technical" | "context";
+
+export type Confidence = "confirmed" | "reported" | "disputed" | "rumored";
+
+export type EraId =
+  | "era_0_precursors"
+  | "era_1_founding"
+  | "era_2_symbolic"
+  | "era_3_first_winter"
+  | "era_4_expert_systems"
+  | "era_5_second_winter"
+  | "era_6_statistical"
+  | "era_7_deep_learning"
+  | "era_8_transformers"
+  | "era_9_generative"
+  | "era_10_frontier";
+
+export type Citation = {
+  url: string;
+  publisher: string;
+  retrieved: string;
+};
+
+export const FIGURE_LICENSES = [
+  "PD-old",
+  "PD-US-expired",
+  "CC0-1.0",
+  "CC-BY-4.0",
+  "CC-BY-SA-4.0",
+  "original",
+] as const;
+
+export type FigureLicense = (typeof FIGURE_LICENSES)[number];
+
+export type Figure = {
+  src: string;
+  alt: string;
+  credit: string;
+  license: FigureLicense;
+  sourceUrl: string;
+  kind: "scan" | "redrawn";
+  redrawnAfter?: string;
+  sourceLabel?: string;
+};
+
 export type ViolationRule =
   | "invalid-shape"
   | "illegal-relation"

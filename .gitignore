@@ -6,3 +6,6 @@ coverage
 *.tsbuildinfo
 .env
 .env.local
+e2e/artifacts/
+test-results/
+playwright-report/

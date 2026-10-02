@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layoutRooms, sealRooms, type PublicExhibit } from "./layout.js";
+import { layoutRooms, sealRooms, type PublicExhibit } from "./layout";
 
 function exhibit(
   id: string,

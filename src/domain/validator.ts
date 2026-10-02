@@ -1,5 +1,15 @@
-import { CLAIM_ROLES, PRIMARY_SOURCE_KINDS, type ClaimRole, type Role, type SourceKind, type Violation } from "./types.js";
-import type { ClaimWrite, ExhibitWrite, SourceWrite, Write } from "../store/memory.js";
+import { confidenceAllowed } from "./confidence";
+import {
+  CLAIM_ROLES,
+  FIGURE_LICENSES,
+  PRIMARY_SOURCE_KINDS,
+  type ClaimRole,
+  type Figure,
+  type Role,
+  type SourceKind,
+  type Violation,
+} from "./types";
+import type { ClaimWrite, ExhibitWrite, SourceWrite, Write } from "../store/memory";
 
 export type StoreView = {
   getExhibit(id: string): (ExhibitWrite & { publicationState: ExhibitWrite["publicationState"] }) | undefined;
@@ -26,8 +36,22 @@ export function validateWrite(store: StoreView, write: Write, role: Role): Viola
   const violations: Violation[] = [];
   const exhibit = write.exhibit;
   if (exhibit) {
-    if (exhibit.startYear < 1943) {
+    const existing = store.getExhibit(exhibit.id);
+    if (existing?.layer && exhibit.layer && exhibit.layer !== existing.layer) {
+      violations.push(violation("exhibit.layer", "forbidden-transition", "An exhibit does not change layer."));
+    }
+    const layer = exhibit.layer ?? existing?.layer ?? "technical";
+    const citations = exhibit.citations ?? existing?.citations ?? [];
+    const confidence = exhibit.confidence ?? existing?.confidence;
+    const official = (exhibit.officialPrimary ?? existing?.officialPrimary) === true;
+    if (layer === "technical" && exhibit.startYear < 1943) {
       violations.push(violation("exhibit.startYear", "forbidden-transition", "The canon starts in 1943."));
+    }
+    if (layer === "context" && (citations.length < 1 || citations.some((citation) => !citation.url))) {
+      violations.push(violation("exhibit.citations", "invalid-shape", "A context exhibit needs at least one source URL."));
+    }
+    if (confidence && !confidenceAllowed(confidence, citations, official)) {
+      violations.push(violation("exhibit.confidence", "source-rule", "The claimed confidence is higher than the sources allow."));
     }
     if (exhibit.previousId && exhibit.previousId !== exhibit.id) {
       violations.push(violation("exhibit.id", "forbidden-transition", "Ids do not change."));
@@ -38,7 +62,6 @@ export function validateWrite(store: StoreView, write: Write, role: Role): Viola
     if (exhibit.kind === "turning_point" && !Number.isFinite(exhibit.startYear)) {
       violations.push(violation("exhibit.startYear", "invalid-shape", "A turning point requires a start year."));
     }
-    const existing = store.getExhibit(exhibit.id);
     if (write.expectedUpdatedAt && existing && existing.updatedAt !== write.expectedUpdatedAt) {
       violations.push(violation("exhibit.updatedAt", "conflict", "The exhibit changed since it was read."));
     }
@@ -46,12 +69,13 @@ export function validateWrite(store: StoreView, write: Write, role: Role): Viola
       violations.push(violation("exhibit.publicationState", "forbidden-transition", "An agent cannot write the canon."));
     }
     if (exhibit.publicationState === "provisional") {
-      const sourceCount = write.sources?.length ?? 0;
+      const sourceCount = (write.sources?.length ?? 0) + (exhibit.citations?.length ?? 0);
       if (!exhibit.title || !exhibit.kind || !exhibit.publicStory || sourceCount < 1 || exhibit.incomplete !== true) {
         violations.push(violation("exhibit", "invalid-shape", "A provisional card needs a title, kind, story, source, and incomplete set."));
       }
     }
-    if (exhibit.publicationState === "canon") {
+    if (exhibit.figure) violations.push(...figureViolations(exhibit.figure));
+    if (exhibit.publicationState === "canon" && layer === "technical") {
       violations.push(...canonViolations(store, write, exhibit));
     }
   }
@@ -70,6 +94,18 @@ export function validateWrite(store: StoreView, write: Write, role: Role): Viola
     if (kind !== "dataset" && kind !== "benchmark") {
       violations.push(violation("evolution", "illegal-relation", "EVALUATED_ON must end on a dataset or benchmark."));
     }
+  }
+  return violations;
+}
+
+function figureViolations(figure: Figure): Violation[] {
+  const violations: Violation[] = [];
+  const licenseOk = (FIGURE_LICENSES as readonly string[]).includes(figure.license);
+  if (!licenseOk || !figure.sourceUrl || !figure.src.startsWith("/museum/")) {
+    violations.push(violation("exhibit.figure", "invalid-shape", "A figure needs an allowed license, a source URL, and a museum path."));
+  }
+  if (figure.kind === "redrawn" && !figure.redrawnAfter) {
+    violations.push(violation("exhibit.figure", "invalid-shape", "A redrawn figure names the source it follows."));
   }
   return violations;
 }

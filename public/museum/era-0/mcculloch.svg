@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360">
+  <rect width="640" height="360" fill="#E4E7EA"/>
+  <g fill="none" stroke="#1E2430" stroke-width="4">
+    <circle cx="160" cy="110" r="36"/>
+    <circle cx="160" cy="250" r="36"/>
+    <circle cx="420" cy="180" r="44"/>
+    <path d="M196 110 H300 L376 160 M196 250 H300 L376 200"/>
+  </g>
+  <g fill="#A6843D">
+    <circle cx="160" cy="110" r="8"/>
+    <circle cx="160" cy="250" r="8"/>
+    <circle cx="420" cy="180" r="8"/>
+  </g>
+  <g fill="#1E2430" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">
+    <text x="120" y="70">in</text>
+    <text x="120" y="310">in</text>
+    <text x="470" y="188">out</text>
+  </g>
+</svg>

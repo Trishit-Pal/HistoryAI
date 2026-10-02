@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lintProse } from "./linter.js";
+import { lintProse } from "./linter";
 
 describe("lintProse", () => {
   it("policy gradient produces no flag", () => {

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" width="800" height="360">
+  <rect width="800" height="360" fill="#E4E7EA"/>
+  <g fill="none" stroke="#1E2430" stroke-width="3">
+    <rect x="20" y="140" width="120" height="64"/>
+    <rect x="180" y="140" width="120" height="64"/>
+    <rect x="340" y="140" width="120" height="64"/>
+    <rect x="500" y="140" width="120" height="64"/>
+    <rect x="660" y="140" width="120" height="64"/>
+    <path d="M140 172 H180 M300 172 H340 M460 172 H500 M620 172 H660"/>
+    <path d="M400 80 V140" stroke="#A6843D"/>
+  </g>
+  <g fill="#1E2430" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">
+    <text x="36" y="176">Source</text>
+    <text x="196" y="176">Transmitter</text>
+    <text x="368" y="176">Channel</text>
+    <text x="524" y="176">Receiver</text>
+    <text x="676" y="176">Destination</text>
+    <text x="360" y="68">Noise</text>
+  </g>
+</svg>

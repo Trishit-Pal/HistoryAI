@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ClaimRole, ClaimStatus, PublicationState, SourceKind, Write } from "../store/memory.js";
-import { MemoryStore } from "../store/memory.js";
+import type { ClaimRole, ClaimStatus, PublicationState, SourceKind, Write } from "../store/memory";
+import { MemoryStore } from "../store/memory";
 
 const ROLES: ClaimRole[] = ["what_changed", "capability", "limit", "failure", "unknown"];
 

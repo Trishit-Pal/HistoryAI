@@ -1,0 +1,272 @@
+{
+  "nodes": [
+    {
+      "id": "c8fa33afec54c85f",
+      "type": "text",
+      "x": 0,
+      "y": -40,
+      "width": 280,
+      "height": 140,
+      "color": "#A6843D",
+      "text": "## Year rail\nShow work up to a year. Later pedestals stay in the room, ghosted."
+    },
+    {
+      "id": "fb200ec8b23a685b",
+      "type": "text",
+      "x": 360,
+      "y": -40,
+      "width": 280,
+      "height": 140,
+      "color": "#A6843D",
+      "text": "## Hall\nThe corridor is the experience. A hall whose exhibits are all later is sealed."
+    },
+    {
+      "id": "bba4810281c0a887",
+      "type": "text",
+      "x": 720,
+      "y": -40,
+      "width": 280,
+      "height": 140,
+      "color": "#E4E7EA",
+      "text": "## Plate\nA zinc reading tool inside the hall. Ink on metal. One exhibit at a time."
+    },
+    {
+      "id": "a309b3cf5b6625c1",
+      "type": "text",
+      "x": 1080,
+      "y": -40,
+      "width": 280,
+      "height": 140,
+      "color": "#E4E7EA",
+      "text": "## Ask\nQuestions are answered only from sourced nodes on this floor."
+    },
+    {
+      "id": "18d6b8ec081d478f",
+      "type": "group",
+      "x": 0,
+      "y": 180,
+      "width": 280,
+      "height": 180,
+      "label": "Precursors"
+    },
+    {
+      "id": "ea749b9c596ba628",
+      "type": "text",
+      "x": 20,
+      "y": 220,
+      "width": 240,
+      "height": 120,
+      "text": "Through 1949. Open mood. Formal ideas before the field name."
+    },
+    {
+      "id": "de68d7dead2b9194",
+      "type": "group",
+      "x": 320,
+      "y": 180,
+      "width": 280,
+      "height": 180,
+      "label": "Formal founding"
+    },
+    {
+      "id": "4af778c68abc5f5f",
+      "type": "text",
+      "x": 340,
+      "y": 220,
+      "width": 240,
+      "height": 120,
+      "text": "1950–1956. Open mood. Turing to Dartmouth."
+    },
+    {
+      "id": "dfa45cc1e6fae807",
+      "type": "group",
+      "x": 640,
+      "y": 180,
+      "width": 280,
+      "height": 180,
+      "label": "Symbolic golden age"
+    },
+    {
+      "id": "5c35da8e5ebfec6e",
+      "type": "text",
+      "x": 660,
+      "y": 220,
+      "width": 240,
+      "height": 120,
+      "text": "1956–1974. Open mood. Early programs and laboratories."
+    },
+    {
+      "id": "0e30841e7c5a1999",
+      "type": "group",
+      "x": 960,
+      "y": 180,
+      "width": 280,
+      "height": 180,
+      "color": "5",
+      "label": "First AI winter"
+    },
+    {
+      "id": "aac1296eeaeeb3d1",
+      "type": "text",
+      "x": 980,
+      "y": 220,
+      "width": 240,
+      "height": 120,
+      "color": "5",
+      "text": "1974–1980. Winter. Funding cuts and stalled claims."
+    },
+    {
+      "id": "a51df0a91571df2d",
+      "type": "group",
+      "x": 1280,
+      "y": 180,
+      "width": 280,
+      "height": 180,
+      "label": "Expert systems boom"
+    },
+    {
+      "id": "242bdded9334bfaf",
+      "type": "text",
+      "x": 1300,
+      "y": 220,
+      "width": 240,
+      "height": 120,
+      "text": "1980–1987. Open mood. Commercial rule systems."
+    },
+    {
+      "id": "e81537b539214af6",
+      "type": "group",
+      "x": 0,
+      "y": 400,
+      "width": 280,
+      "height": 180,
+      "color": "5",
+      "label": "Second AI winter"
+    },
+    {
+      "id": "c7b24edf69420c57",
+      "type": "text",
+      "x": 20,
+      "y": 440,
+      "width": 240,
+      "height": 120,
+      "color": "5",
+      "text": "1987–1993. Winter. The second contraction."
+    },
+    {
+      "id": "f7f51809520aeb5a",
+      "type": "group",
+      "x": 320,
+      "y": 400,
+      "width": 280,
+      "height": 180,
+      "label": "Statistical renaissance"
+    },
+    {
+      "id": "7592e35fa49b1348",
+      "type": "text",
+      "x": 340,
+      "y": 440,
+      "width": 240,
+      "height": 120,
+      "text": "1993–2011. Open mood. Data, learning, benchmarks."
+    },
+    {
+      "id": "36e32704836018c1",
+      "type": "group",
+      "x": 640,
+      "y": 400,
+      "width": 280,
+      "height": 180,
+      "color": "6",
+      "label": "Deep learning"
+    },
+    {
+      "id": "21dc8a7d73bb03f3",
+      "type": "text",
+      "x": 660,
+      "y": 440,
+      "width": 240,
+      "height": 120,
+      "color": "6",
+      "text": "2012–2016. Dense. Neural methods take the floor."
+    },
+    {
+      "id": "42ecf72dd41ba586",
+      "type": "group",
+      "x": 960,
+      "y": 400,
+      "width": 280,
+      "height": 180,
+      "color": "6",
+      "label": "Transformer era"
+    },
+    {
+      "id": "c6b47bf7dfb51559",
+      "type": "text",
+      "x": 980,
+      "y": 440,
+      "width": 240,
+      "height": 120,
+      "color": "6",
+      "text": "2017–2019. Dense. Attention as the method."
+    },
+    {
+      "id": "7ed8c7a1eed5497e",
+      "type": "group",
+      "x": 1280,
+      "y": 400,
+      "width": 280,
+      "height": 180,
+      "color": "6",
+      "label": "Generative boom"
+    },
+    {
+      "id": "a20da2890fc49fb7",
+      "type": "text",
+      "x": 1300,
+      "y": 440,
+      "width": 240,
+      "height": 120,
+      "color": "6",
+      "text": "2020–2022. Dense. Large generative systems."
+    },
+    {
+      "id": "c8af2b6708ff62ec",
+      "type": "group",
+      "x": 1600,
+      "y": 400,
+      "width": 280,
+      "height": 180,
+      "color": "6",
+      "label": "Frontier"
+    },
+    {
+      "id": "f6d858fdda6b50fc",
+      "type": "text",
+      "x": 1620,
+      "y": 440,
+      "width": 240,
+      "height": 120,
+      "color": "6",
+      "text": "From 2023. Dense. Still being written. Provisional wing from here."
+    }
+  ],
+  "edges": [
+    {
+      "id": "80851d7776755d58",
+      "fromNode": "c8fa33afec54c85f",
+      "toNode": "fb200ec8b23a685b",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "seals"
+    },
+    {
+      "id": "a0107272c2fc41ce",
+      "fromNode": "fb200ec8b23a685b",
+      "toNode": "bba4810281c0a887",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "opens"
+    }
+  ]
+}

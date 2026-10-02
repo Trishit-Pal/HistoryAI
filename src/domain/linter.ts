@@ -1,4 +1,4 @@
-import type { ProseFlag } from "./types.js";
+import type { ProseFlag } from "./types";
 
 const LICENSED = [
   "policy gradient",
