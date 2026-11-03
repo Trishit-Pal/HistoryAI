@@ -51,6 +51,12 @@ export type Citation = {
   retrieved: string;
 };
 
+export type FieldChange = {
+  before: string;
+  after: string;
+  citationUrls: string[];
+};
+
 export const FIGURE_LICENSES = [
   "PD-old",
   "PD-US-expired",

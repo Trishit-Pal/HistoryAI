@@ -101,12 +101,23 @@ export function layoutRooms(exhibits: PublicExhibit[]): Floor {
   return { rooms, startYears };
 }
 
+export const PROVISIONAL_OPENS = 2023;
+
+// The one seal rule: a room is sealed while every exhibit it holds starts after the year cursor.
+// A room with no known exhibits is never sealed; the provisional hall is sealed until PROVISIONAL_OPENS.
+export function isRoomSealed(
+  room: { id: string; exhibitIds: readonly string[] },
+  startYearOf: (exhibitId: string) => number | undefined,
+  yearCursor: number,
+): boolean {
+  if (room.id === "provisional") return yearCursor < PROVISIONAL_OPENS;
+  const years = room.exhibitIds.map(startYearOf).filter((year): year is number => year !== undefined);
+  return years.length > 0 && years.every((year) => year > yearCursor);
+}
+
 export function sealRooms(floor: Floor, yearCursor: number): string[] {
   return floor.rooms
-    .filter((room) => {
-      if (room.id === "provisional") return yearCursor < 2023;
-      return room.exhibitIds.every((id) => (floor.startYears[id] ?? 0) > yearCursor);
-    })
+    .filter((room) => isRoomSealed(room, (id) => floor.startYears[id], yearCursor))
     .map((room) => room.id);
 }
 

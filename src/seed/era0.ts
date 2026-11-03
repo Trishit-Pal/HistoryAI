@@ -96,6 +96,12 @@ export const ERA0_NODES: SeedNode[] = [
     citations: [nilsson],
     confidence: "reported",
     tags: ["precursor"],
+    fieldChange: {
+      before: "A history of the field could open at the first meeting that used the name, and leave earlier logic and machinery outside it.",
+      after:
+        "Nilsson's survey places the form of the syllogism, Boole's 1854 equations, and Babbage's engines inside that history, as clues rather than as one technical result.",
+      citationUrls: [nilsson.url],
+    },
     editorialNote:
       "Framing plaque. Nilsson's pages say the print version is Cambridge University Press and ask readers not to cite this PDF. The URL is the file that was opened. Not a single technical result.",
     figure: plate(
@@ -121,13 +127,20 @@ export const ERA0_NODES: SeedNode[] = [
     citations: [
       cite("https://www.gutenberg.org/ebooks/75107", "Project Gutenberg"),
       cite(
-        "https://en.wikisource.org/wiki/Scientific_Memoirs/3/Sketch_of_the_Analytical_Engine_invented_by_Charles_Babbage,_Esq./Notes_by_the_Translator",
+        "https://en.wikisource.org/wiki/Scientific_Memoirs/3/Sketch_of_the_Analytical_Engine_invented_by_Charles_Babbage,_Esq.",
         "Wikisource",
       ),
     ],
     confidence: "reported",
     tags: ["precursor"],
-    editorialNote: "Both opened pages are transcriptions, not the 1843 volume, so this stays reported.",
+    fieldChange: {
+      before: "A calculating engine was discussed as a machine for tables, without a published general procedure written for it.",
+      after:
+        "The 1843 translation of Menabrea's sketch, with Lovelace's Note G, works through a table for the Bernoulli numbers on the Analytical Engine.",
+      citationUrls: ["https://www.gutenberg.org/ebooks/75107"],
+    },
+    editorialNote:
+      "Gutenberg and the Wikisource sketch page answered. The separate Notes subpage returned 404, so it is not cited. Both are transcriptions, not the 1843 volume, so this stays reported.",
     figure: plate(
       "/museum/era-0/bernoulli-note-g.jpg",
       "Note G diagram titled Diagram for the computation by the Engine of the Numbers of Bernoulli.",
@@ -156,6 +169,12 @@ export const ERA0_NODES: SeedNode[] = [
     ],
     confidence: "reported",
     tags: ["precursor"],
+    fieldChange: {
+      before: "Logic was taught as a verbal art, apart from the manipulation of algebraic equations.",
+      after:
+        "The opened 1854 title page presents Boole's book as an investigation of the laws of thought on which the mathematical theories of logic and probabilities are founded.",
+      citationUrls: ["https://archive.org/details/aninvestigation00boolgoog"],
+    },
     editorialNote:
       "The shipped scan is Internet Archive item aninvestigation00boolgoog, whose metadata says not in copyright in the US.",
     figure: plate(
@@ -177,9 +196,23 @@ export const ERA0_NODES: SeedNode[] = [
     layer: "context",
     publicStory:
       "A. M. Turing's On Computable Numbers, with an Application to the Entscheidungsproblem, appeared in the Proceedings of the London Mathematical Society, series 2, volume 42.",
-    citations: [cite("https://doi.org/10.1112/plms/s2-42.1.230", "London Mathematical Society")],
+    citations: [
+      cite("https://doi.org/10.1112/plms/s2-42.1.230", "London Mathematical Society"),
+      {
+        url: "https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf",
+        publisher: "University of Virginia",
+        retrieved: "2026-10-04",
+      },
+    ],
     confidence: "reported",
     tags: ["precursor"],
+    fieldChange: {
+      before:
+        "The Entscheidungsproblem asked whether a definite method could decide every statement of a formal system, without a published account of what such a method was.",
+      after:
+        "Turing's paper in the Proceedings of the London Mathematical Society defines computable numbers by a machine and applies that definition to the Entscheidungsproblem.",
+      citationUrls: ["https://doi.org/10.1112/plms/s2-42.1.230"],
+    },
     editorialNote:
       "The opened Crossref record dates the print issue 1937. It does not give a received-in-1936 date. This room keeps 1936 as the working year.",
     figure: plate(
@@ -202,9 +235,22 @@ export const ERA0_NODES: SeedNode[] = [
     layer: "context",
     publicStory:
       "Claude Shannon's A Symbolic Analysis of Relay and Switching Circuits appeared in the Transactions of the American Institute of Electrical Engineers, volume 57, pages 713–723, in 1938.",
-    citations: [shannon1938],
+    citations: [
+      shannon1938,
+      {
+        url: "https://www.cs.virginia.edu/~evans/greatworks/shannon38.pdf",
+        publisher: "University of Virginia",
+        retrieved: "2026-10-04",
+      },
+    ],
     confidence: "reported",
     tags: ["precursor"],
+    fieldChange: {
+      before: "Relay circuits were drawn as electrical arrangements, and symbolic logic was a separate study.",
+      after:
+        "Shannon's 1938 paper gives a symbolic analysis of relay and switching circuits, in the Transactions of the AIEE, volume 57, pages 713–723.",
+      citationUrls: [shannon1938.url],
+    },
     editorialNote: "The DOI record was opened. The IEEE Xplore HTML was a bot challenge and was not read.",
     figure: plate(
       "/museum/era-0/shannon-1938.svg",
@@ -235,6 +281,12 @@ export const ERA0_NODES: SeedNode[] = [
     confidence: "confirmed",
     officialPrimary: true,
     tags: ["capability_breakthrough"],
+    fieldChange: {
+      before: "A neuron was described physiologically, and propositional logic was a separate calculus.",
+      after:
+        "The 1943 paper treats all-or-none neural events with propositional logic and pairs a logical expression with a net that behaves as that expression describes.",
+      citationUrls: ["https://link.springer.com/article/10.1007/BF02478259"],
+    },
     noPredecessorInScope: true,
     claims: mcculloch.claims,
     sources: [mccullochSource],
@@ -259,9 +311,22 @@ export const ERA0_NODES: SeedNode[] = [
     layer: "context",
     publicStory:
       "A 1948 edition is catalogued as Norbert Wiener, Cybernetics; or, Control and communication in the animal and the machine, from The Technology Press.",
-    citations: [openLibrary],
+    citations: [
+      openLibrary,
+      {
+        url: "https://archive.org/details/cyberneticsorcon00wien",
+        publisher: "Internet Archive",
+        retrieved: "2026-10-04",
+      },
+    ],
     confidence: "reported",
     tags: ["precursor"],
+    fieldChange: {
+      before: "Control in machines and communication in animals were catalogued as separate subjects.",
+      after:
+        "A 1948 edition is catalogued as Norbert Wiener, Cybernetics; or, Control and communication in the animal and the machine.",
+      citationUrls: [openLibrary.url],
+    },
     editorialNote:
       "Open Library's edition record was opened. A title page was not. The record does not name Hermann et Cie.",
     figure: plate(
@@ -287,11 +352,17 @@ export const ERA0_NODES: SeedNode[] = [
     technicalAccount:
       "The paper's text names five parts of a communication system: information source, transmitter, channel, receiver, and destination, and it places a noise source on the channel. A message is one selected from a set of possible messages. When that set is finite and choices are equally likely, the measure is a logarithm of the number of messages. The discrete noiseless case is developed before the continuous case.",
     citations: [
-      cite("https://onlinelibrary.wiley.com/doi/10.1002/j.1538-7305.1948.tb01338.x", "Wiley"),
+      cite("https://doi.org/10.1002/j.1538-7305.1948.tb01338.x", "Bell System Technical Journal"),
       cite("https://archive.org/details/bstj27-3-379", "Internet Archive"),
     ],
     confidence: "reported",
     tags: ["capability_breakthrough"],
+    fieldChange: {
+      before: "Communication engineering had no shared measure for a choice among possible messages.",
+      after:
+        "The 1948 paper names an information source, a transmitter, a channel, a receiver, and a destination, and it measures a finite set of equally likely messages by a logarithm of that number.",
+      citationUrls: ["https://archive.org/details/bstj27-3-379"],
+    },
     noPredecessorInScope: true,
     claims: shannon.claims,
     sources: [shannonSource],

@@ -1,14 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { precursorsLayout, stationLight, precursorsCameraY } from "./precursorsRoom";
+import { precursorsLayout, precursorsCameraY } from "./precursorsRoom";
 
 describe("precursors layout", () => {
-  it("shifts the lamp from warm to cool across the room", () => {
-    expect(stationLight(1843)).toBe("#f2e6c9");
-    expect(stationLight(1948)).toBe("#d5dbe3");
-    expect(stationLight(1800)).toBe("#f2e6c9");
-    expect(stationLight(1990)).toBe("#d5dbe3");
-  });
-
   it("places the plaque in front and the works on rising terraces", () => {
     const spots = precursorsLayout([
       "evt_history_overview",

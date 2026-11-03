@@ -82,6 +82,15 @@ describe("figure field", () => {
     expect(result.ok).toBe(false);
   });
 
+  it("rejects a data URL and a javascript redraw source", () => {
+    const store = new MemoryStore();
+    const dataUrl = store.apply(exhibit({ ...redrawn, sourceUrl: "data:text/html,hi" }), "editor");
+    expect(dataUrl.ok).toBe(false);
+    const script = store.apply(exhibit({ ...redrawn, redrawnAfter: "javascript:alert(1)" }), "editor");
+    expect(script.ok).toBe(false);
+    expect(store.getExhibit("fig")).toBeUndefined();
+  });
+
   it("accepts a scan without redrawnAfter", () => {
     const store = new MemoryStore();
     const { redrawnAfter: _dropped, ...rest } = redrawn;

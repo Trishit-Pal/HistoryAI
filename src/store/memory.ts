@@ -10,6 +10,7 @@ import type {
   Confidence,
   EraId,
   EvolutionType,
+  FieldChange,
   Figure,
   Kind,
   Layer,
@@ -38,6 +39,7 @@ export type ExhibitWrite = {
   editorialNote?: string;
   officialPrimary?: boolean;
   figure?: Figure;
+  fieldChange?: FieldChange;
 };
 
 export type ClaimWrite = {
@@ -60,7 +62,13 @@ export type SourceWrite = {
 
 export type SupportLink = { claimId: string; sourceId: string };
 
-export type EvolutionLink = { type: EvolutionType; fromId: string; toId: string };
+export type EvolutionLink = {
+  type: EvolutionType;
+  fromId: string;
+  toId: string;
+  sourceId?: string;
+  note?: string;
+};
 
 export type Write = {
   exhibit?: ExhibitWrite;
@@ -72,6 +80,10 @@ export type Write = {
   retractClaimId?: string;
   deleteClaimId?: string;
   expectedUpdatedAt?: string;
+  reason?: string;
+  suggestionId?: string;
+  /** merge (default) keeps fields the write omits; replace clears them; create refuses an existing id. */
+  mode?: "merge" | "replace" | "create";
 };
 
 type ExhibitRecord = ExhibitWrite & {
@@ -86,6 +98,8 @@ export type VersionRecord = {
   version: number;
   at: string;
   blob: ExhibitWrite;
+  reason: string;
+  suggestionId?: string;
 };
 
 export type ChangelogLine = {
@@ -93,9 +107,22 @@ export type ChangelogLine = {
   nodeId: string;
   version: number;
   reason: string;
+  suggestionId?: string;
 };
 
 type AuditRecord = { at: string; by: Role; change: string };
+
+export type MuseumSnapshot = {
+  exhibits: ExhibitRecord[];
+  claims: ClaimWrite[];
+  sources: SourceWrite[];
+  supports: SupportLink[];
+  evolution: EvolutionLink[];
+  contradicts: { fromClaimId: string; toClaimId: string }[];
+  audits: AuditRecord[];
+  versions: VersionRecord[];
+  changelog: ChangelogLine[];
+};
 
 export class MemoryStore {
   private exhibits = new Map<string, ExhibitRecord>();
@@ -158,7 +185,21 @@ export class MemoryStore {
     );
   }
 
-  snapshot(): unknown {
+  static fromSnapshot(snapshot: MuseumSnapshot): MemoryStore {
+    const store = new MemoryStore();
+    store.exhibits = new Map(snapshot.exhibits.map((exhibit) => [exhibit.id, exhibit]));
+    store.claims = new Map(snapshot.claims.map((claim) => [claim.id, claim]));
+    store.sources = new Map(snapshot.sources.map((source) => [source.id, source]));
+    store.supports = [...snapshot.supports];
+    store.evolution = [...snapshot.evolution];
+    store.contradicts = [...snapshot.contradicts];
+    store.audits = [...snapshot.audits];
+    store.versionLog = [...snapshot.versions];
+    store.changeLog = [...snapshot.changelog];
+    return store;
+  }
+
+  snapshot(): MuseumSnapshot {
     return {
       exhibits: [...this.exhibits.values()],
       claims: [...this.claims.values()],
@@ -197,8 +238,9 @@ export class MemoryStore {
       const incoming = Object.fromEntries(
         Object.entries(write.exhibit).filter(([, value]) => value !== undefined),
       ) as ExhibitWrite;
+      const kept = write.mode === "replace" ? { tags: existing?.tags } : existing;
       const next: ExhibitRecord = {
-        ...existing,
+        ...kept,
         ...incoming,
         layer,
         proseFlags,
@@ -207,17 +249,21 @@ export class MemoryStore {
       };
       this.exhibits.set(write.exhibit.id, next);
       const blob = structuredClone(next);
+      const reason = write.reason ?? (existing ? "Revised" : "First published");
       this.versionLog.push({
         nodeId: next.id,
         version,
         at: now,
         blob,
+        reason,
+        suggestionId: write.suggestionId,
       });
       this.changeLog.push({
         at: now,
         nodeId: next.id,
         version,
-        reason: blob.publicStory.slice(0, 140),
+        reason,
+        suggestionId: write.suggestionId,
       });
     }
     for (const claim of write.claims ?? []) this.claims.set(claim.id, claim);

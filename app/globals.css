@@ -12,6 +12,50 @@
   --context: #6b7c8a;
 }
 
+/* Cyanotype sheet tokens for the corridor. Defined on .shell and on the page that holds one,
+   so the site nav above it can use them; other pages keep the stone theme.
+   Keep equal to src/museum/theme.ts (theme.test.ts checks). */
+.shell,
+.exhibit-page,
+html:has(:is(.shell, .exhibit-page)) {
+  --bp-prussian: #0e2a47;
+  --bp-lift: #16406a;
+  --bp-chalk: #eaf1f5;
+  --bp-chalk-dim: #8faec6;
+  --bp-redline: #ff7a59;
+  --bp-print: #f2f6f8;
+  --bp-ink: #1e2430;
+}
+
+/* Resolved on body and below, where next/font defines --font-sheet. */
+.shell,
+.exhibit-page,
+body:has(:is(.shell, .exhibit-page)) {
+  --bp-sheet-font: var(--font-sheet), "Barlow Semi Condensed", "DIN Alternate", system-ui, sans-serif;
+}
+
+html:has(:is(.shell, .exhibit-page)),
+body:has(:is(.shell, .exhibit-page)) {
+  background: var(--bp-prussian);
+  color: var(--bp-chalk);
+}
+
+body:has(:is(.shell, .exhibit-page)) .site-nav {
+  background: var(--bp-prussian);
+  border-bottom-color: var(--bp-chalk-dim);
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+}
+
+body:has(:is(.shell, .exhibit-page)) .site-nav a {
+  color: var(--bp-chalk);
+}
+
+body:has(:is(.shell, .exhibit-page)) .site-nav a:hover,
+body:has(:is(.shell, .exhibit-page)) .site-nav a[aria-current="page"] {
+  color: var(--bp-redline);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -148,51 +192,249 @@ textarea {
   color: var(--brass);
 }
 
+.shell {
+  display: flex;
+  flex-direction: column;
+  background: var(--bp-prussian);
+  color: var(--bp-chalk);
+  font-family: var(--bp-sheet-font);
+}
+
+.shell :focus-visible {
+  outline: 2px solid var(--bp-redline);
+  outline-offset: 2px;
+}
+
+.shell .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.shell .archive-banner {
+  color: var(--bp-chalk-dim);
+  font-family: var(--bp-sheet-font);
+}
+
+/* The rail is the sheet's top border: name, scale bar, then the sheet tabs. */
 .rail {
   position: sticky;
   top: 0;
   z-index: 4;
   display: grid;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: var(--floor);
-  border-bottom: 1px solid var(--brass);
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 2rem;
+  row-gap: 0.15rem;
+  padding: 0.6rem 1rem 0.7rem;
+  background: var(--bp-prussian);
+  border-bottom: 1px solid var(--bp-chalk);
 }
 
 .site-name {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
   margin: 0;
-  font-family: var(--font-display), Syne, sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--brass);
-  text-wrap: balance;
+  font-family: var(--bp-sheet-font);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--bp-chalk);
 }
 
 .rail label {
-  font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.8rem;
-  color: var(--brass);
+  grid-column: 2;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-chalk);
 }
 
-.rail input[type="range"] {
-  accent-color: var(--brass);
-  width: min(40rem, 100%);
+.year-scale {
+  --thumb: 6px;
+  grid-column: 2;
+  position: relative;
+  max-width: 44rem;
+  padding-top: 1.6rem;
+}
+
+.year-scale .ticks {
+  position: absolute;
+  inset: 0 calc(var(--thumb) / 2) auto;
+  height: 1.6rem;
+}
+
+.year-scale .tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 0.4rem;
+  background: var(--bp-chalk-dim);
+}
+
+.year-scale .tick.major {
+  height: 0.7rem;
+  background: var(--bp-chalk);
+}
+
+.year-scale .tick-label {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-chalk-dim);
+}
+
+.year-scale input[type="range"] {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 1.5rem;
+  margin: 0;
+  background: transparent;
+  cursor: ew-resize;
+}
+
+.year-scale input[type="range"]::-webkit-slider-runnable-track {
+  height: 1.5rem;
+  background: linear-gradient(var(--bp-chalk), var(--bp-chalk)) center / 100% 1px no-repeat;
+}
+
+.year-scale input[type="range"]::-moz-range-track {
+  height: 1.5rem;
+  background: linear-gradient(var(--bp-chalk), var(--bp-chalk)) center / 100% 1px no-repeat;
+}
+
+.year-scale input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--thumb);
+  height: 1.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--bp-redline);
+}
+
+.year-scale input[type="range"]::-moz-range-thumb {
+  width: var(--thumb);
+  height: 1.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--bp-redline);
 }
 
 .stage {
   display: grid;
-  grid-template-columns: 1fr minmax(18rem, 28rem);
-  min-height: calc(100vh - 9rem);
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 28rem);
+  flex: 1;
+}
+
+/* Wide screens: the sheet is exactly one viewport; the dossier scrolls inside its column. */
+@media (min-width: 801px) {
+  body:has(.shell) {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .shell {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .stage,
+  .viewport,
+  .canvas-wrap {
+    min-height: 0;
+  }
+
+  .flatland {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .dossier-panel {
+    display: flex;
+    min-height: 0;
+  }
+
+  .dossier {
+    flex: 1;
+    max-height: none;
+  }
+}
+
+.viewport {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--bp-chalk-dim);
 }
 
 @media (max-width: 800px) {
+  .rail {
+    position: static;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.4rem;
+  }
+
+  .index {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .index button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .site-name,
+  .rail label,
+  .year-scale,
+  .plan-toggle {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .plan-toggle {
+    justify-self: start;
+  }
+
   .stage {
     grid-template-columns: 1fr;
   }
 
-  .dossier {
+  /* Tabs, then the panel they control, then the plan: the visual order matches the focus order. */
+  .viewport {
+    display: contents;
+  }
+
+  .exhibit-tabs {
+    order: -2;
+    border-top: 0;
+    border-bottom: 1px solid var(--bp-chalk-dim);
+  }
+
+  .dossier-panel {
     order: -1;
+  }
+
+  .dossier {
     max-height: none;
+  }
+
+  .canvas-wrap,
+  .corridor {
+    min-height: 24rem;
   }
 }
 
@@ -203,16 +445,73 @@ textarea {
 .canvas-wrap {
   position: relative;
   overflow: hidden;
-  min-height: 28rem;
-  background: var(--floor);
+  flex: 1;
+  background: var(--bp-prussian);
+}
+
+.corridor {
+  height: 100%;
+}
+
+.canvas-wrap .badge {
+  white-space: nowrap;
+}
+
+.exhibit-tabs {
+  display: flex;
+  overflow-x: auto;
+  background: var(--bp-prussian);
+  border-top: 1px solid var(--bp-chalk-dim);
+}
+
+.exhibit-tabs [role="tab"] {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 0.1rem;
+  max-width: 15rem;
+  padding: 0.5rem 0.85rem 0.6rem;
+  background: transparent;
+  color: var(--bp-chalk);
+  border: 0;
+  border-top: 3px solid transparent;
+  border-right: 1px solid var(--bp-chalk-dim);
+  font-family: var(--bp-sheet-font);
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exhibit-tabs [role="tab"][aria-selected="true"] {
+  background: var(--bp-lift);
+  border-top-color: var(--bp-redline);
+  font-weight: 600;
+}
+
+/* Not yet drawn: dim chalk and italic, never faded, so the small year stays above 4.5:1. */
+.exhibit-tabs [role="tab"].ghost {
+  opacity: 1;
+  color: var(--bp-chalk-dim);
+  font-style: italic;
+}
+
+.exhibit-tabs .tab-year {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-chalk-dim);
+}
+
+.exhibit-tabs .tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hall-name {
   margin: 0;
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--bp-sheet-font);
   font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--brass);
+  font-weight: 600;
+  color: var(--bp-chalk);
   text-wrap: balance;
   pointer-events: none;
 }
@@ -226,32 +525,37 @@ textarea {
 }
 
 .flatland h2 {
-  font-family: var(--font-display), Syne, sans-serif;
-  font-weight: 700;
+  font-family: var(--bp-sheet-font);
+  font-weight: 600;
   margin: 0 0 0.75rem;
-  color: var(--brass);
+  color: var(--bp-chalk);
   text-wrap: balance;
+}
+
+.flatland a {
+  color: var(--bp-chalk);
 }
 
 .flatland article {
   margin: 0 0 1.5rem;
   padding: 0.9rem 0.75rem 1.25rem;
-  border: 1px solid #3a342c;
+  border: 1px solid var(--bp-chalk-dim);
 }
 
 .flatland article.selected {
-  border-color: var(--brass);
+  border-color: var(--bp-redline);
+  border-width: 2px;
 }
 
 .flatland article.ghost {
-  opacity: 0.35;
+  opacity: 0.55;
 }
 
 .flatland .exhibit-title {
   display: block;
-  font-family: var(--font-display), Syne, sans-serif;
-  font-weight: 700;
-  font-size: 1.15rem;
+  font-family: var(--bp-sheet-font);
+  font-weight: 600;
+  font-size: 1.2rem;
   text-align: left;
   text-wrap: balance;
 }
@@ -262,6 +566,11 @@ textarea {
   border: 0;
   padding: 0;
   cursor: pointer;
+}
+
+.flatland .note {
+  color: var(--bp-chalk);
+  border-top-color: var(--bp-chalk-dim);
 }
 
 .years {
@@ -275,29 +584,57 @@ textarea {
   color: var(--ink);
 }
 
+.plan-toggle {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  padding: 0.2rem 0.7rem;
+  background: transparent;
+  color: var(--bp-chalk);
+  border: 1px solid var(--bp-chalk-dim);
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.plan-toggle[aria-pressed="true"] {
+  background: var(--bp-lift);
+  border-color: var(--bp-chalk);
+  box-shadow: inset 0 -3px 0 var(--bp-redline);
+}
+
+/* Hall chips are sheet tabs. A sealed hall is not yet drawn: dashed outline. */
 .index {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
 }
 
 .index button {
   background: transparent;
-  color: var(--plate);
-  border: 1px solid #3a342c;
-  padding: 0.35rem 0.55rem;
+  color: var(--bp-chalk);
+  border: 1px solid var(--bp-chalk-dim);
+  border-bottom-width: 3px;
+  padding: 0.25rem 0.6rem 0.2rem;
   cursor: pointer;
-  font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.78rem;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .index button[aria-current="true"] {
-  border-color: var(--brass);
-  color: var(--brass);
+  background: var(--bp-lift);
+  border-color: var(--bp-chalk);
+  border-bottom-color: var(--bp-redline);
+  font-weight: 600;
 }
 
 .index button:disabled {
-  opacity: 0.35;
+  border-style: dashed;
+  color: var(--bp-chalk-dim);
   cursor: not-allowed;
 }
 
@@ -323,22 +660,125 @@ textarea {
   cursor: not-allowed;
 }
 
+.shell .years {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+  color: var(--bp-chalk-dim);
+}
+
+.shell .hall-order button {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+}
+
 .flatland .hall-order button {
-  color: var(--plate);
-  border-color: #3a342c;
+  color: var(--bp-chalk);
+  border-color: var(--bp-chalk-dim);
+}
+
+/* The dossier is a print pinned to the plan: ink on a pale sheet, laid out as a title block. */
+.dossier-panel {
+  min-width: 0;
+  background: var(--bp-print);
 }
 
 .dossier {
   padding: 1.25rem;
   overflow: auto;
-  max-height: calc(100vh - 9rem);
+}
+
+.shell .dossier.plate {
+  background: var(--bp-print);
+  color: var(--bp-ink);
+}
+
+.shell .dossier :focus-visible {
+  outline-color: var(--bp-ink);
+}
+
+.shell .dossier .years,
+.shell .dossier .muted {
+  color: var(--bp-ink);
 }
 
 .dossier h1 {
-  font-family: var(--font-display), Syne, sans-serif;
-  font-size: 1.6rem;
-  margin: 0 0 0.5rem;
+  font-family: var(--bp-sheet-font);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0 0 0.75rem;
   text-wrap: balance;
+}
+
+.dossier h2 {
+  font-family: var(--bp-sheet-font);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 1.25rem 0 0.25rem;
+}
+
+.titleblock {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  margin: 0 0 1rem;
+  border-top: 1px solid var(--bp-ink);
+  border-left: 1px solid var(--bp-ink);
+}
+
+.titleblock > div {
+  padding: 0.3rem 0.55rem 0.4rem;
+  border-right: 1px solid var(--bp-ink);
+  border-bottom: 1px solid var(--bp-ink);
+}
+
+.titleblock dt {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.78rem;
+  color: #4f5a66;
+}
+
+.titleblock dd {
+  margin: 0;
+  font-family: var(--bp-sheet-font);
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.titleblock .badges {
+  margin: 0.15rem 0 0;
+}
+
+:is(.shell, .exhibit-page) .badge {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* A shape per confidence word, so colour is never the only cue. Mirrors theme.ts (theme.test.ts checks). */
+:is(.shell, .exhibit-page) .badge::before {
+  margin-right: 0.35em;
+}
+
+:is(.shell, .exhibit-page) .badge-confirmed::before {
+  content: "●";
+}
+
+:is(.shell, .exhibit-page) .badge-reported::before {
+  content: "◐";
+}
+
+:is(.shell, .exhibit-page) .badge-rumored::before {
+  content: "○";
+}
+
+:is(.shell, .exhibit-page) .badge-disputed::before {
+  content: "◆";
+}
+
+:is(.shell, .exhibit-page) .badge-unset::before {
+  content: "–";
 }
 
 .dossier p,
@@ -356,38 +796,12 @@ textarea {
   font-size: 0.78rem;
 }
 
-.ask {
-  display: grid;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #c9cdd2;
-}
-
-.ask label {
+.archive-banner {
+  margin: 0;
+  padding: 0.4rem 1rem;
   font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.8rem;
-}
-
-.ask input {
-  width: 100%;
-  padding: 0.45rem 0.5rem;
-  border: 1px solid var(--ink);
-  background: #f4f5f6;
-  color: var(--ink);
-}
-
-.ask button {
-  width: fit-content;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid var(--ink);
-  background: var(--ink);
-  color: var(--plate);
-  cursor: pointer;
-}
-
-.answer {
-  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--brass);
 }
 
 .page {
@@ -423,3 +837,375 @@ textarea {
 .changelog li {
   margin-bottom: 0.75rem;
 }
+
+/* The exhibit page is one more sheet: the plan's blue ground with the same pale print and title block. */
+.exhibit-page {
+  background: var(--bp-prussian);
+  color: var(--bp-chalk);
+  font-family: var(--bp-sheet-font);
+}
+
+.exhibit-page :focus-visible {
+  outline: 2px solid var(--bp-redline);
+  outline-offset: 2px;
+}
+
+.exhibit-page .exhibit-sheet :focus-visible {
+  outline-color: var(--bp-ink);
+}
+
+.exhibit-page .archive-banner {
+  max-width: 46rem;
+  margin: 0 auto;
+  color: var(--bp-chalk-dim);
+  font-family: var(--bp-sheet-font);
+}
+
+.exhibit-rail {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 0;
+  font-size: 1rem;
+}
+
+.exhibit-rail a {
+  color: var(--bp-chalk);
+}
+
+.exhibit-sheet {
+  max-width: 46rem;
+  margin: 0.75rem auto 4rem;
+  padding: 1.5rem;
+}
+
+.exhibit-page .exhibit-sheet.plate {
+  background: var(--bp-print);
+  color: var(--bp-ink);
+}
+
+.exhibit-sheet h1 {
+  font-family: var(--bp-sheet-font);
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.08;
+  margin: 0 0 1rem;
+}
+
+.exhibit-sheet h2,
+.exhibit-sheet h3 {
+  font-family: var(--bp-sheet-font);
+  font-weight: 600;
+}
+
+/* Each section is ruled off like a block on a drawing. */
+.exhibit-sheet h2 {
+  margin: 1.75rem 0 0.35rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--bp-ink);
+  font-size: 1.3rem;
+}
+
+.exhibit-sheet p,
+.exhibit-sheet li {
+  max-width: 65ch;
+  font-family: var(--font-body), Literata, serif;
+  line-height: 1.55;
+}
+
+.exhibit-sheet .years {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Revision history reads as a revision table: version and date, then the reason and the changes. */
+.exhibit-sheet .revisions {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--bp-ink);
+}
+
+.exhibit-sheet .revisions > li {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  column-gap: 1rem;
+  max-width: none;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--bp-ink);
+}
+
+.exhibit-sheet .revisions > li > .years {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  margin: 0;
+}
+
+.exhibit-sheet .revisions > li > p:not(.years),
+.exhibit-sheet .revisions > li > ul {
+  grid-column: 2;
+  margin: 0 0 0.25rem;
+}
+
+.exhibit-sheet .revisions > li > ul {
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 800px) {
+  .exhibit-sheet .revisions > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .exhibit-sheet .revisions > li > .years,
+  .exhibit-sheet .revisions > li > p:not(.years),
+  .exhibit-sheet .revisions > li > ul {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+
+.revisions,
+.suggestions {
+  padding-left: 1.2rem;
+}
+
+.exhibit-sheet .suggest summary {
+  font-family: var(--bp-sheet-font);
+  font-weight: 600;
+}
+
+.suggest {
+  margin-top: 2rem;
+}
+
+.suggest summary {
+  cursor: pointer;
+  font-family: var(--font-display), Syne, sans-serif;
+}
+
+.suggest-form,
+.editor-form {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 65ch;
+  margin-top: 1rem;
+}
+
+.suggest-form input,
+.suggest-form textarea,
+.suggest-form select,
+.editor-form input,
+.editor-form textarea,
+.editor-form select {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--ink);
+  background: #f4f5f6;
+  color: var(--ink);
+}
+
+.suggest-form button,
+.editor-form button,
+.editor button {
+  width: fit-content;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--plate);
+  cursor: pointer;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  height: 0;
+  width: 0;
+  opacity: 0;
+}
+
+.night {
+  min-height: 100vh;
+  background: #07070d;
+  color: #e8e6f0;
+  font-family: var(--font-night-ui), "Space Grotesk", sans-serif;
+}
+
+.night h1,
+.night h2,
+.night h3 {
+  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-weight: 600;
+  color: #f0d68a;
+}
+
+.night a {
+  color: #5eead4;
+}
+
+.night button:focus-visible,
+.night a:focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 3px;
+}
+
+.night-hero {
+  position: relative;
+  height: 70vh;
+  min-height: 24rem;
+}
+
+.night-hero-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.night-hero-stage canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.night-hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 36rem;
+  padding: 2rem 1.25rem;
+  pointer-events: none;
+}
+
+.night-hero-copy p {
+  max-width: 40ch;
+  color: #8b8aa3;
+}
+
+.night-ring {
+  width: min(40vw, 18rem);
+  height: min(40vw, 18rem);
+  margin: 2rem 1.25rem 2rem auto;
+  border: 1px solid #d4af37;
+  border-radius: 50%;
+}
+
+.night-block {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+}
+
+.night-year {
+  display: block;
+  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: #f0d68a;
+}
+
+.night-timeline {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.night-card {
+  flex: 0 0 min(78vw, 18rem);
+  scroll-snap-align: start;
+  text-align: left;
+  color: inherit;
+  background: #0c0d17;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  padding: 1rem;
+}
+
+.night-card button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.night-card a {
+  display: inline-block;
+  margin-top: 0.75rem;
+}
+
+.night-card p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #8b8aa3;
+}
+
+.night-hall {
+  position: relative;
+}
+
+.night-hall-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.night-hud {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  margin: 0;
+  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-size: 2.5rem;
+  color: #f0d68a;
+}
+
+.night-vault {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem;
+}
+
+.night-vault button {
+  width: 100%;
+  display: grid;
+  gap: 0.25rem;
+  text-align: left;
+  color: inherit;
+  background: #0c0d17;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  padding: 0.9rem;
+  cursor: pointer;
+}
+
+.night-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(4, 4, 10, 0.86);
+}
+
+.night-sheet {
+  width: min(40rem, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1.5rem 1.4rem 2rem;
+  background: #0c0d17;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.night-sheet button {
+  margin-top: 1rem;
+  color: #f0d68a;
+  background: transparent;
+  border: 1px solid #d4af37;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+

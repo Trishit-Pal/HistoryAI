@@ -13,7 +13,7 @@ async function tabTo(page: import("@playwright/test").Page, name: RegExp, shift 
 }
 
 test("keyboard leaves Formal founding for Precursors and the plate stays readable", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/rooms/founding");
   const founding = await tabTo(page, /Formal founding/);
   await expect(founding).toBeFocused();
   await founding.press("Enter");
@@ -50,13 +50,15 @@ test("keyboard leaves Formal founding for Precursors and the plate stays readabl
         new Promise<number>((resolve) => {
           let last = 0;
           const deltas: number[] = [];
+          const finish = () => resolve(deltas.length ? deltas.reduce((sum, delta) => sum + delta, 0) / deltas.length : 0);
           const sample = (now: number) => {
             if (last > 0) deltas.push(now - last);
             last = now;
             if (deltas.length < 60) requestAnimationFrame(sample);
-            else resolve(deltas.reduce((sum, delta) => sum + delta, 0) / deltas.length);
+            else finish();
           };
           requestAnimationFrame(sample);
+          setTimeout(finish, 2500);
         }),
     );
     console.log(`Room 0 frame sample ${average.toFixed(2)} ms`);
@@ -65,7 +67,7 @@ test("keyboard leaves Formal founding for Precursors and the plate stays readabl
 
 test("reduced motion still reaches the Precursors plate", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/rooms/founding");
   const precursors = await tabTo(page, /Precursors/);
   await precursors.press("Enter");
   await expect(precursors).toHaveAttribute("aria-current", "true");

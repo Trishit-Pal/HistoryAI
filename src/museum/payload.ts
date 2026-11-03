@@ -21,6 +21,7 @@ export function museumNodes(store: MemoryStore): MuseumNode[] {
     incomplete: exhibit.incomplete,
     proseFlags: exhibit.proseFlags,
     figure: exhibit.figure,
+    fieldChange: exhibit.fieldChange,
   }));
 }
 

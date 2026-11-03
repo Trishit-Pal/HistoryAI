@@ -68,14 +68,7 @@ afterEach(() => cleanup());
 describe("reading surfaces", () => {
   it("shows a redrawn figure credit in the dossier", () => {
     render(
-      <Dossier
-        node={node("ctx_1936_turing_computable", 1936, redrawn)}
-        ask=""
-        answer={null}
-        onAskChange={() => undefined}
-        onAsk={() => undefined}
-        onFocus={() => undefined}
-      />,
+      <Dossier node={node("ctx_1936_turing_computable", 1936, redrawn)} onFocus={() => undefined} />,
     );
     expect(screen.getByAltText("A state table with rows for machine configurations.")).toBeTruthy();
     expect(screen.getByText(redrawn.credit)).toBeTruthy();
@@ -87,18 +80,15 @@ describe("reading surfaces", () => {
     );
     expect(screen.queryByText(redrawn.sourceUrl)).toBeNull();
     expect(screen.getByText("Original illustration for this museum")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Full exhibit, sources and changes" }).getAttribute("href")).toBe(
+      "/rooms/precursors/ctx_1936_turing_computable",
+    );
+    expect(screen.queryByLabelText("Ask the museum")).toBeNull();
   });
 
   it("omits the redrawn note on a scan", () => {
     render(
-      <Dossier
-        node={node("ctx_1854_boole_laws_of_thought", 1854, scan)}
-        ask=""
-        answer={null}
-        onAskChange={() => undefined}
-        onAsk={() => undefined}
-        onFocus={() => undefined}
-      />,
+      <Dossier node={node("ctx_1854_boole_laws_of_thought", 1854, scan)} onFocus={() => undefined} />,
     );
     expect(screen.queryByText(/Redrawn after/)).toBeNull();
   });

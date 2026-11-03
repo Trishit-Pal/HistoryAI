@@ -1,16 +1,16 @@
 "use client";
 
+import { eraById } from "../src/domain/eras";
 import type { Hall } from "../src/domain/layout";
 import { hallNeighbors } from "../src/domain/threads";
 import { hallTally, tallyLabel } from "../src/domain/visited";
+import { hallSpan } from "../src/museum/hallMath";
 import type { MuseumNode } from "../src/museum/view";
 import { FigureCredit } from "./FigureCredit";
 import { HallOrderNav } from "./HallOrderNav";
 
 function hallHeading(hall: Hall, emptyProvisional: boolean): string {
-  const span = hall.startYear
-    ? ` ${hall.startYear}${hall.endYear ? `–${hall.endYear}` : "–"}`
-    : "";
+  const span = hallSpan(hall);
   const winter = hall.mood === "winter" ? " · winter" : "";
   const empty = emptyProvisional ? " · Nothing provisional is on the floor yet." : "";
   return `${hall.label}${span}${winter}${empty}`;
@@ -66,6 +66,11 @@ export function Flatland({
                   )}
                   <FigureCredit figure={node.figure} />
                   <p>{node.publicStory}</p>
+                  {node.eraId ? (
+                    <p>
+                      <a href={`/rooms/${eraById(node.eraId).slug}/${node.id}`}>Full exhibit, sources and changes</a>
+                    </p>
+                  ) : null}
                   {node.editorialNote ? <p className="note">{node.editorialNote}</p> : null}
                 </article>
               );

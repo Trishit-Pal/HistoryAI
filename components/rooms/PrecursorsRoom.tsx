@@ -1,22 +1,19 @@
 "use client";
 
 import { Text } from "@react-three/drei";
+import { LABEL_FONT } from "../labelFont";
 import type { Hall } from "../../src/domain/layout";
 import {
   ENTRANCE_PLAQUE_ID,
   TERRACE_RISE,
   TERRACE_STEP,
   precursorsLayout,
-  stationLight,
 } from "../../src/museum/precursorsRoom";
+import { CHALK } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
 import { FigurePlate } from "../FigurePlate";
 import { Monument } from "../Monument";
-
-const FLOOR = "#1A1814";
-const STONE = "#C8BBA4";
-const BRASS = "#A6843D";
-const WALL = "#3a342c";
+import { Ink } from "./roomKit";
 
 export function PrecursorsRoom({
   hall,
@@ -45,7 +42,6 @@ export function PrecursorsRoom({
 }) {
   const spots = precursorsLayout(hall.exhibitIds);
   const stations = spots.filter((spot) => spot.id !== ENTRANCE_PLAQUE_ID);
-  const focusedNode = members.find((node) => node.id === focusedId) ?? members[0];
   const byId = new Map(members.map((node) => [node.id, node]));
   const plaque = byId.get(ENTRANCE_PLAQUE_ID);
   const plaqueSpot = spots.find((spot) => spot.id === ENTRANCE_PLAQUE_ID);
@@ -55,24 +51,16 @@ export function PrecursorsRoom({
   const spanEnd = lastZ - 1.6;
   const span = spanStart - spanEnd;
   const midZ = (spanStart + spanEnd) / 2;
-  const lit = spots.find((spot) => spot.id === focusedId) ?? plaqueSpot ?? stations[0];
 
   return (
     <group position={[0, 0, originZ]}>
-      <pointLight
-        position={[lit?.x ?? 0, (lit?.y ?? 0) + 2.2, lit?.z ?? 1.8]}
-        intensity={4}
-        distance={8}
-        decay={2}
-        color={stationLight(focusedNode?.startYear ?? 1843)}
-      />
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, 0, 1.8]}
         onClick={() => onHall(hallIndex)}
       >
         <planeGeometry args={[6, 1.8]} />
-        <meshStandardMaterial color={FLOOR} />
+        <Ink tone="floor" />
       </mesh>
       {stations.map((spot, index) => {
         const node = byId.get(spot.id);
@@ -84,19 +72,20 @@ export function PrecursorsRoom({
           <group key={node.id}>
             <mesh position={[0, spot.y - 0.04, spot.z]}>
               <boxGeometry args={[6, 0.08, TERRACE_STEP]} />
-              <meshStandardMaterial color={FLOOR} />
+              <Ink tone="floor" />
             </mesh>
             {index > 0 ? (
               <mesh position={[0, spot.y - TERRACE_RISE / 2, spot.z + TERRACE_STEP / 2]}>
                 <boxGeometry args={[6, TERRACE_RISE, 0.08]} />
-                <meshStandardMaterial color={STONE} />
+                <Ink tone="stone" />
               </mesh>
             ) : null}
             {index === 1 ? (
               <Text
+                font={LABEL_FONT}
                 position={[0, spot.y + 0.42, spot.z + TERRACE_STEP / 2 + 0.08]}
                 fontSize={0.28}
-                color={BRASS}
+                color={CHALK}
                 anchorX="center"
                 anchorY="middle"
               >
@@ -155,34 +144,35 @@ export function PrecursorsRoom({
               Math.max(0.4, Math.abs(spanEnd - ((stations.at(-1)?.z ?? 0) - TERRACE_STEP / 2))),
             ]}
           />
-          <meshStandardMaterial color={FLOOR} />
+          <Ink tone="floor" />
         </mesh>
       ) : null}
       <mesh position={[3, 1.5, midZ]}>
         <boxGeometry args={[0.12, 3.2, span]} />
-        <meshStandardMaterial color={WALL} />
+        <Ink tone="wall" />
       </mesh>
       <mesh position={[-3, 1.5, midZ]}>
         <boxGeometry args={[0.12, 3.2, span]} />
-        <meshStandardMaterial color={WALL} />
+        <Ink tone="wall" />
       </mesh>
       <mesh position={[-0.7, (stations.at(-1)?.y ?? 0) + 1.3, spanEnd]}>
         <boxGeometry args={[0.12, 2.6, 0.12]} />
-        <meshStandardMaterial color={BRASS} />
+        <Ink tone="metal" />
       </mesh>
       <mesh position={[0.7, (stations.at(-1)?.y ?? 0) + 1.3, spanEnd]}>
         <boxGeometry args={[0.12, 2.6, 0.12]} />
-        <meshStandardMaterial color={BRASS} />
+        <Ink tone="metal" />
       </mesh>
       <mesh position={[0, (stations.at(-1)?.y ?? 0) + 2.55, spanEnd]}>
         <boxGeometry args={[1.52, 0.1, 0.12]} />
-        <meshStandardMaterial color={BRASS} />
+        <Ink tone="metal" />
       </mesh>
       {nextLabel ? (
         <Text
+          font={LABEL_FONT}
           position={[0, (stations.at(-1)?.y ?? 0) + 2.2, spanEnd + 0.08]}
           fontSize={0.12}
-          color={BRASS}
+          color={CHALK}
           anchorX="center"
           maxWidth={2.4}
         >

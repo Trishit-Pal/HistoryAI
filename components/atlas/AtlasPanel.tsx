@@ -1,0 +1,158 @@
+"use client";
+
+import Link from "next/link";
+import { type ModelFacts, describeCoverage } from "../../src/atlas/describe";
+import type { GovernanceView } from "../../src/atlas/governance";
+import { YEAR_AXIS } from "../../src/atlas/projection";
+import type { LandmarkExhibit } from "../../src/atlas/landmarks";
+import type { AtlasMetric, AtlasTotals } from "../../src/atlas/types";
+import { CONFIDENCE_GLYPH } from "../../src/museum/theme";
+
+const METRIC_LABEL: Record<AtlasMetric, string> = {
+  compute: "Training compute",
+  parameters: "Parameters",
+};
+
+interface ControlsProps {
+  metric: AtlasMetric;
+  cutoff: number;
+  totals: AtlasTotals;
+  showAll: boolean;
+  /** Featured models drawn for the current measure. */
+  drawn: number;
+  canReset: boolean;
+  onMetric: (metric: AtlasMetric) => void;
+  onShowAll: (showAll: boolean) => void;
+  onCutoff: (year: number) => void;
+  onReset: () => void;
+}
+
+export function AtlasControls({
+  metric,
+  cutoff,
+  totals,
+  showAll,
+  drawn,
+  canReset,
+  onMetric,
+  onShowAll,
+  onCutoff,
+  onReset,
+}: ControlsProps) {
+  return (
+    <div className="atlas-controls">
+      <fieldset>
+        <legend>Height shows</legend>
+        {(Object.keys(METRIC_LABEL) as AtlasMetric[]).map((option) => (
+          <button key={option} type="button" aria-pressed={metric === option} onClick={() => onMetric(option)}>
+            {METRIC_LABEL[option]}
+          </button>
+        ))}
+      </fieldset>
+
+      <fieldset>
+        <legend>Which models</legend>
+        <button type="button" aria-pressed={showAll} onClick={() => onShowAll(!showAll)}>
+          Show all models
+        </button>
+      </fieldset>
+
+      <label className="atlas-year">
+        <span>
+          Models after <output>{Math.floor(cutoff)}</output> are dimmed
+        </span>
+        <input
+          type="range"
+          min={YEAR_AXIS.min}
+          max={YEAR_AXIS.max}
+          step={1}
+          value={cutoff}
+          onChange={(event) => onCutoff(Number(event.target.value))}
+        />
+      </label>
+
+      <p className="atlas-coverage">{describeCoverage({ metric, totals, showAll, drawn })}</p>
+
+      {canReset ? (
+        <button type="button" className="atlas-reset" onClick={onReset}>
+          Back to the whole plot
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+interface DetailProps {
+  facts: ModelFacts | null;
+  exhibit?: LandmarkExhibit;
+  /** A selected governance marker. It takes the panel over from the model. */
+  marker?: GovernanceView | null;
+}
+
+function GovernanceDetail({ marker }: { marker: GovernanceView }) {
+  const [what, ...rest] = marker.dateMeans.split(";");
+  const note = rest.join(";").trim();
+  return (
+    <>
+      <h2>{marker.title}</h2>
+      <dl>
+        <dt>{what}</dt>
+        <dd>{marker.date}</dd>
+        <dt>Issued by</dt>
+        <dd>{marker.issuer}</dd>
+      </dl>
+      {note ? <p className="atlas-confidence">{note}.</p> : null}
+      <p className="atlas-links">
+        <a href={marker.url} target="_blank" rel="noopener noreferrer">
+          The issuer&rsquo;s own page
+        </a>
+        {marker.exhibit ? <Link href={marker.exhibit.href}>Read the exhibit: {marker.exhibit.title}</Link> : null}
+      </p>
+    </>
+  );
+}
+
+export function AtlasDetail({ facts, exhibit, marker }: DetailProps) {
+  return (
+    <div className="atlas-detail" role="status" aria-live="polite">
+      {marker ? (
+        <GovernanceDetail marker={marker} />
+      ) : facts ? (
+        <>
+          <h2>{facts.name}</h2>
+          <dl>
+            <dt>Published</dt>
+            <dd>{facts.date}</dd>
+            <dt>Organisation</dt>
+            <dd>{facts.organization}</dd>
+            <dt>Domain</dt>
+            <dd>{facts.domain}</dd>
+            <dt>Training compute</dt>
+            <dd>{facts.compute}</dd>
+            <dt>Parameters</dt>
+            <dd>{facts.parameters}</dd>
+            <dt>Epoch&rsquo;s own rating</dt>
+            <dd>{facts.epochConfidence}</dd>
+          </dl>
+          {facts.why.length > 0 ? (
+            <p className="atlas-why">
+              <span>Why it is here</span> {facts.why.join(", ")}
+            </p>
+          ) : null}
+          <p className="atlas-confidence">
+            <span aria-hidden="true">{CONFIDENCE_GLYPH.reported}</span> Reported: figures are estimates published by
+            Epoch AI.
+          </p>
+          <p className="atlas-links">
+            <a href={facts.link} target="_blank" rel="noopener noreferrer">
+              Epoch&rsquo;s source for this model
+            </a>
+            {exhibit ? <Link href={exhibit.href}>Read the exhibit: {exhibit.title}</Link> : null}
+          </p>
+        </>
+      ) : (
+        <p>Hover over a dot to read about the model. Select one to fly to it.</p>
+      )}
+    </div>
+  );
+}
