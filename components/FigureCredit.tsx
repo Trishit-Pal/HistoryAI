@@ -1,4 +1,5 @@
 import type { Figure, FigureLicense } from "../src/domain/types";
+import { SafeLink } from "./SafeLink";
 
 const LICENSE_LABEL: Record<FigureLicense, string> = {
   "PD-old": "Public domain (author died over 100 years ago)",
@@ -18,10 +19,10 @@ export function FigureCredit({ figure }: { figure?: Figure }) {
       <figcaption>
         <p>{figure.credit}</p>
         <p>{LICENSE_LABEL[figure.license]}</p>
-        <a href={figure.sourceUrl}>Source: {label}</a>
+        <SafeLink href={figure.sourceUrl}>Source: {label}</SafeLink>
         {figure.kind === "redrawn" && figure.redrawnAfter ? (
           <p>
-            Redrawn after <a href={figure.redrawnAfter}>{label}</a>
+            Redrawn after <SafeLink href={figure.redrawnAfter}>{label}</SafeLink>
           </p>
         ) : null}
       </figcaption>

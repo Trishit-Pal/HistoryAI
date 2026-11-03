@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedMuseum } from "../seed/eras";
 import { asPublicExhibits, museumHalls, museumNodes } from "./payload";
-import { askMuseum, cameraMove, chooseView, nodeIds } from "./view";
+import { cameraMove, chooseView, nodeIds } from "./view";
 import { layoutHalls } from "../domain/layout";
 
 describe("museum views", () => {
@@ -21,18 +21,6 @@ describe("museum views", () => {
     const nodes = museumNodes(seedMuseum());
     const hallIds = layoutHalls(asPublicExhibits(nodes)).flatMap((hall) => hall.exhibitIds).sort();
     expect(hallIds).toEqual(nodeIds(nodes));
-  });
-
-  it("answers from a matching node and refuses when none match", () => {
-    const nodes = museumNodes(seedMuseum());
-    const hit = askMuseum("Dartmouth workshop coined", nodes);
-    expect(hit.id).toBe("evt_1956_dartmouth");
-    expect(hit.sources.length).toBeGreaterThan(0);
-    const miss = askMuseum("unrelated underwater basket weaving", nodes);
-    expect(miss.summary).toBe("The museum has no matching exhibit.");
-    expect(miss.sources).toEqual([]);
-    expect(askMuseum("the", nodes).id).toBeUndefined();
-    expect(askMuseum("What is the capital of France?", nodes).id).toBeUndefined();
   });
 
   it("copies a figure onto the museum node", () => {

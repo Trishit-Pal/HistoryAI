@@ -30,7 +30,7 @@ function canonWrite(publicStory = "A method for credit assignment."): Write {
       title: "A paper",
       year: 1950,
       authors: "Author",
-      locator: "doi:10.0000/example",
+      locator: "https://doi.org/10.0000/example",
       kind: "paper" as SourceKind,
     })),
     supports: ROLES.map((role) => ({ claimId: `c-${role}`, sourceId: `s-${role}` })),
@@ -162,6 +162,69 @@ describe("MemoryStore.apply", () => {
     const result = store.apply(write, "editor");
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.violations.some((v) => v.rule === "source-rule")).toBe(true);
+    expect(store.snapshot()).toEqual(before);
+  });
+
+  it("rejects a javascript citation on a context exhibit", () => {
+    const store = new MemoryStore();
+    const before = store.snapshot();
+    const result = store.apply(
+      {
+        exhibit: {
+          id: "ctx",
+          title: "Context",
+          kind: "idea",
+          startYear: 1854,
+          publicStory: "A precursor.",
+          publicationState: "canon",
+          incomplete: false,
+          layer: "context",
+          confidence: "reported",
+          citations: [{ url: "javascript:alert(1)", publisher: "Bad", retrieved: "2026-10-03" }],
+        },
+      },
+      "editor",
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.violations.some((item) => item.path === "exhibit.citations")).toBe(true);
+    expect(store.snapshot()).toEqual(before);
+  });
+
+  it("rejects a field change that cites an unknown URL", () => {
+    const store = new MemoryStore();
+    const result = store.apply(
+      {
+        exhibit: {
+          id: "ctx",
+          title: "Context",
+          kind: "idea",
+          startYear: 1854,
+          publicStory: "A precursor.",
+          publicationState: "canon",
+          incomplete: false,
+          layer: "context",
+          confidence: "reported",
+          citations: [{ url: "https://example.com/a", publisher: "Example", retrieved: "2026-10-03" }],
+          fieldChange: { before: "Before.", after: "After.", citationUrls: ["https://evil.example/x"] },
+        },
+      },
+      "editor",
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.violations.some((item) => item.path === "exhibit.fieldChange")).toBe(true);
+  });
+
+  it("rejects an evolution link with no source", () => {
+    const store = new MemoryStore();
+    const before = store.snapshot();
+    const result = store.apply(
+      {
+        evolution: [{ type: "INFLUENCED_BY", fromId: "a", toId: "b" }],
+      },
+      "editor",
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.violations.some((item) => item.path === "evolution")).toBe(true);
     expect(store.snapshot()).toEqual(before);
   });
 

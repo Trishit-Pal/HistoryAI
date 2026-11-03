@@ -1,3 +1,5 @@
+import { ATLAS_SOURCES } from "../../src/atlas/sources";
+
 export default function AccuracyPage() {
   return (
     <main className="page plate">
@@ -40,16 +42,31 @@ export default function AccuracyPage() {
         as a provisional card. Nothing in the curator may write the technical canon. Every change
         appends a version. The previous blob stays.
       </p>
-      <h2>Ask the museum</h2>
+      <h2>Data from outside the museum</h2>
       <p>
-        Questions are answered only from this site&apos;s sourced nodes. If nothing matches, the museum
-        says so and does not invent an exhibit.
+        The scale of AI page draws on published datasets and official records. Each is copied at a
+        known date and shown with its licence. Figures are estimates published by their source, so
+        they carry the confidence word reported and never confirmed. Sources whose reuse is unclear
+        are linked, not redrawn.
       </p>
-      <h2>Corrections</h2>
+      <ul className="rules">
+        {ATLAS_SOURCES.map((source) => (
+          <li key={source.id}>
+            <span>
+              <a href={source.homepage} target="_blank" rel="noopener noreferrer">
+                {source.name}
+              </a>
+              . {source.linkOnly ? "Linked only, not reused. " : ""}Licence: {source.licence}. Checked{" "}
+              {source.retrieved}.
+            </span>
+          </li>
+        ))}
+      </ul>
+      <h2>Suggestions</h2>
       <p>
-        Send a correction to <a href="mailto:corrections@localhost">corrections@localhost</a> with
-        the node id, the claimed error, and a source URL. That address is a documented path in this
-        build, not an account system.
+        Each exhibit page has a form for a correction or a new source. Nothing is published from that
+        form. An editor reviews the queue. The site stores a hash of the network address used to send
+        the suggestion, not the address itself, and it does not ask for a name or an email.
       </p>
     </main>
   );

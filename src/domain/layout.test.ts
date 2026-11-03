@@ -62,4 +62,10 @@ describe("layoutRooms", () => {
     expect(sealed).toContain("provisional");
     expect(sealed).not.toContain(earlier?.id);
   });
+
+  it("never seals a room with no exhibits, except the provisional hall before it opens", () => {
+    const floor = { rooms: [{ id: "bare", startYear: null, endYear: null, exhibitIds: [] }], startYears: {} };
+    expect(sealRooms(floor, 1800)).toEqual([]);
+  });
 });
+

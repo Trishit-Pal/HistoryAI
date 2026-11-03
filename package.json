@@ -4,13 +4,19 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/snapshot.ts --if-reachable",
     "build": "next build",
     "test": "vitest run",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/db-seed.ts",
+    "snapshot": "tsx scripts/snapshot.ts --from-seed",
+    "atlas:snapshot": "tsx scripts/atlas-snapshot.ts",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.63.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
@@ -18,7 +24,10 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
+    "csv-parse": "^7.0.3",
+    "fflate": "^0.8.3",
     "jsdom": "^29.1.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
@@ -27,8 +36,10 @@
     "@react-three/fiber": "^9.8.1",
     "gsap": "^3.15.0",
     "next": "^16.3.6",
+    "postgres": "^3.4.9",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
     "three": "^0.186.1"
   }
 }

@@ -2,82 +2,62 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Text } from "@react-three/drei";
+import { Grid, Text } from "@react-three/drei";
+import { LABEL_FONT } from "./labelFont";
 import gsap from "gsap";
-import type { MeshStandardMaterial } from "three";
 import type { Hall } from "../src/domain/layout";
 import { hallThreads, otherThreadId } from "../src/domain/threads";
-import { precursorsCameraY, precursorsLayout } from "../src/museum/precursorsRoom";
+import { eraSpot } from "../src/museum/eraRooms";
+import { focusedPedestal, hallLength, hallOrigin, pedestalPosition, planCamera } from "../src/museum/hallMath";
+import { precursorsCameraY } from "../src/museum/precursorsRoom";
+import { isSealed } from "../src/museum/seal";
+import { CHALK, CHALK_DIM, PRUSSIAN, REDLINE } from "../src/museum/theme";
 import { cameraMove, type MuseumNode } from "../src/museum/view";
+import { Ink } from "./Ink";
 import { Monument } from "./Monument";
-import { PrecursorsRoom } from "./rooms/PrecursorsRoom";
-
-const FLOOR = "#1A1814";
-const BRASS = "#A6843D";
-
-function hallOrigin(index: number, halls: Hall[]): number {
-  let z = 0;
-  for (let i = 0; i < index; i += 1) {
-    const hall = halls[i];
-    z -= 8 + (hall?.exhibitIds.length ?? 0) * (hall?.spacing ?? 1.8);
-  }
-  return z;
-}
-
-function pedestalPosition(hallIndex: number, exhibitIndex: number, halls: Hall[]): [number, number, number] {
-  const hall = halls[hallIndex];
-  const z0 = hallOrigin(hallIndex, halls);
-  const spacing = hall?.spacing ?? 1.8;
-  return [((exhibitIndex % 2) * 2 - 1) * 1.2, 0, z0 - 2 - exhibitIndex * spacing];
-}
-
-function focusedPedestal(halls: Hall[], hallIndex: number, focusedId: string | null): [number, number, number] {
-  if (focusedId) {
-    for (let i = 0; i < halls.length; i += 1) {
-      const hall = halls[i];
-      if (!hall.exhibitIds.includes(focusedId)) continue;
-      const origin = hallOrigin(i, halls);
-      if (hall.id === "era_0_precursors") {
-        const spot = precursorsLayout(hall.exhibitIds).find((item) => item.id === focusedId);
-        if (spot) return [spot.x, spot.y, origin + spot.z];
-      }
-      return pedestalPosition(i, hall.exhibitIds.indexOf(focusedId), halls);
-    }
-  }
-  return [0, 0, hallOrigin(hallIndex, halls) - 2];
-}
+import { ERA_ROOMS } from "./rooms/eraRoomMap";
 
 function CameraRig({
   halls,
   hallIndex,
   focusedId,
   reducedMotion,
+  plan,
 }: {
   halls: Hall[];
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
+  plan: boolean;
 }) {
   const { camera } = useThree();
   const look = focusedPedestal(halls, hallIndex, focusedId);
-  const inPrecursors = Boolean(
-    focusedId && halls.some((hall) => hall.id === "era_0_precursors" && hall.exhibitIds.includes(focusedId)),
+  const inPlacedRoom = Boolean(
+    focusedId &&
+      halls.some(
+        (hall) =>
+          hall.exhibitIds.includes(focusedId) &&
+          (hall.id === "era_0_precursors" || eraSpot(hall.id, hall.exhibitIds, focusedId)),
+      ),
   );
-  const camZ = look[2] + (inPrecursors ? 4.2 : 6);
-  const camY = precursorsCameraY(inPrecursors ? look[1] : null);
+  const overview = planCamera(halls, hallIndex);
+  const camX = plan ? overview.position[0] : 0;
+  const camZ = plan ? overview.position[2] : look[2] + (inPlacedRoom ? 4.2 : 6);
+  const camY = plan ? overview.position[1] : precursorsCameraY(inPlacedRoom ? look[1] : null);
   useEffect(() => {
     if (cameraMove(reducedMotion) === "snap") {
       gsap.killTweensOf(camera.position);
-      camera.position.set(0, camY, camZ);
+      camera.position.set(camX, camY, camZ);
       return;
     }
-    const tween = gsap.to(camera.position, { x: 0, y: camY, z: camZ, duration: 1.1, ease: "power2.inOut" });
+    const tween = gsap.to(camera.position, { x: camX, y: camY, z: camZ, duration: 1.1, ease: "power2.inOut" });
     return () => {
       tween.kill();
     };
-  }, [camera, camY, camZ, reducedMotion]);
+  }, [camera, camX, camY, camZ, reducedMotion]);
   useFrame(() => {
-    camera.lookAt(look[0], 1.2 + (camY - 1.6), look[2]);
+    if (plan) camera.lookAt(...overview.target);
+    else camera.lookAt(look[0], 1.2 + (camY - 1.6), look[2]);
   });
   return null;
 }
@@ -88,7 +68,6 @@ function FloorThread({
   fromId,
   toId,
   focusedId,
-  reducedMotion,
   onFocus,
 }: {
   from: [number, number, number];
@@ -96,35 +75,20 @@ function FloorThread({
   fromId: string;
   toId: string;
   focusedId: string | null;
-  reducedMotion: boolean;
   onFocus: (id: string) => void;
 }) {
-  const mat = useRef<MeshStandardMaterial>(null);
   const hot = focusedId === fromId || focusedId === toId;
   const dx = to[0] - from[0];
   const dz = to[2] - from[2];
   const length = Math.hypot(dx, dz);
-  useFrame(({ clock }) => {
-    if (!mat.current) return;
-    if (!hot) {
-      mat.current.emissiveIntensity = 0;
-      return;
-    }
-    if (reducedMotion) {
-      mat.current.emissiveIntensity = 0.7;
-      return;
-    }
-    const t = clock.getElapsedTime();
-    mat.current.emissiveIntensity = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(t * 3));
-  });
   if (length < 0.01) return null;
   const mid: [number, number, number] = [(from[0] + to[0]) / 2, 0.03, (from[2] + to[2]) / 2];
   const angle = Math.atan2(dx, dz);
   return (
     <group position={mid} rotation={[0, angle, 0]}>
       <mesh>
-        <boxGeometry args={[0.04, 0.02, length]} />
-        <meshStandardMaterial ref={mat} color={BRASS} emissive={BRASS} emissiveIntensity={0} />
+        <boxGeometry args={[hot ? 0.05 : 0.025, 0.02, length]} />
+        <meshBasicMaterial color={hot ? REDLINE : CHALK_DIM} />
       </mesh>
       <mesh
         onClick={(event) => {
@@ -144,7 +108,6 @@ function Corridor({
   nodes,
   year,
   focusedId,
-  reducedMotion,
   onFocus,
   onHall,
 }: {
@@ -152,7 +115,6 @@ function Corridor({
   nodes: MuseumNode[];
   year: number;
   focusedId: string | null;
-  reducedMotion: boolean;
   onFocus: (id: string) => void;
   onHall: (index: number) => void;
 }) {
@@ -161,13 +123,15 @@ function Corridor({
     <>
       {halls.map((hall, index) => {
         const z0 = hallOrigin(index, halls);
-        const length = 8 + hall.exhibitIds.length * hall.spacing;
+        const length = hallLength(hall);
         const width = 6 * hall.width;
-        const light = hall.light;
         const members = hall.exhibitIds.map((id) => byId.get(id)).filter(Boolean) as MuseumNode[];
-        if (hall.id === "era_0_precursors") {
+        const Room = ERA_ROOMS[hall.id];
+        const next = halls[index + 1];
+        const nextSealed = next ? isSealed(next, nodes, year) : false;
+        if (Room) {
           return (
-            <PrecursorsRoom
+            <Room
               key={hall.id}
               hall={hall}
               originZ={z0}
@@ -175,14 +139,9 @@ function Corridor({
               members={members}
               year={year}
               focusedId={focusedId}
-              nextLabel={halls[index + 1]?.label}
-              nextYear={halls[index + 1]?.startYear}
-              nextSealed={
-                halls[index + 1]?.id === "provisional"
-                  ? year < 2023
-                  : (halls[index + 1]?.exhibitIds ?? []).every((id) => (byId.get(id)?.startYear ?? 0) > year) &&
-                    (halls[index + 1]?.exhibitIds.length ?? 0) > 0
-              }
+              nextLabel={next?.label}
+              nextYear={next?.startYear}
+              nextSealed={nextSealed}
               onFocus={onFocus}
               onHall={onHall}
             />
@@ -196,21 +155,21 @@ function Corridor({
               onClick={() => onHall(index)}
             >
               <planeGeometry args={[width, length]} />
-              <meshStandardMaterial color={FLOOR} />
+              <Ink tone="floor" />
             </mesh>
             <mesh position={[width / 2, 1.4, z0 - length / 2]}>
               <boxGeometry args={[0.12, 2.8, length]} />
-              <meshStandardMaterial color={hall.mood === "winter" ? "#2a241c" : "#3a342c"} />
+              <Ink tone={hall.mood === "winter" ? "winter" : "wall"} />
             </mesh>
             <mesh position={[-width / 2, 1.4, z0 - length / 2]}>
               <boxGeometry args={[0.12, 2.8, length]} />
-              <meshStandardMaterial color={hall.mood === "winter" ? "#2a241c" : "#3a342c"} />
+              <Ink tone={hall.mood === "winter" ? "winter" : "wall"} />
             </mesh>
-            <pointLight position={[0, 3, z0 - 2]} intensity={light} color={hall.mood === "winter" ? "#8899aa" : "#f2e6c9"} />
             <Text
+              font={LABEL_FONT}
               position={[0, 2.4, z0 - 0.8]}
               fontSize={0.32}
-              color={BRASS}
+              color={CHALK}
               anchorX="center"
               anchorY="middle"
               maxWidth={5}
@@ -240,7 +199,6 @@ function Corridor({
                   from={pedestalPosition(index, fromIndex, halls)}
                   to={pedestalPosition(index, toIndex, halls)}
                   focusedId={focusedId}
-                  reducedMotion={reducedMotion}
                   onFocus={onFocus}
                 />
               );
@@ -254,7 +212,7 @@ function Corridor({
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  if (target.closest("input, textarea, select, [contenteditable='true']")) return true;
+  if (target.closest("input, textarea, select, [role='tab'], [contenteditable='true']")) return true;
   return target.closest("input[type='range']") !== null;
 }
 
@@ -265,6 +223,7 @@ export function HallCorridor({
   hallIndex,
   focusedId,
   reducedMotion,
+  plan = false,
   onFocus,
   onHall,
 }: {
@@ -274,6 +233,7 @@ export function HallCorridor({
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
+  plan?: boolean;
   onFocus: (id: string) => void;
   onHall: (index: number) => void;
 }) {
@@ -290,17 +250,40 @@ export function HallCorridor({
   }, [hallIndex, onHall]);
 
   return (
-    <div ref={wrap} style={{ height: "100%", minHeight: "28rem" }}>
-      <Canvas camera={{ position: [0, 1.6, 6], fov: 60 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
-        <color attach="background" args={[FLOOR]} />
-        <ambientLight intensity={0.25} />
-        <CameraRig halls={halls} hallIndex={hallIndex} focusedId={focusedId} reducedMotion={reducedMotion} />
+    <div
+      ref={wrap}
+      className="corridor"
+      role="img"
+      aria-label="Plan of the halls. Move between exhibits with the exhibit tabs below, or between halls with the left and right arrow keys."
+    >
+      {/* flat: no tone mapping, so the Prussian fills match the Prussian ground exactly. */}
+      <Canvas flat camera={{ position: [0, 1.6, 6], fov: 60 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
+        <color attach="background" args={[PRUSSIAN]} />
+        <Grid
+          position={[0, -0.02, 0]}
+          infiniteGrid
+          followCamera
+          cellSize={0.6}
+          cellThickness={0.6}
+          cellColor={CHALK_DIM}
+          sectionSize={3}
+          sectionThickness={1}
+          sectionColor={CHALK_DIM}
+          fadeDistance={34}
+          fadeStrength={1.6}
+        />
+        <CameraRig
+          halls={halls}
+          hallIndex={hallIndex}
+          focusedId={focusedId}
+          reducedMotion={reducedMotion}
+          plan={plan}
+        />
         <Corridor
           halls={halls}
           nodes={nodes}
           year={year}
           focusedId={focusedId}
-          reducedMotion={reducedMotion}
           onFocus={onFocus}
           onHall={onHall}
         />

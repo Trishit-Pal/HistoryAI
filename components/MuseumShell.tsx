@@ -1,57 +1,49 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Hall } from "../src/domain/layout";
-import type { ChangelogLine } from "../src/store/memory";
 import { hallNeighbors } from "../src/domain/threads";
 import { hallTally, parseVisited, tallyLabel } from "../src/domain/visited";
-import { askMuseum, chooseView, type MuseumAnswer, type MuseumNode } from "../src/museum/view";
+import { hasWebGL, usePrefersReducedMotion } from "../src/museum/env";
+import { hallSpan } from "../src/museum/hallMath";
+import { enterHall, focusExhibit, isSealed, reconcileFocus, type NavState } from "../src/museum/seal";
+import { chooseView, type MuseumNode } from "../src/museum/view";
 import { HallCorridor } from "./HallCorridor";
 import { Flatland } from "./Flatland";
 import { Dossier } from "./Dossier";
+import { EXHIBIT_PANEL_ID, ExhibitTabs, exhibitTabId } from "./ExhibitTabs";
+import { YearScale } from "./YearScale";
 
 const VISITED_KEY = "historyai.visited";
-
-function hasWebGL(): boolean {
-  if (typeof document === "undefined") return false;
-  const canvas = document.createElement("canvas");
-  return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
-}
-
-function hallSpan(hall: Hall): string {
-  if (!hall.startYear) return "";
-  return ` ${hall.startYear}${hall.endYear ? `–${hall.endYear}` : "–"}`;
-}
 
 export function MuseumShell({
   nodes,
   halls,
+  initialHallId,
+  archivedAt,
 }: {
   nodes: MuseumNode[];
   halls: Hall[];
-  changelog: ChangelogLine[];
+  initialHallId?: string;
+  archivedAt?: string;
 }) {
-  const [webgl, setWebgl] = useState(true);
-  const [reduced, setReduced] = useState(false);
+  const startIndex = Math.max(0, halls.findIndex((hall) => hall.id === initialHallId));
+  const startHall = halls[startIndex] ?? halls[0];
+  // null until the browser has been asked: the 3D canvas must not be attempted without WebGL.
+  const [webgl, setWebgl] = useState<boolean | null>(null);
+  const reduced = usePrefersReducedMotion();
   const [year, setYear] = useState(2026);
-  const [hallIndex, setHallIndex] = useState(0);
-  const [focusedId, setFocusedId] = useState<string | null>(nodes[0]?.id ?? null);
-  const [ask, setAsk] = useState("");
-  const [answer, setAnswer] = useState<MuseumAnswer | null>(null);
+  const [plan, setPlan] = useState(false);
+  const [nav, setNav] = useState<NavState>({
+    focusedId: startHall?.exhibitIds[0] ?? nodes[0]?.id ?? null,
+    hallIndex: startIndex,
+  });
   const [visited, setVisited] = useState<string[]>([]);
   const [visitedReady, setVisitedReady] = useState(false);
-
-  useLayoutEffect(() => {
-    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
+  const { focusedId, hallIndex } = nav;
 
   useEffect(() => {
     setWebgl(hasWebGL());
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
   }, []);
 
   useEffect(() => {
@@ -74,90 +66,49 @@ export function MuseumShell({
     if (!id) return;
     const node = nodes.find((item) => item.id === id);
     if (!node) return;
-    setFocusedId(node.id);
     const index = halls.findIndex((hall) => hall.exhibitIds.includes(node.id));
-    if (index >= 0) setHallIndex(index);
+    setNav((prev) => ({ focusedId: node.id, hallIndex: index >= 0 ? index : prev.hallIndex }));
   }, [halls, nodes]);
 
-  const view = chooseView({ webgl, reducedMotion: reduced });
+  const view = chooseView({ webgl: webgl !== false, reducedMotion: reduced });
   const focused = nodes.find((node) => node.id === focusedId) ?? nodes[0];
   const focusedHall =
     halls.find((hall) => focused && hall.exhibitIds.includes(focused.id)) ?? halls[hallIndex] ?? halls[0];
+  const hallExhibits = (focusedHall?.exhibitIds ?? [])
+    .map((id) => nodes.find((node) => node.id === id))
+    .filter((node): node is MuseumNode => node !== undefined);
   const neighbors = hallNeighbors(focusedHall?.exhibitIds ?? [], nodes, year, focused?.id ?? null);
   const openedLabel = focusedHall
     ? tallyLabel(hallTally(focusedHall.exhibitIds, nodes, year, visited))
     : null;
 
-  function sealed(hall: Hall): boolean {
-    if (hall.id === "provisional") return year < 2023;
-    const members = hall.exhibitIds
-      .map((id) => nodes.find((node) => node.id === id))
-      .filter((node): node is MuseumNode => Boolean(node));
-    return members.length > 0 && members.every((node) => node.startYear > year);
+  function onYear(next: number) {
+    setYear(next);
+    setNav((prev) => reconcileFocus(prev, { halls, nodes, year: next }));
   }
 
-  function focusExhibit(id: string) {
-    setFocusedId(id);
-    const index = halls.findIndex((hall) => hall.exhibitIds.includes(id));
-    if (index >= 0 && halls[index] && !sealed(halls[index])) setHallIndex(index);
+  function onFocusExhibit(id: string) {
+    setNav((prev) => focusExhibit(prev, id, { halls, nodes, year }));
   }
 
   function goHall(index: number) {
-    const next = Math.max(0, Math.min(halls.length - 1, index));
-    const hall = halls[next];
-    if (!hall || sealed(hall)) return;
-    setHallIndex(next);
-    const first = hall.exhibitIds.find((id) => {
-      const node = nodes.find((item) => item.id === id);
-      return node && node.startYear <= year;
-    });
-    if (first) setFocusedId(first);
+    setNav((prev) => enterHall(prev, index, { halls, nodes, year }));
   }
-
-  useEffect(() => {
-    const current = nodes.find((node) => node.id === focusedId);
-    if (current && current.startYear > year) {
-      const inYear = nodes.filter((node) => node.startYear <= year);
-      if (inYear.length === 0) return;
-      const nearest = inYear.reduce((best, node) =>
-        Math.abs(node.startYear - year) < Math.abs(best.startYear - year) ? node : best,
-      );
-      setFocusedId(nearest.id);
-      const index = halls.findIndex((hall) => hall.exhibitIds.includes(nearest.id));
-      if (index >= 0 && halls[index] && !sealed(halls[index])) setHallIndex(index);
-      return;
-    }
-    const hall = halls[hallIndex];
-    if (hall && sealed(hall)) {
-      for (let i = hallIndex - 1; i >= 0; i -= 1) {
-        if (halls[i] && !sealed(halls[i])) {
-          goHall(i);
-          break;
-        }
-      }
-    }
-  }, [year]);
 
   return (
     <main className="shell">
+      {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
       <header className="rail">
         <p className="site-name">Hall of Eras</p>
         <label htmlFor="year">Show work up to {year}</label>
-        <input
-          id="year"
-          type="range"
-          min={1843}
-          max={2026}
-          value={year}
-          onChange={(event) => setYear(Number(event.target.value))}
-        />
+        <YearScale year={year} onYear={onYear} />
         <div className="index" role="navigation" aria-label="Halls">
           {halls.map((hall, index) => (
             <button
               key={hall.id}
               type="button"
               aria-current={index === hallIndex ? "true" : undefined}
-              disabled={sealed(hall)}
+              disabled={isSealed(hall, nodes, year)}
               onClick={() => goHall(index)}
             >
               {hall.label}
@@ -165,20 +116,41 @@ export function MuseumShell({
             </button>
           ))}
         </div>
+        {webgl !== false ? (
+          <button
+            type="button"
+            className="plan-toggle"
+            aria-pressed={plan}
+            // Holds its place in the rail while WebGL is checked, so nothing shifts when it appears.
+            style={webgl ? undefined : { visibility: "hidden" }}
+            onClick={() => setPlan((on) => !on)}
+          >
+            Plan view
+          </button>
+        ) : null}
       </header>
+      <p className="sr-only" role="status">
+        {focused && focusedHall ? `Showing ${focused.title}, ${focused.confidence ?? "unset"}, in ${focusedHall.label}.` : ""}
+      </p>
       <div className="stage">
         {view === "halls" ? (
-          <div className="canvas-wrap">
-            <HallCorridor
-              halls={halls}
-              nodes={nodes}
-              year={year}
-              hallIndex={hallIndex}
-              focusedId={focused?.id ?? null}
-              reducedMotion={reduced}
-              onFocus={focusExhibit}
-              onHall={goHall}
-            />
+          <div className="viewport">
+            <div className="canvas-wrap">
+              {webgl ? (
+                <HallCorridor
+                  halls={halls}
+                  nodes={nodes}
+                  year={year}
+                  hallIndex={hallIndex}
+                  focusedId={focused?.id ?? null}
+                  reducedMotion={reduced}
+                  plan={plan}
+                  onFocus={onFocusExhibit}
+                  onHall={goHall}
+                />
+              ) : null}
+            </div>
+            <ExhibitTabs exhibits={hallExhibits} year={year} focusedId={focused?.id ?? null} onFocus={onFocusExhibit} />
           </div>
         ) : (
           <Flatland
@@ -187,25 +159,25 @@ export function MuseumShell({
             year={year}
             visited={visited}
             focusedId={focused?.id ?? null}
-            onFocus={focusExhibit}
+            onFocus={onFocusExhibit}
           />
         )}
-        <Dossier
-          node={focused}
-          ask={ask}
-          answer={answer}
-          onAskChange={setAsk}
-          onAsk={() => {
-            const result = askMuseum(ask, nodes);
-            setAnswer(result);
-            if (result.id) focusExhibit(result.id);
-          }}
-          hallLabel={focusedHall?.label}
-          openedLabel={openedLabel}
-          earlier={neighbors.earlier}
-          later={neighbors.later}
-          onFocus={focusExhibit}
-        />
+        <div
+          className="dossier-panel"
+          {...(view === "halls" && focused
+            ? { id: EXHIBIT_PANEL_ID, role: "tabpanel", "aria-labelledby": exhibitTabId(focused.id) }
+            : {})}
+        >
+          <Dossier
+            node={focused}
+            hallLabel={focusedHall?.label}
+            openedLabel={openedLabel}
+            earlier={neighbors.earlier}
+            later={neighbors.later}
+            onFocus={onFocusExhibit}
+            sheet={focusedHall ? { number: halls.indexOf(focusedHall) + 1, total: halls.length } : undefined}
+          />
+        </div>
       </div>
     </main>
   );

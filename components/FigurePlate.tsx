@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Text } from "@react-three/drei";
+import { LABEL_FONT } from "./labelFont";
 import { SRGBColorSpace, Texture, TextureLoader } from "three";
-
-const ZINC = "#E4E7EA";
-const INK = "#1E2430";
+import { INK, PRINT } from "../src/museum/theme";
 
 export function FigurePlate({
   src,
@@ -59,15 +58,14 @@ export function FigurePlate({
     <group>
       <mesh>
         <planeGeometry args={[0.72, 0.48]} />
-        <meshStandardMaterial
-          color={map ? "#ffffff" : ZINC}
+        <meshBasicMaterial
+          color={map ? "#ffffff" : PRINT}
           map={map ?? undefined}
           transparent={ghost}
           opacity={ghost ? 0.25 : 1}
-          roughness={0.5}
         />
       </mesh>
-      <Text position={[0, -0.32, 0.02]} fontSize={0.04} color={INK} anchorX="center" anchorY="middle" maxWidth={0.7}>
+      <Text font={LABEL_FONT} position={[0, -0.32, 0.02]} fontSize={0.04} color={INK} anchorX="center" anchorY="middle" maxWidth={0.7}>
         {id}
       </Text>
     </group>

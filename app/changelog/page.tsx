@@ -1,8 +1,9 @@
-import { loadMuseum } from "../../src/museum/load";
+import { eraById } from "../../src/domain/eras";
+import { getMuseum } from "../../src/server/museum";
 
-export default function ChangelogPage() {
-  const { changelog, nodes } = loadMuseum();
-  const titles = new Map(nodes.map((node) => [node.id, node.title]));
+export default async function ChangelogPage() {
+  const { changelog, nodes } = await getMuseum();
+  const byId = new Map(nodes.map((node) => [node.id, node]));
   return (
     <main className="page plate">
       <p>
@@ -13,12 +14,15 @@ export default function ChangelogPage() {
         {changelog
           .slice()
           .reverse()
-          .map((line) => (
-            <li key={`${line.nodeId}-${line.version}`}>
-              <span className="years">v{line.version}</span>{" "}
-              <a href={`/#${line.nodeId}`}>{titles.get(line.nodeId) ?? line.nodeId}</a>: {line.reason}
-            </li>
-          ))}
+          .map((line) => {
+            const node = byId.get(line.nodeId);
+            const href = node?.eraId ? `/rooms/${eraById(node.eraId).slug}/${line.nodeId}` : `/#${line.nodeId}`;
+            return (
+              <li key={`${line.nodeId}-${line.version}`}>
+                <span className="years">v{line.version}</span> <a href={href}>{node?.title ?? line.nodeId}</a>: {line.reason}
+              </li>
+            );
+          })}
       </ol>
     </main>
   );

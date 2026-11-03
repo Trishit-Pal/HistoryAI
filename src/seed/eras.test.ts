@@ -75,6 +75,21 @@ describe("era seed", () => {
     }
   });
 
+  it("gives every exhibit a sourced field change and a second citation when it is canon", () => {
+    for (const node of SEED_NODES) {
+      expect(node.fieldChange?.before.trim().length).toBeGreaterThan(0);
+      expect(node.fieldChange?.after.trim().length).toBeGreaterThan(0);
+      const urls = new Set(node.citations.map((citation) => citation.url));
+      expect(node.fieldChange?.citationUrls.every((url) => urls.has(url))).toBe(true);
+      // The framing plaque stays on Nilsson's survey alone.
+      if (node.id !== "evt_history_overview" && node.publicationState !== "provisional") {
+        expect(node.citations.length).toBeGreaterThan(1);
+      }
+    }
+    const store = seedMuseum();
+    expect(store.getExhibit("evt_1956_dartmouth")?.fieldChange?.after.length).toBeGreaterThan(0);
+  });
+
   it("loads into the store and builds winter plus dense halls", () => {
     const store = seedMuseum();
     const publicNodes = store.publicExhibits().map((exhibit) => ({

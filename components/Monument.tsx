@@ -1,13 +1,13 @@
 "use client";
 
-import { Html, Text } from "@react-three/drei";
+import { useState } from "react";
+import { Html, Text, useCursor } from "@react-three/drei";
+import { INK } from "../src/museum/theme";
 import type { MuseumNode } from "../src/museum/view";
+import { Ink } from "./Ink";
+import { LABEL_FONT } from "./labelFont";
 
-const STONE = "#C8BBA4";
-const BRASS = "#A6843D";
-const ZINC = "#E4E7EA";
-const INK = "#1E2430";
-const DISC = "#0E0C0A";
+const GHOST_OPACITY = 0.25;
 
 export function Monument({
   node,
@@ -24,7 +24,9 @@ export function Monument({
   onFocus: (id: string) => void;
   showLabel?: boolean;
 }) {
-  const opacity = ghost ? 0.25 : 1;
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
+  const opacity = ghost ? GHOST_OPACITY : 1;
   const discH = 0.02;
   const plinthH = 0.12;
   const shaftH = 0.7;
@@ -41,21 +43,22 @@ export function Monument({
     <group position={position}>
       <mesh position={[0, yDisc, 0]}>
         <cylinderGeometry args={[0.64, 0.64, discH, 32]} />
-        <meshStandardMaterial color={DISC} roughness={0.95} transparent={ghost} opacity={opacity} />
+        <Ink tone="floor" opacity={opacity} accent={focused} />
       </mesh>
       <mesh position={[0, yPlinth, 0]}>
         <boxGeometry args={[0.85, plinthH, 0.85]} />
-        <meshStandardMaterial color={STONE} roughness={0.85} transparent={ghost} opacity={opacity} />
+        <Ink tone="stone" opacity={opacity} accent={focused} />
       </mesh>
       <mesh position={[0, yShaft, 0]}>
         <boxGeometry args={[0.28, shaftH, shaftD]} />
-        <meshStandardMaterial color={STONE} roughness={0.85} transparent={ghost} opacity={opacity} />
+        <Ink tone="stone" opacity={opacity} accent={focused} />
       </mesh>
       <mesh position={[0, yShaft, zPlaque]}>
         <boxGeometry args={[0.5, 0.22, plaqueD]} />
-        <meshStandardMaterial color={ZINC} roughness={0.45} transparent={ghost} opacity={opacity} />
+        <Ink tone="print" opacity={opacity} />
       </mesh>
       <Text
+        font={LABEL_FONT}
         position={[0, yShaft, zPlaque + plaqueD / 2 + 0.012]}
         fontSize={0.1}
         color={INK}
@@ -67,15 +70,7 @@ export function Monument({
       </Text>
       <mesh position={[0, yCap, 0]}>
         <boxGeometry args={[0.36, capH, 0.36]} />
-        <meshStandardMaterial
-          color={BRASS}
-          metalness={0.6}
-          roughness={0.4}
-          emissive={focused ? BRASS : "#000000"}
-          emissiveIntensity={focused ? 0.45 : 0}
-          transparent={ghost}
-          opacity={opacity}
-        />
+        <Ink tone={focused ? "redline" : "metal"} opacity={opacity} />
       </mesh>
       <mesh
         position={[0, stackH / 2, 0]}
@@ -83,6 +78,11 @@ export function Monument({
           event.stopPropagation();
           onFocus(node.id);
         }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={() => setHovered(false)}
       >
         <boxGeometry args={[1.32, stackH, 1.32]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
