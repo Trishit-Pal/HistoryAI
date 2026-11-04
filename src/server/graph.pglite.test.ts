@@ -222,6 +222,54 @@ describe("postgres graph", () => {
     expect(publicGraph.changelog.some((line) => line.nodeId === "draft_db")).toBe(false);
   });
 
+  it("keeps a draft withdrawn without ever being public out of the public changelog", async () => {
+    const draft = {
+      id: "draft_withdrawn_db",
+      title: "Never shown",
+      kind: "idea" as const,
+      startYear: 1950,
+      publicStory: "A draft.",
+      publicationState: "draft" as const,
+      incomplete: true,
+      layer: "context" as const,
+      eraId: "era_1_founding" as const,
+      confidence: "rumored" as const,
+      citations: [{ url: "https://example.com/w", publisher: "Example", retrieved: "2026-11-04" }],
+    };
+    expect((await commitWrite(database, { exhibit: draft, reason: "Draft" }, "editor")).ok).toBe(true);
+    const withdrawn = await commitWrite(
+      database,
+      { exhibit: { ...draft, publicationState: "withdrawn" }, reason: "Withdrawn: secret" },
+      "editor",
+    );
+    expect(withdrawn.ok).toBe(true);
+    const publicGraph = await loadGraph(database, { publicOnly: true });
+    expect(publicGraph.changelog.some((line) => line.nodeId === "draft_withdrawn_db")).toBe(false);
+    expect(publicGraph.versions.some((entry) => entry.nodeId === "draft_withdrawn_db")).toBe(false);
+  });
+
+  it("serves only confirmed exhibits on the public graph", async () => {
+    const reported = {
+      id: "ctx_reported_db",
+      title: "Reported only",
+      kind: "idea" as const,
+      startYear: 1950,
+      publicStory: "One secondary source.",
+      publicationState: "canon" as const,
+      incomplete: false,
+      layer: "context" as const,
+      eraId: "era_1_founding" as const,
+      confidence: "reported" as const,
+      citations: [{ url: "https://example.com/r", publisher: "Example", retrieved: "2026-11-04" }],
+    };
+    expect((await commitWrite(database, { exhibit: reported, reason: "Reported" }, "editor")).ok).toBe(true);
+    const publicGraph = await loadGraph(database, { publicOnly: true });
+    expect(publicGraph.exhibits.length).toBeGreaterThan(0);
+    expect(publicGraph.exhibits.every((exhibit) => exhibit.confidence === "confirmed")).toBe(true);
+    const editorGraph = await loadGraph(database, { publicOnly: false });
+    expect(editorGraph.exhibits.some((exhibit) => exhibit.id === "ctx_reported_db")).toBe(true);
+  });
+
   it("keeps draft claims off the public graph", async () => {
     await database.query(
       `insert into claims (id, exhibit_id, statement, role, status, publication_state)

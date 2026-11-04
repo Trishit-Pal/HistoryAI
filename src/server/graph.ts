@@ -147,7 +147,7 @@ async function loadWriteScope(database: Db, write: Write): Promise<MuseumSnapsho
 
 export async function loadGraph(database: Db, opts: { publicOnly: boolean }): Promise<MuseumSnapshot> {
   const exhibitSql = opts.publicOnly
-    ? "select * from exhibits where publication_state in ('canon', 'provisional')"
+    ? "select * from exhibits where publication_state in ('canon', 'provisional') and confidence = 'confirmed'"
     : "select * from exhibits";
   const exhibits = (await database.query<Row>(exhibitSql)).map(exhibitFrom);
   const ids = exhibits.map((exhibit) => exhibit.id);
@@ -167,12 +167,20 @@ export async function loadGraph(database: Db, opts: { publicOnly: boolean }): Pr
   const sources = sourceIds.length
     ? await database.query<Row>(`select * from sources where id = any($1::text[])`, [sourceIds])
     : [];
-  // The public changelog also lists withdrawn exhibits, so a withdrawal is never silent.
+  // The public changelog also lists withdrawn exhibits that were once public, so a withdrawal is
+  // never silent. A draft that was withdrawn without ever being public stays out.
   const versions = opts.publicOnly
     ? await database.query<Row>(
         `select v.* from exhibit_versions v
          where v.exhibit_id = any($1::text[])
-            or v.exhibit_id in (select id from exhibits where publication_state = 'withdrawn')
+            or v.exhibit_id in (
+              select e.id from exhibits e
+              where e.publication_state = 'withdrawn'
+                and exists (
+                  select 1 from exhibit_versions p
+                  where p.exhibit_id = e.id and p.blob->>'publicationState' in ('canon', 'provisional')
+                )
+            )
          order by v.at, v.version`,
         [ids],
       )

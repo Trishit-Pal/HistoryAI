@@ -97,7 +97,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_2_symbolic",
     kind: "system",
     publicStory:
-      "Frank Rosenblatt published the Perceptron, a probabilistic model of a learning network, amid press claims that went far beyond the demonstrated work.",
+      "Frank Rosenblatt published the Perceptron, a probabilistic model of a learning network.",
     citations: [
       c("https://doi.org/10.1037/h0042519", "Psychological Review"),
       c("https://en.wikipedia.org/wiki/Perceptron", "Wikipedia"),

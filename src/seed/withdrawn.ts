@@ -5,8 +5,6 @@ import type { SeedNode } from "./eras";
 // Kept as first published, so the seed changelog can show each withdrawal honestly.
 // They are written, then set to "withdrawn"; no public page shows them.
 
-export const WITHDRAWN_AT = "2026-11-04";
-
 export type WithdrawnNode = SeedNode & { withdrawnReason: string };
 
 function c(url: string, publisher: string): Citation {
@@ -77,7 +75,7 @@ export const WITHDRAWN_NODES: WithdrawnNode[] = [
   },
   {
     id: "evt_1985_expert_spend",
-    withdrawnReason: "Both links led to the same 1985 Department of Energy report, so there were not two independent sources.",
+    withdrawnReason: "Both sources were on one website (OSTI), and the only other website found was a DOI for the same report, so there were not two independent sources.",
     title: "Expert systems commercial boom",
     startYear: 1985,
     eraId: "era_4_expert_systems",

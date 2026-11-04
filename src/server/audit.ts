@@ -10,6 +10,16 @@ import type { Db } from "./pg";
 const AUDIT_FIELDS = ["title", "publicStory", "confidence", "officialPrimary", "citations", "fieldChange", "editorialNote"] as const;
 export const CONFIRM_REASON =
   "Accuracy audit, November 2026: confirmed against a primary record and two independent sources.";
+export const WORDING_REASON = "Accuracy audit, November 2026: wording corrected to match the sources.";
+const CONFIRM_FIELDS: readonly string[] = ["confidence", "officialPrimary", "citations"];
+
+/** Says what kind of change the audit made, so the changelog does not claim more than happened. */
+function auditReason(fields: string[]): string {
+  const confirmed = fields.some((field) => CONFIRM_FIELDS.includes(field));
+  const reworded = fields.some((field) => !CONFIRM_FIELDS.includes(field));
+  if (confirmed && reworded) return `${CONFIRM_REASON} Wording corrected to match the sources.`;
+  return confirmed ? CONFIRM_REASON : WORDING_REASON;
+}
 
 type Stored = MuseumSnapshot["exhibits"][number];
 
@@ -83,7 +93,8 @@ export async function applyAudit(db: Db, opts: { dryRun?: boolean } = {}): Promi
       result.lines.push(`already matches: ${node.id}`);
       continue;
     }
-    await apply(node.id, { ...editable(stored), ...changes }, CONFIRM_REASON, `updated ${Object.keys(changes).join(", ")}`);
+    const fields = Object.keys(changes);
+    await apply(node.id, { ...editable(stored), ...changes }, auditReason(fields), `updated ${fields.join(", ")}`);
   }
   return result;
 }

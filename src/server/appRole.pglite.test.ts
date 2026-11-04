@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { seedMuseum } from "../seed/eras";
-import { applyAudit } from "./audit";
+import { applyAudit, CONFIRM_REASON } from "./audit";
 import { commitWrite, importSnapshot, loadGraph } from "./graph";
 import { createPgliteDb, migratePglite } from "./pglite";
 import { hit } from "./rateLimit";
@@ -110,6 +110,8 @@ describe("museum_app role", () => {
     expect(after.exhibits.find((e) => e.id === "evt_1950_turing")).toMatchObject({ confidence: "confirmed", officialPrimary: true });
     expect(after.exhibits.find((e) => e.id === "evt_1987_lisp_collapse")?.publicationState).toBe("withdrawn");
     expect(after.versions.filter((v) => v.nodeId === "evt_1987_lisp_collapse").at(-1)?.reason).toMatch(/^Withdrawn: /);
+    // Only confidence fields changed, so the reason must not claim a wording fix.
+    expect(after.versions.filter((v) => v.nodeId === "evt_1950_turing").at(-1)?.reason).toBe(CONFIRM_REASON);
 
     const second = await applyAudit(database);
     expect(second).toMatchObject({ failed: false, writes: 0 });
