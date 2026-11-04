@@ -31,7 +31,17 @@ alter table suggestions enable row level security;
 alter table rate_events enable row level security;
 alter table schema_migrations enable row level security;
 
-revoke all on all tables in schema public from anon, authenticated;
+-- Supabase exposes anon/authenticated roles; Neon does not. Revoke only where they exist.
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    revoke all on all tables in schema public from anon;
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    revoke all on all tables in schema public from authenticated;
+  end if;
+end
+$$;
 
 do $$
 declare

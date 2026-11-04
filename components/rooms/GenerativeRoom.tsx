@@ -35,7 +35,7 @@ export function GenerativeRoom({
           <Ink tone="stone" />
         </mesh>
       ))}
-      <HallTitle position={[0, 2.15, -3.8]} label={hall.label} />
+      <HallTitle position={[0, 2.7, -3.8]} label={hall.label} />
       <RoomExhibits members={members} spots={spots} year={year} focusedId={focusedId} onFocus={onFocus} />
       <NextMark z={-4.8} nextLabel={nextLabel} nextYear={nextYear} nextSealed={nextSealed} onNext={() => onHall(hallIndex + 1)} />
     </group>

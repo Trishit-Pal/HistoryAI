@@ -16,10 +16,17 @@ export default async function ChangelogPage() {
           .reverse()
           .map((line) => {
             const node = byId.get(line.nodeId);
-            const href = node?.eraId ? `/rooms/${eraById(node.eraId).slug}/${line.nodeId}` : `/#${line.nodeId}`;
+            const title = node?.title ?? line.title ?? line.nodeId;
+            // A withdrawn exhibit has no page left to link to.
+            const name = node ? (
+              <a href={node.eraId ? `/rooms/${eraById(node.eraId).slug}/${line.nodeId}` : `/#${line.nodeId}`}>{title}</a>
+            ) : (
+              <span>{title}</span>
+            );
             return (
               <li key={`${line.nodeId}-${line.version}`}>
-                <span className="years">v{line.version}</span> <a href={href}>{node?.title ?? line.nodeId}</a>: {line.reason}
+                <span className="years">v{line.version}</span> <time dateTime={line.at}>{line.at.slice(0, 10)}</time>{" "}
+                {name}: {line.reason}
               </li>
             );
           })}

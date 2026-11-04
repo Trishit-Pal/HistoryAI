@@ -31,41 +31,15 @@ test("the exhibit tabs walk a hall with the arrow keys without leaving it", asyn
   await expect(page.getByRole("tabpanel")).toBeVisible();
 
   // The window listener that travels between halls must not also fire.
-  await expect(page.getByRole("button", { name: /Symbolic golden age/ })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByRole("navigation", { name: "Breadcrumb" }).locator("[aria-current='page']")).toHaveText(
+    "Symbolic golden age",
+  );
 
   await page.keyboard.press("Home");
   await expect(tabs.first()).toHaveAttribute("aria-selected", "true");
 });
 
-test("plan view frames the sheet and stays accessible", async ({ page }) => {
-  await page.goto("/rooms/symbolic");
-  test.skip(!(await hasWebGL(page)), "plan view needs the 3D view");
-
-  const toggle = page.getByRole("button", { name: "Plan view" });
-  await expect(toggle).toHaveAttribute("aria-pressed", "false");
-  await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("canvas")).toHaveCount(1);
-  await expect(page.getByRole("img", { name: /Plan of the halls/ })).toBeVisible();
-  expect(await blockingViolations(page)).toEqual([]);
-
-  await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", "false");
-});
-
-test("moving the year rail back seals the later halls", async ({ page }) => {
-  await page.goto("/rooms/symbolic");
-  // Filling before React hydrates is overwritten by the server value, so retry until it sticks.
-  await expect(async () => {
-    await page.locator("#year").fill("1960");
-    await expect(page.getByText("Show work up to 1960")).toBeVisible({ timeout: 500 });
-  }).toPass();
-  await expect(page.getByRole("button", { name: /Statistical renaissance/ })).toBeDisabled();
-  await expect(page.getByRole("button", { name: /Symbolic golden age/ })).toBeEnabled();
-  expect(await blockingViolations(page)).toEqual([]);
-});
-
-test("the no-WebGL fallback is a readable list, with future exhibits dimmed, and passes axe", async ({ page }) => {
+test("the no-WebGL fallback is a readable list with no year slider, and passes axe", async ({ page }) => {
   const webglErrors: string[] = [];
   page.on("pageerror", (error) => webglErrors.push(error.message));
   page.on("console", (message) => {
@@ -93,13 +67,7 @@ test("the no-WebGL fallback is a readable list, with future exhibits dimmed, and
   expect(await page.evaluate(() => (window as unknown as { __canvasInserts: number }).__canvasInserts)).toBe(0);
   expect(webglErrors.filter((text) => /WebGL/i.test(text))).toEqual([]);
   await expect(page.getByRole("tablist")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Plan view" })).toHaveCount(0);
-
-  await expect(async () => {
-    await page.locator("#year").fill("1960");
-    await expect(page.getByText("Show work up to 1960")).toBeVisible({ timeout: 500 });
-  }).toPass();
-  await expect(page.locator(".flatland article.ghost").first()).toBeVisible();
+  await expect(page.getByRole("slider")).toHaveCount(0);
   expect(await blockingViolations(page)).toEqual([]);
 });
 

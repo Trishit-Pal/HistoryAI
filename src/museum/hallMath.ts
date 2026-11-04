@@ -52,30 +52,8 @@ export function hallSpan(hall: Hall): string {
   return ` ${hall.startYear}${hall.endYear ? `–${hall.endYear}` : "–"}`;
 }
 
-const PLAN_MIN_HEIGHT = 8;
-const PLAN_PADDING = 6;
-const PLAN_DEPTH_RATIO = 0.9;
-const PLAN_WIDTH_RATIO = 0.6;
-const PLAN_TILT = 0.4;
-
-// A high, steep view of one hall (one sheet) with all its exhibits in frame.
-// Tilted a little rather than straight down, so the camera's up axis never degenerates.
-export function planCamera(halls: readonly Hall[], hallIndex: number): { position: Vec3; target: Vec3 } {
-  const hall = halls[hallIndex];
-  const spots = (hall?.exhibitIds ?? []).map((id) => focusedPedestal(halls, hallIndex, id));
-  if (spots.length === 0) {
-    const front = hallOrigin(hallIndex, halls) - FIRST_PEDESTAL_SETBACK;
-    return { position: [0, PLAN_MIN_HEIGHT, front + PLAN_MIN_HEIGHT * PLAN_TILT], target: [0, 0, front] };
-  }
-  const xs = spots.map((spot) => spot[0]);
-  const zs = spots.map((spot) => spot[2]);
-  const centreX = (Math.min(...xs) + Math.max(...xs)) / 2;
-  const centreZ = (Math.min(...zs) + Math.max(...zs)) / 2;
-  const depth = Math.max(...zs) - Math.min(...zs) + PLAN_PADDING;
-  const width = Math.max(...xs) - Math.min(...xs) + PLAN_PADDING;
-  const height = Math.max(PLAN_MIN_HEIGHT, depth * PLAN_DEPTH_RATIO, width * PLAN_WIDTH_RATIO);
-  return {
-    position: [centreX, height, centreZ + height * PLAN_TILT],
-    target: [centreX, 0, centreZ],
-  };
+// Textures and artefacts mount only within one spot of the focus, and only in the focused hall
+// (focusedIndex -1 means the focus is elsewhere).
+export function loadsNear(index: number, focusedIndex: number): boolean {
+  return focusedIndex >= 0 && Math.abs(index - focusedIndex) <= 1;
 }

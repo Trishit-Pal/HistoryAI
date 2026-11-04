@@ -3,27 +3,21 @@ import { expect, test } from "@playwright/test";
 
 test.use({ viewport: { width: 1920, height: 1080 } });
 
-async function tabTo(page: import("@playwright/test").Page, name: RegExp, shift = false) {
+async function tabTo(page: import("@playwright/test").Page, name: RegExp) {
   const button = page.getByRole("button", { name });
   for (let step = 0; step < 40; step += 1) {
     if (await button.evaluate((element) => element === document.activeElement)) return button;
-    await page.keyboard.press(shift ? "Shift+Tab" : "Tab");
+    await page.keyboard.press("Tab");
   }
   return button;
 }
 
 test("keyboard leaves Formal founding for Precursors and the plate stays readable", async ({ page }) => {
   await page.goto("/rooms/founding");
-  const founding = await tabTo(page, /Formal founding/);
-  await expect(founding).toBeFocused();
-  await founding.press("Enter");
-  await expect(founding).toHaveAttribute("aria-current", "true");
-
-  const precursors = await tabTo(page, /Precursors/, true);
+  const precursors = await tabTo(page, /Previous era: Precursors/);
   await expect(precursors).toBeFocused();
   await precursors.press("Enter");
-  await expect(precursors).toHaveAttribute("aria-current", "true");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mechanical and logical precursors");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sketch of the Analytical Engine");
 
   const source = page.getByRole("link", { name: /Source:/ }).first();
   for (let step = 0; step < 40; step += 1) {
@@ -68,8 +62,7 @@ test("keyboard leaves Formal founding for Precursors and the plate stays readabl
 test("reduced motion still reaches the Precursors plate", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/rooms/founding");
-  const precursors = await tabTo(page, /Precursors/);
+  const precursors = await tabTo(page, /Previous era: Precursors/);
   await precursors.press("Enter");
-  await expect(precursors).toHaveAttribute("aria-current", "true");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });

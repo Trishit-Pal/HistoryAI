@@ -67,8 +67,9 @@ describe("exhibit page", () => {
     expect(values).toEqual(["Precursors", "1854", "idea, context", "reported"]);
     // The class is what carries the confidence shape (a glyph drawn in CSS), not only the word.
     expect(container.querySelector(".titleblock .badge.badge-reported")).not.toBeNull();
-    const back = screen.getByRole("link", { name: "Back to Precursors" });
-    expect(back.getAttribute("href")).toBe("/rooms/precursors");
+    const back = screen.getByRole("link", { name: "Precursors" });
+    expect(back.getAttribute("href")).toBe("/rooms/precursors#evt_example");
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" }).querySelector("[aria-current='page']")).not.toBeNull();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeCoverage, describeModel, featuredDrawn, isDrawn } from "./describe";
+import { describeCoverage, describeModel, featuredDrawn, isDrawn, visibleModels } from "./describe";
 import { hashForModel, modelFromHash } from "./hash";
 import type { AtlasSnapshot } from "./types";
 
@@ -122,5 +122,24 @@ describe("isDrawn", () => {
   it("treats nothing selected, and an index that does not exist, as not drawn", () => {
     expect(isDrawn(featured, null, true)).toBe(false);
     expect(isDrawn(featured, 5, true)).toBe(false);
+  });
+});
+
+describe("visibleModels", () => {
+  const models = {
+    names: ["Zed", "Alpha", "Beta", "Old", "NoValue"],
+    years: [2020, 2020, 2020, 1990, 2010],
+    featured: [true, true, false, true, true],
+    logCompute: [20, 20, 20, 10, null],
+    logParameters: [null, 9, 9, 5, 9],
+  };
+
+  it("lists the drawn models oldest first, then by name", () => {
+    expect(visibleModels(models, "compute", false)).toEqual([3, 1, 0]);
+  });
+
+  it("leaves out a model with no value for the measure, and adds the rest with show all", () => {
+    expect(visibleModels(models, "parameters", false)).toEqual([3, 4, 1]);
+    expect(visibleModels(models, "compute", true)).toEqual([3, 1, 2, 0]);
   });
 });

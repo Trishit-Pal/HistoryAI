@@ -37,13 +37,15 @@ describe("museum views", () => {
           incomplete: false,
           layer: "context",
           eraId: "era_0_precursors",
-          confidence: "reported",
+          confidence: "confirmed",
+          officialPrimary: true,
           citations: [
             {
               url: "https://plato.stanford.edu/entries/artificial-intelligence/",
               publisher: "Stanford Encyclopedia of Philosophy",
               retrieved: "2026-10-02",
             },
+            { url: "https://example.org/second", publisher: "Example", retrieved: "2026-10-02" },
           ],
           figure: {
             src: "/museum/era-0/overview.svg",
@@ -61,6 +63,33 @@ describe("museum views", () => {
     expect(written.ok).toBe(true);
     const node = museumNodes(store).find((item) => item.id === "evt_history_overview");
     expect(node?.figure?.src).toBe("/museum/era-0/overview.svg");
+  });
+
+  it("keeps a public exhibit that is not confirmed off the floor", () => {
+    const store = seedMuseum();
+    const written = store.apply(
+      {
+        exhibit: {
+          id: "ctx_reported_only",
+          title: "Reported only",
+          kind: "idea",
+          startYear: 1950,
+          publicStory: "One secondary source.",
+          publicationState: "canon",
+          incomplete: false,
+          layer: "context",
+          eraId: "era_1_founding",
+          confidence: "reported",
+          citations: [{ url: "https://example.com/r", publisher: "Example", retrieved: "2026-11-04" }],
+        },
+      },
+      "editor",
+    );
+    expect(written.ok).toBe(true);
+    expect(store.publicExhibits().some((exhibit) => exhibit.id === "ctx_reported_only")).toBe(true);
+    expect(museumNodes(store).some((node) => node.id === "ctx_reported_only")).toBe(false);
+    expect(museumHalls(store).flatMap((hall) => hall.exhibitIds)).not.toContain("ctx_reported_only");
+    expect(museumNodes(store).every((node) => node.confidence === "confirmed")).toBe(true);
   });
 
   it("exposes a changelog from seeded versions", () => {

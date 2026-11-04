@@ -8,27 +8,27 @@ import gsap from "gsap";
 import type { Hall } from "../src/domain/layout";
 import { hallThreads, otherThreadId } from "../src/domain/threads";
 import { eraSpot } from "../src/museum/eraRooms";
-import { focusedPedestal, hallLength, hallOrigin, pedestalPosition, planCamera } from "../src/museum/hallMath";
+import { focusedPedestal, hallLength, hallOrigin, loadsNear, pedestalPosition } from "../src/museum/hallMath";
 import { precursorsCameraY } from "../src/museum/precursorsRoom";
 import { isSealed } from "../src/museum/seal";
 import { CHALK, CHALK_DIM, PRUSSIAN, REDLINE } from "../src/museum/theme";
 import { cameraMove, type MuseumNode } from "../src/museum/view";
 import { Ink } from "./Ink";
 import { Monument } from "./Monument";
+import { hasArtefact, LABEL_ABOVE_ARTEFACT, PlinthArtefact } from "./artefacts/PlinthArtefact";
 import { ERA_ROOMS } from "./rooms/eraRoomMap";
+import { HighlightContext, type PartHighlight } from "./artefacts/highlight";
 
 function CameraRig({
   halls,
   hallIndex,
   focusedId,
   reducedMotion,
-  plan,
 }: {
   halls: Hall[];
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
-  plan: boolean;
 }) {
   const { camera } = useThree();
   const look = focusedPedestal(halls, hallIndex, focusedId);
@@ -40,24 +40,21 @@ function CameraRig({
           (hall.id === "era_0_precursors" || eraSpot(hall.id, hall.exhibitIds, focusedId)),
       ),
   );
-  const overview = planCamera(halls, hallIndex);
-  const camX = plan ? overview.position[0] : 0;
-  const camZ = plan ? overview.position[2] : look[2] + (inPlacedRoom ? 4.2 : 6);
-  const camY = plan ? overview.position[1] : precursorsCameraY(inPlacedRoom ? look[1] : null);
+  const camZ = look[2] + (inPlacedRoom ? 4.2 : 6);
+  const camY = precursorsCameraY(inPlacedRoom ? look[1] : null);
   useEffect(() => {
     if (cameraMove(reducedMotion) === "snap") {
       gsap.killTweensOf(camera.position);
-      camera.position.set(camX, camY, camZ);
+      camera.position.set(0, camY, camZ);
       return;
     }
-    const tween = gsap.to(camera.position, { x: camX, y: camY, z: camZ, duration: 1.1, ease: "power2.inOut" });
+    const tween = gsap.to(camera.position, { x: 0, y: camY, z: camZ, duration: 1.1, ease: "power2.inOut" });
     return () => {
       tween.kill();
     };
-  }, [camera, camX, camY, camZ, reducedMotion]);
+  }, [camera, camY, camZ, reducedMotion]);
   useFrame(() => {
-    if (plan) camera.lookAt(...overview.target);
-    else camera.lookAt(look[0], 1.2 + (camY - 1.6), look[2]);
+    camera.lookAt(look[0], 1.2 + (camY - 1.6), look[2]);
   });
   return null;
 }
@@ -126,6 +123,7 @@ function Corridor({
         const length = hallLength(hall);
         const width = 6 * hall.width;
         const members = hall.exhibitIds.map((id) => byId.get(id)).filter(Boolean) as MuseumNode[];
+        const focusedIndex = members.findIndex((member) => member.id === focusedId);
         const Room = ERA_ROOMS[hall.id];
         const next = halls[index + 1];
         const nextSealed = next ? isSealed(next, nodes, year) : false;
@@ -177,16 +175,29 @@ function Corridor({
             >
               {hall.label}
             </Text>
-            {members.map((node, i) => (
-              <Monument
-                key={node.id}
-                node={node}
-                focused={node.id === focusedId}
-                ghost={node.startYear > year}
-                onFocus={onFocus}
-                position={pedestalPosition(index, i, halls)}
-              />
-            ))}
+            {members.map((node, i) => {
+              const position = pedestalPosition(index, i, halls);
+              return (
+                <group key={node.id}>
+                  <Monument
+                    node={node}
+                    focused={node.id === focusedId}
+                    ghost={node.startYear > year}
+                    onFocus={onFocus}
+                    position={position}
+                    labelY={hasArtefact(node.id) ? LABEL_ABOVE_ARTEFACT : undefined}
+                  />
+                  <PlinthArtefact
+                    exhibitId={node.id}
+                    position={position}
+                    focused={node.id === focusedId}
+                    load={loadsNear(i, focusedIndex)}
+                    ghost={node.startYear > year}
+                    onFocus={onFocus}
+                  />
+                </group>
+              );
+            })}
             {hallThreads(hall.exhibitIds, members, year).map((thread) => {
               const fromIndex = hall.exhibitIds.indexOf(thread.fromId);
               const toIndex = hall.exhibitIds.indexOf(thread.toId);
@@ -211,9 +222,11 @@ function Corridor({
 }
 
 function isTypingTarget(target: EventTarget | null): boolean {
+  // While a modal (the inspect dialog) is open, keys belong to it, not to the halls behind,
+  // wherever the event lands (a control in it, its canvas, or the body after a click).
+  if (document.querySelector("dialog[open]")) return true;
   if (!(target instanceof HTMLElement)) return false;
-  if (target.closest("input, textarea, select, [role='tab'], [contenteditable='true']")) return true;
-  return target.closest("input[type='range']") !== null;
+  return target.closest("input, textarea, select, [role='tab'], [contenteditable='true']") !== null;
 }
 
 export function HallCorridor({
@@ -223,7 +236,8 @@ export function HallCorridor({
   hallIndex,
   focusedId,
   reducedMotion,
-  plan = false,
+  paused = false,
+  highlight = null,
   onFocus,
   onHall,
 }: {
@@ -233,7 +247,9 @@ export function HallCorridor({
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
-  plan?: boolean;
+  // While the inspect dialog draws its own canvas, this one renders only on demand.
+  paused?: boolean;
+  highlight?: PartHighlight;
   onFocus: (id: string) => void;
   onHall: (index: number) => void;
 }) {
@@ -257,7 +273,13 @@ export function HallCorridor({
       aria-label="Plan of the halls. Move between exhibits with the exhibit tabs below, or between halls with the left and right arrow keys."
     >
       {/* flat: no tone mapping, so the Prussian fills match the Prussian ground exactly. */}
-      <Canvas flat camera={{ position: [0, 1.6, 6], fov: 60 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
+      <Canvas
+        flat
+        frameloop={paused ? "demand" : "always"}
+        camera={{ position: [0, 1.6, 6], fov: 60 }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true }}
+      >
         <color attach="background" args={[PRUSSIAN]} />
         <Grid
           position={[0, -0.02, 0]}
@@ -277,16 +299,10 @@ export function HallCorridor({
           hallIndex={hallIndex}
           focusedId={focusedId}
           reducedMotion={reducedMotion}
-          plan={plan}
         />
-        <Corridor
-          halls={halls}
-          nodes={nodes}
-          year={year}
-          focusedId={focusedId}
-          onFocus={onFocus}
-          onHall={onHall}
-        />
+        <HighlightContext.Provider value={highlight}>
+          <Corridor halls={halls} nodes={nodes} year={year} focusedId={focusedId} onFocus={onFocus} onHall={onHall} />
+        </HighlightContext.Provider>
       </Canvas>
     </div>
   );

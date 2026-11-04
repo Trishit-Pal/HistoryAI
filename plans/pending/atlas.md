@@ -4,6 +4,8 @@ Ticket: none. On approval, step 0.0 copies this file to `plans/pending/atlas.md`
 
 ## Context
 
+> Note: `HeroCloud`, `ScrollHall`, `ReadingModal` and `NightMuseum` have since been removed; the home page is now the vertical timeline in `components/home/Timeline.tsx`. References below are historical.
+
 HistoryAI is a Next.js museum of AI history. Its provenance is strong in method but thin in coverage:
 
 - All 35 exhibits carry inline citations, but only 2 have formal `Source` records, there are 0 evolution edges, and the `dataset` / `benchmark` kinds are unused.

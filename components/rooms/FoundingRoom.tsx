@@ -39,7 +39,7 @@ export function FoundingRoom({
         <ringGeometry args={[0.35, 0.48, 24]} />
         <Ink tone="metal" />
       </mesh>
-      <HallTitle position={[0, 1.85, -3.6]} label={hall.label} />
+      <HallTitle position={[0, 2.7, -3.6]} label={hall.label} />
       <RoomExhibits members={members} spots={spots} year={year} focusedId={focusedId} onFocus={onFocus} />
       <NextMark z={-4.2} nextLabel={nextLabel} nextYear={nextYear} nextSealed={nextSealed} onNext={() => onHall(hallIndex + 1)} />
     </group>

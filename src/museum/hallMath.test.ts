@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Hall } from "../domain/layout";
 import { precursorsLayout } from "./precursorsRoom";
-import { focusedPedestal, hallLength, hallOrigin, hallSpan, pedestalPosition, planCamera } from "./hallMath";
+import { focusedPedestal, hallLength, hallOrigin, hallSpan, loadsNear, pedestalPosition } from "./hallMath";
 
 function hall(id: string, exhibitIds: string[], overrides: Partial<Hall> = {}): Hall {
   return {
@@ -73,26 +73,12 @@ describe("hallSpan", () => {
   });
 });
 
-describe("planCamera", () => {
-  it("looks at the middle of the exhibits in the current hall from above and behind", () => {
-    const { position, target } = planCamera(halls, 1);
-    const spots = halls[1]!.exhibitIds.map((_, i) => pedestalPosition(1, i, halls));
-    const zs = spots.map((spot) => spot[2]);
-    expect(target[0]).toBeCloseTo(0);
-    expect(target[1]).toBe(0);
-    expect(target[2]).toBeCloseTo((Math.min(...zs) + Math.max(...zs)) / 2);
-    expect(position[1]).toBeGreaterThan(8);
-    expect(position[2]).toBeGreaterThan(target[2]);
+describe("loadsNear", () => {
+  it("loads the focused spot and its neighbours only", () => {
+    expect([0, 1, 2, 3].map((i) => loadsNear(i, 1))).toEqual([true, true, true, false]);
   });
 
-  it("rises for a longer hall so the whole sheet stays in view", () => {
-    const longer = [hall("long", Array.from({ length: 12 }, (_, i) => `x${i}`))];
-    expect(planCamera(longer, 0).position[1]).toBeGreaterThan(planCamera(halls, 0).position[1]);
-  });
-
-  it("falls back to the front of the hall when it holds no exhibits", () => {
-    const empty = [hall("e", [])];
-    const { target } = planCamera(empty, 0);
-    expect(target).toEqual([0, 0, hallOrigin(0, empty) - 2]);
+  it("loads nothing in a hall that does not hold the focus", () => {
+    expect([0, 1].map((i) => loadsNear(i, -1))).toEqual([false, false]);
   });
 });

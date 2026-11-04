@@ -18,7 +18,7 @@ function seededParams() {
 
 export function generateStaticParams() {
   const params = seededParams();
-  return params.length > 0 ? params : [{ era: "precursors", exhibit: "evt_history_overview" }];
+  return params.length > 0 ? params : [{ era: "founding", exhibit: "evt_1956_dartmouth" }];
 }
 
 export async function generateMetadata({

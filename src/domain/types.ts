@@ -8,7 +8,7 @@ export type Kind =
   | "dataset"
   | "benchmark";
 
-export type PublicationState = "draft" | "provisional" | "proposed" | "canon";
+export type PublicationState = "draft" | "provisional" | "proposed" | "canon" | "withdrawn";
 
 export type ClaimRole = "what_changed" | "capability" | "limit" | "failure" | "unknown";
 

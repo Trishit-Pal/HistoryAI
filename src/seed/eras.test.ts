@@ -1,11 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { independentDomains } from "../domain/confidence";
 import { layoutHalls } from "../domain/layout";
 import { CLAIM_ROLES } from "../domain/types";
 import { SEED_NODES, seedMuseum } from "./eras";
+import { WITHDRAWN_NODES } from "./withdrawn";
 
 const ERA0_IDS = [
-  "evt_history_overview",
   "ctx_1843_analytical_engine",
   "ctx_1854_boole_laws_of_thought",
   "ctx_1936_turing_computable",
@@ -16,15 +17,37 @@ const ERA0_IDS = [
 ];
 
 describe("era seed", () => {
-  it("gives every node at least one URL and keeps the 2026 snapshot off the canon", () => {
+  it("confirms every seeded exhibit against a primary record and two domains", () => {
     expect(SEED_NODES.every((node) => node.citations.some((citation) => citation.url.startsWith("http")))).toBe(true);
-    const snapshot = SEED_NODES.find((node) => node.id === "evt_2026_frontier_snapshot");
-    expect(snapshot?.publicationState).toBe("provisional");
-    expect(snapshot?.confidence).toBe("reported");
-    expect(snapshot?.editorialNote).toMatch(/Not canon/);
-    const confirmed = SEED_NODES.filter((node) => node.confidence === "confirmed");
-    expect(confirmed.every((node) => node.officialPrimary)).toBe(true);
-    expect(SEED_NODES.find((node) => node.id === "evt_2025_winter_debate")?.confidence).toBe("disputed");
+    for (const node of SEED_NODES) {
+      expect(node.confidence, node.id).toBe("confirmed");
+      expect(node.officialPrimary, node.id).toBe(true);
+      expect(independentDomains(node.citations), node.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("keeps the eight withdrawn exhibits off the floor but in the changelog", () => {
+    expect(WITHDRAWN_NODES.map((node) => node.id).sort()).toEqual([
+      "evt_1974_first_winter",
+      "evt_1985_expert_spend",
+      "evt_1987_lisp_collapse",
+      "evt_2015_google_photos",
+      "evt_2017_transformer_citations",
+      "evt_2025_winter_debate",
+      "evt_2026_frontier_snapshot",
+      "evt_history_overview",
+    ]);
+    const seededIds = new Set(SEED_NODES.map((node) => node.id));
+    const store = seedMuseum();
+    const publicIds = new Set(store.publicExhibits().map((exhibit) => exhibit.id));
+    for (const node of WITHDRAWN_NODES) {
+      expect(seededIds.has(node.id)).toBe(false);
+      expect(publicIds.has(node.id)).toBe(false);
+      expect(store.getExhibit(node.id)?.publicationState).toBe("withdrawn");
+      const last = store.changelog().filter((line) => line.nodeId === node.id).at(-1);
+      expect(last?.reason).toBe(`Withdrawn: ${node.withdrawnReason}`);
+      expect(last?.title).toBe(node.title);
+    }
   });
 
   it("seeds Room 0 with logged figures and two canon dossiers", () => {
@@ -40,9 +63,11 @@ describe("era seed", () => {
       expect(line).toContain(figure?.license);
       expect(line).toContain(figure?.sourceUrl);
     }
-    expect(store.getExhibit("ctx_1843_analytical_engine")?.confidence).toBe("reported");
-    expect(store.getExhibit("ctx_1843_analytical_engine")?.officialPrimary).toBeUndefined();
-    expect(store.getExhibit("evt_history_overview")?.version).toBe(1);
+    expect(store.getExhibit("ctx_1843_analytical_engine")?.confidence).toBe("confirmed");
+    expect(store.getExhibit("ctx_1843_analytical_engine")?.citations?.map((c) => c.url)).toContain(
+      "https://archive.org/details/india.history.resource.53369",
+    );
+    expect(store.getExhibit("evt_history_overview")?.version).toBe(2);
     expect(store.getExhibit("evt_1943_mcculloch_pitts")?.version).toBe(1);
     for (const id of ["evt_1943_mcculloch_pitts", "tech_1948_shannon_information"]) {
       const exhibit = store.getExhibit(id);
@@ -57,7 +82,7 @@ describe("era seed", () => {
     expect(beforeCanon.every((exhibit) => exhibit.layer === "context")).toBe(true);
   });
 
-  it("lists era 0 plaque-first and keeps every figure file on disk", () => {
+  it("lists era 0 in year order and keeps every figure file on disk", () => {
     const store = seedMuseum();
     const publicNodes = store.publicExhibits().map((exhibit) => ({
       id: exhibit.id,
@@ -81,10 +106,7 @@ describe("era seed", () => {
       expect(node.fieldChange?.after.trim().length).toBeGreaterThan(0);
       const urls = new Set(node.citations.map((citation) => citation.url));
       expect(node.fieldChange?.citationUrls.every((url) => urls.has(url))).toBe(true);
-      // The framing plaque stays on Nilsson's survey alone.
-      if (node.id !== "evt_history_overview" && node.publicationState !== "provisional") {
-        expect(node.citations.length).toBeGreaterThan(1);
-      }
+      expect(node.citations.length).toBeGreaterThan(1);
     }
     const store = seedMuseum();
     expect(store.getExhibit("evt_1956_dartmouth")?.fieldChange?.after.length).toBeGreaterThan(0);
@@ -105,6 +127,7 @@ describe("era seed", () => {
     expect(halls.some((hall) => hall.mood === "winter")).toBe(true);
     expect(halls.some((hall) => hall.mood === "dense")).toBe(true);
     expect(halls.at(-1)?.id).toBe("provisional");
-    expect(store.getExhibit("evt_2026_frontier_snapshot")?.publicationState).toBe("provisional");
+    // Both eras lost their only exhibit in the November 2026 audit, so they have no hall.
+    expect(halls.some((hall) => hall.id === "era_4_expert_systems" || hall.id === "era_5_second_winter")).toBe(false);
   });
 });
