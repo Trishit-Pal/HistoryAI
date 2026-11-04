@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { ERAS } from "../../src/domain/eras";
 import type { Hall } from "../../src/domain/layout";
+import { dialEntries } from "../../src/museum/dial";
 import { CONFIDENCE_GLYPH } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
+import { ArtefactDial } from "./ArtefactDial";
 import { YearRail, type RailEntry } from "./YearRail";
 
 // ponytail: the provisional hall has no room of its own; the hash focus in MuseumShell finds it from any room.
@@ -29,10 +31,13 @@ function bandsFrom(halls: Hall[], nodes: MuseumNode[]): Band[] {
   });
 }
 
+const hrefFor = (band: Band, id: string) => `/rooms/${band.slug ?? FALLBACK_SLUG}#${id}`;
+
 export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; halls: Hall[]; archivedAt?: string }) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
   const bands = bandsFrom(halls, nodes);
+  const dial = dialEntries(bands.map((band) => ({ href: (id: string) => hrefFor(band, id), exhibits: band.exhibits })));
   const matches = (node: MuseumNode) => !needle || node.title.toLowerCase().includes(needle);
   const total = bands.reduce((sum, band) => sum + band.exhibits.filter(matches).length, 0);
   // While searching, an era with no matching exhibit leaves both the timeline and the rail.
@@ -48,8 +53,11 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
     <div className="night">
       {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
       <header className="tl-hero">
-        <h1>Hall of Eras</h1>
-        <p>A sourced walk through the history of artificial intelligence, one era at a time.</p>
+        <div className="tl-hero-text">
+          <h1>Hall of Eras</h1>
+          <p>A sourced walk through the history of artificial intelligence, one era at a time.</p>
+        </div>
+        {dial.length > 0 ? <ArtefactDial entries={dial} /> : null}
       </header>
       <div className="tl-layout">
         <div className="tl-main">
@@ -93,7 +101,7 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
                         <ul className="tl-cards">
                           {shown.map((node) => (
                             <li key={node.id}>
-                              <ExhibitCard node={node} href={`/rooms/${band.slug ?? FALLBACK_SLUG}#${node.id}`} />
+                              <ExhibitCard node={node} href={hrefFor(band, node.id)} />
                             </li>
                           ))}
                         </ul>

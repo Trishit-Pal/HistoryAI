@@ -969,6 +969,159 @@ textarea {
   color: var(--bp-chalk-dim);
 }
 
+/* The hero: words on the left, the artefact dial on the right (stacked on narrow screens). */
+.tl-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+/* The shelf fades out at the sides instead of being cut by the canvas edge. */
+.dial-stage {
+  height: min(26rem, 50vh, 90vw);
+  mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
+}
+
+.dial-stage[hidden] {
+  display: none;
+}
+
+.dial-controls {
+  --thumb: 44px;
+  display: grid;
+  gap: 0.2rem;
+  max-width: 36rem;
+  margin: 0.75rem auto 0;
+}
+
+.dial-label {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--bp-chalk);
+  text-align: center;
+}
+
+.tl-hero .dial-label {
+  max-width: none;
+  margin: 0;
+  color: var(--bp-chalk);
+}
+
+.dial-year {
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--bp-gold-soft);
+}
+
+.dial-track {
+  position: relative;
+  height: var(--thumb);
+}
+
+/* The line and the era ticks are drawn under a transparent native range, centred on the thumb's travel. */
+.dial-track::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--thumb) / 2);
+  right: calc(var(--thumb) / 2);
+  top: 50%;
+  height: 1px;
+  background: color-mix(in srgb, var(--bp-chalk-dim) 55%, transparent);
+}
+
+.dial-ticks span {
+  position: absolute;
+  top: calc(50% - 5px);
+  left: calc(var(--thumb) / 2 + var(--at) * (100% - var(--thumb)));
+  width: 1px;
+  height: 10px;
+  background: var(--bp-chalk-dim);
+}
+
+.dial-ticks span.is-current {
+  background: var(--bp-redline);
+}
+
+.dial-range {
+  --dial-focus: transparent;
+  position: relative;
+  width: 100%;
+  height: var(--thumb);
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.dial-range::-webkit-slider-runnable-track {
+  height: var(--thumb);
+  background: transparent;
+}
+
+.dial-range::-moz-range-track {
+  height: var(--thumb);
+  background: transparent;
+}
+
+.dial-range::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  background: radial-gradient(circle, var(--bp-redline) 0 6px, var(--bp-prussian) 6.5px 8px, color-mix(in srgb, var(--bp-redline) 55%, transparent) 8.5px 9.5px, transparent 10px 12px, var(--dial-focus) 12.5px 14px, transparent 14.5px);
+  appearance: none;
+}
+
+.dial-range::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  background: radial-gradient(circle, var(--bp-redline) 0 6px, var(--bp-prussian) 6.5px 8px, color-mix(in srgb, var(--bp-redline) 55%, transparent) 8.5px 9.5px, transparent 10px 12px, var(--dial-focus) 12.5px 14px, transparent 14.5px);
+}
+
+/* Focus draws a second ring round the thumb, not a box round the whole track. */
+.dial-range:focus-visible {
+  --dial-focus: var(--bp-gold-soft);
+  outline: none;
+}
+
+.dial-ends {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 calc(var(--thumb) / 2 - 1rem);
+  font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  color: var(--bp-chalk-dim);
+}
+
+.night .dial-visit {
+  justify-self: center;
+  margin-top: 0.4rem;
+  color: var(--bp-gold-soft);
+  text-decoration: none;
+}
+
+.night .dial-visit:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.tl-hero .dial-credit p {
+  max-width: none;
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .tl-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+}
+
 .tl-layout {
   --tl-year-col: 7rem;
   max-width: 72rem;

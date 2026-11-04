@@ -3,7 +3,9 @@ import { expect, test } from "@playwright/test";
 test("the home is one timeline of era bands whose chips open the exhibit in its room", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "Hall of Eras" })).toBeVisible();
-  await expect(page.locator("video, canvas")).toHaveCount(0);
+  await expect(page.locator("video")).toHaveCount(0);
+  // At most the dial's one canvas (none when this browser has no WebGL).
+  expect(await page.locator("canvas").count()).toBeLessThanOrEqual(1);
   const founding = page.getByRole("region", { name: "Formal founding" });
   await expect(founding).toBeVisible();
   expect(await page.locator(".tl-band").count()).toBeGreaterThan(5);
