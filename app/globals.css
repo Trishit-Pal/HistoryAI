@@ -1287,3 +1287,184 @@ textarea {
     transition: none;
   }
 }
+
+/* The object on the plinth: its credit line and sourced parts, set like the dossier's notes. */
+.artefact {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0 0.2rem;
+  border-top: 1px solid var(--bp-rule);
+}
+
+.artefact-credit,
+.inspect .artefact-credit {
+  margin: 0 0 0.5rem;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--bp-chalk-dim);
+}
+
+.artefact-hotspots {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artefact-hotspots li {
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--bp-rule);
+  font-size: 0.92rem;
+}
+
+.artefact-hotspots li:hover,
+.artefact-hotspots li:focus-within {
+  border-left-color: var(--bp-redline);
+}
+
+.artefact-hotspots strong {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--bp-chalk-dim);
+}
+
+:is(.artefact, .inspect) a {
+  color: var(--bp-redline);
+  text-underline-offset: 2px;
+}
+
+/* Inspect the artefact: a native modal dialog with a turntable canvas and the parts beside it. */
+.inspect-open,
+.inspect-close,
+.inspect-parts button {
+  background: transparent;
+  color: var(--bp-chalk);
+  border: 1px solid var(--bp-chalk-dim);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+}
+
+.inspect-open {
+  margin: 0 0 1rem;
+  border-color: var(--bp-redline);
+  color: var(--bp-redline);
+}
+
+.inspect-open:hover,
+.inspect-close:hover,
+.inspect-parts button:hover {
+  border-color: var(--bp-redline);
+}
+
+.inspect-parts button[aria-pressed="true"] {
+  border-color: var(--bp-redline);
+  background: color-mix(in srgb, var(--bp-redline) 18%, transparent);
+  color: var(--bp-gold-soft);
+}
+
+.inspect {
+  width: min(64rem, 100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  overflow: auto;
+  background: var(--bp-print);
+  color: var(--bp-ink);
+  border: 1px solid var(--bp-rule);
+}
+
+.inspect::backdrop {
+  background: color-mix(in srgb, var(--bp-prussian) 80%, transparent);
+}
+
+.inspect :focus-visible {
+  outline: 2px solid var(--bp-redline);
+  outline-offset: 2px;
+}
+
+.inspect-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--bp-rule);
+}
+
+.inspect-head h2 {
+  margin: 0;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.inspect-body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+}
+
+.inspect-canvas {
+  position: relative;
+  height: min(30rem, 70dvh);
+  background: var(--bp-prussian);
+}
+
+.inspect-canvas canvas {
+  touch-action: none;
+}
+
+.inspect-loading {
+  margin: 0;
+  padding: 1rem;
+  color: var(--bp-chalk-dim);
+}
+
+.inspect-side {
+  padding: 1rem;
+  border-left: 1px solid var(--bp-rule);
+}
+
+.inspect-side h3 {
+  margin: 0.75rem 0 0.4rem;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bp-chalk-dim);
+}
+
+.inspect-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.inspect-text {
+  margin: 0;
+  min-height: 4.5em;
+  font-family: var(--font-body), Literata, serif;
+  line-height: 1.55;
+}
+
+@media (max-width: 700px) {
+  .inspect-body {
+    grid-template-columns: 1fr;
+  }
+
+  .inspect-canvas {
+    height: 44dvh;
+  }
+
+  .inspect-side {
+    border-left: 0;
+    border-top: 1px solid var(--bp-rule);
+  }
+}

@@ -101,7 +101,7 @@ export function MarkIPerceptron({ active, highlight }: ArtefactProps) {
     <group position={[0.06, 0, -0.03]}>
       <mesh position={[0, H / 2, 0]}>
         <boxGeometry args={[0.86, H, D]} />
-        <Ink tone="stone" />
+        <Ink tone="stone" accent={highlight === "built"} />
       </mesh>
       <group name="retina" position={[mx, 0.315, FRONT + 0.001]}>
         <mesh position={[0, 0, -0.001]}>

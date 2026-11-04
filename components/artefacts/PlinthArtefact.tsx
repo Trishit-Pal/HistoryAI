@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType, useState } from "react";
+import { type ComponentType, useContext, useState } from "react";
 import { useCursor } from "@react-three/drei";
 import { Ink } from "../Ink";
 import { artefactFor, type ArtefactKey } from "../../src/museum/artefacts";
@@ -9,11 +9,12 @@ import { DeepBlue } from "./DeepBlue";
 import { GoBoard } from "./GoBoard";
 import { Gtx580Pair } from "./Gtx580Pair";
 import { MarkIPerceptron } from "./MarkIPerceptron";
+import { HighlightContext } from "./highlight";
 import type { ArtefactProps } from "./motion";
 import { Protein } from "./Protein";
 import { Relay } from "./Relay";
 
-const COMPONENTS: Record<ArtefactKey, ComponentType<ArtefactProps>> = {
+export const ARTEFACT_MODELS:Record<ArtefactKey, ComponentType<ArtefactProps>> = {
   analyticalEngine: AnalyticalEngine,
   relay: Relay,
   markIPerceptron: MarkIPerceptron,
@@ -41,7 +42,6 @@ export function PlinthArtefact({
   focused,
   load,
   ghost,
-  highlight,
   onFocus,
 }: {
   exhibitId: string;
@@ -49,14 +49,15 @@ export function PlinthArtefact({
   focused: boolean;
   load: boolean;
   ghost: boolean;
-  highlight?: string;
   onFocus: (id: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
+  const lit = useContext(HighlightContext);
+  const highlight = lit?.exhibitId === exhibitId ? lit.part : undefined;
   const artefact = artefactFor(exhibitId);
   if (!artefact || !load || ghost) return null;
-  const Model = COMPONENTS[artefact.component];
+  const Model = ARTEFACT_MODELS[artefact.component];
   const [w, d] = artefact.footprint;
   return (
     <group

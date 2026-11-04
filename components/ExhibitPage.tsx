@@ -5,6 +5,7 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { FieldChangeSection } from "./FieldChangeSection";
 import { ArtefactCredit } from "./ArtefactCredit";
 import { FigureCredit } from "./FigureCredit";
+import { InspectArtefact } from "./InspectArtefact";
 import { RevisionList } from "./RevisionList";
 import { SafeLink } from "./SafeLink";
 
@@ -65,6 +66,7 @@ export function ExhibitPage({
         <h1>{node.title}</h1>
         <FigureCredit figure={node.figure} />
         <ArtefactCredit exhibitId={node.id} />
+        <InspectArtefact exhibitId={node.id} title={node.title} />
         <p>{node.publicStory}</p>
         {node.editorialNote ? <p className="note">{node.editorialNote}</p> : null}
         {node.technicalAccount ? (

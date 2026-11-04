@@ -17,6 +17,7 @@ import { Ink } from "./Ink";
 import { Monument } from "./Monument";
 import { hasArtefact, LABEL_ABOVE_ARTEFACT, PlinthArtefact } from "./artefacts/PlinthArtefact";
 import { ERA_ROOMS } from "./rooms/eraRoomMap";
+import { HighlightContext, type PartHighlight } from "./artefacts/highlight";
 
 function CameraRig({
   halls,
@@ -233,6 +234,8 @@ export function HallCorridor({
   hallIndex,
   focusedId,
   reducedMotion,
+  paused = false,
+  highlight = null,
   onFocus,
   onHall,
 }: {
@@ -242,6 +245,9 @@ export function HallCorridor({
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
+  // While the inspect dialog draws its own canvas, this one renders only on demand.
+  paused?: boolean;
+  highlight?: PartHighlight;
   onFocus: (id: string) => void;
   onHall: (index: number) => void;
 }) {
@@ -265,7 +271,13 @@ export function HallCorridor({
       aria-label="Plan of the halls. Move between exhibits with the exhibit tabs below, or between halls with the left and right arrow keys."
     >
       {/* flat: no tone mapping, so the Prussian fills match the Prussian ground exactly. */}
-      <Canvas flat camera={{ position: [0, 1.6, 6], fov: 60 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
+      <Canvas
+        flat
+        frameloop={paused ? "demand" : "always"}
+        camera={{ position: [0, 1.6, 6], fov: 60 }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true }}
+      >
         <color attach="background" args={[PRUSSIAN]} />
         <Grid
           position={[0, -0.02, 0]}
@@ -286,14 +298,9 @@ export function HallCorridor({
           focusedId={focusedId}
           reducedMotion={reducedMotion}
         />
-        <Corridor
-          halls={halls}
-          nodes={nodes}
-          year={year}
-          focusedId={focusedId}
-          onFocus={onFocus}
-          onHall={onHall}
-        />
+        <HighlightContext.Provider value={highlight}>
+          <Corridor halls={halls} nodes={nodes} year={year} focusedId={focusedId} onFocus={onFocus} onHall={onHall} />
+        </HighlightContext.Provider>
       </Canvas>
     </div>
   );
