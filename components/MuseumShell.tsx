@@ -9,6 +9,7 @@ import { hasWebGL, usePrefersReducedMotion } from "../src/museum/env";
 import { enterHall, focusExhibit, type NavState } from "../src/museum/seal";
 import { chooseView, type MuseumNode } from "../src/museum/view";
 import { HallCorridor } from "./HallCorridor";
+import type { PartHighlight } from "./artefacts/highlight";
 import { Flatland } from "./Flatland";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { Dossier } from "./Dossier";
@@ -41,6 +42,8 @@ export function MuseumShell({
   });
   const [visited, setVisited] = useState<string[]>([]);
   const [visitedReady, setVisitedReady] = useState(false);
+  const [highlight, setHighlight] = useState<PartHighlight>(null);
+  const [inspecting, setInspecting] = useState(false);
   const { focusedId, hallIndex } = nav;
 
   useEffect(() => {
@@ -51,6 +54,9 @@ export function MuseumShell({
     setVisited(parseVisited(sessionStorage.getItem(VISITED_KEY)));
     setVisitedReady(true);
   }, []);
+
+  // A part lit from the hotspot list belongs to one exhibit: a new focus starts unlit.
+  useEffect(() => setHighlight(null), [focusedId]);
 
   useEffect(() => {
     if (!visitedReady || !focusedId) return;
@@ -140,6 +146,8 @@ export function MuseumShell({
                   hallIndex={hallIndex}
                   focusedId={focused?.id ?? null}
                   reducedMotion={reduced}
+                  paused={inspecting}
+                  highlight={highlight}
                   onFocus={onFocusExhibit}
                   onHall={goHall}
                 />
@@ -171,6 +179,8 @@ export function MuseumShell({
             later={neighbors.later}
             onFocus={onFocusExhibit}
             sheet={focusedHall ? { number: halls.indexOf(focusedHall) + 1, total: halls.length } : undefined}
+            onHotspot={(part) => setHighlight(part && focused ? { exhibitId: focused.id, part } : null)}
+            onInspect={setInspecting}
           />
         </div>
       </div>

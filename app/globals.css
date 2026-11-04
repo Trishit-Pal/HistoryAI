@@ -140,6 +140,11 @@ textarea {
   height: auto;
 }
 
+/* Photographed scans are dimmed a little on the night panel; drawn SVG figures keep full contrast. */
+.exhibit-figure img:is([src$=".jpg" i], [src$=".jpeg" i], [src$=".png" i], [src$=".webp" i]) {
+  filter: brightness(0.85);
+}
+
 .exhibit-figure figcaption {
   max-width: 65ch;
 }
@@ -944,10 +949,15 @@ textarea {
 }
 
 /* Home: one vertical timeline of eras with a sticky year rail. */
+/* The hero: words on the left, the artefact dial on the right (stacked on narrow screens). */
 .tl-hero {
   max-width: 72rem;
   margin: 0 auto;
   padding: 3.5rem 1.5rem 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 3rem;
+  align-items: center;
 }
 
 .tl-hero h1 {
@@ -962,6 +972,138 @@ textarea {
   margin: 0.85rem 0 0;
   font-size: 1.05rem;
   color: var(--bp-chalk-dim);
+}
+
+/* The shelf fades out at the sides instead of being cut by the canvas edge. */
+.dial-stage {
+  height: min(26rem, 50vh, 90vw);
+  mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
+}
+
+.dial-controls {
+  --thumb: 44px;
+  display: grid;
+  gap: 0.2rem;
+  max-width: 36rem;
+  margin: 0.75rem auto 0;
+}
+
+.dial-label {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--bp-chalk);
+  text-align: center;
+}
+
+.tl-hero .dial-label {
+  max-width: none;
+  margin: 0;
+  color: var(--bp-chalk);
+}
+
+.dial-year {
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--bp-gold-soft);
+}
+
+.dial-track {
+  position: relative;
+  height: var(--thumb);
+}
+
+/* The line and the era ticks are drawn under a transparent native range, centred on the thumb's travel. */
+.dial-track::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--thumb) / 2);
+  right: calc(var(--thumb) / 2);
+  top: 50%;
+  height: 1px;
+  background: color-mix(in srgb, var(--bp-chalk-dim) 55%, transparent);
+}
+
+.dial-ticks span {
+  position: absolute;
+  top: calc(50% - 5px);
+  left: calc(var(--thumb) / 2 + var(--at) * (100% - var(--thumb)));
+  width: 1px;
+  height: 10px;
+  background: var(--bp-chalk-dim);
+}
+
+.dial-ticks span.is-current {
+  background: var(--bp-redline);
+}
+
+.dial-range {
+  --dial-focus: transparent;
+  position: relative;
+  width: 100%;
+  height: var(--thumb);
+  margin: 0;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.dial-range::-webkit-slider-runnable-track {
+  height: var(--thumb);
+  background: transparent;
+}
+
+.dial-range::-moz-range-track {
+  height: var(--thumb);
+  background: transparent;
+}
+
+.dial-range::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  background: radial-gradient(circle, var(--bp-redline) 0 6px, var(--bp-prussian) 6.5px 8px, color-mix(in srgb, var(--bp-redline) 55%, transparent) 8.5px 9.5px, transparent 10px 12px, var(--dial-focus) 12.5px 14px, transparent 14.5px);
+  appearance: none;
+}
+
+.dial-range::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  background: radial-gradient(circle, var(--bp-redline) 0 6px, var(--bp-prussian) 6.5px 8px, color-mix(in srgb, var(--bp-redline) 55%, transparent) 8.5px 9.5px, transparent 10px 12px, var(--dial-focus) 12.5px 14px, transparent 14.5px);
+}
+
+/* Focus draws a second ring round the thumb, not a box round the whole track. */
+.dial-range:focus-visible {
+  --dial-focus: var(--bp-gold-soft);
+  outline: none;
+}
+
+.night .dial-visit {
+  justify-self: center;
+  margin-top: 0.4rem;
+  color: var(--bp-gold-soft);
+  text-decoration: none;
+}
+
+.night .dial-visit:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.tl-hero .dial-credit p {
+  max-width: none;
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .tl-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
 }
 
 .tl-layout {
@@ -1285,5 +1427,186 @@ textarea {
   .night .tl-card,
   .night .tl-rail a {
     transition: none;
+  }
+}
+
+/* The object on the plinth: its credit line and sourced parts, set like the dossier's notes. */
+.artefact {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0 0.2rem;
+  border-top: 1px solid var(--bp-rule);
+}
+
+.artefact-credit,
+.inspect .artefact-credit {
+  margin: 0 0 0.5rem;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--bp-chalk-dim);
+}
+
+.artefact-hotspots {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artefact-hotspots li {
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--bp-rule);
+  font-size: 0.92rem;
+}
+
+.artefact-hotspots li:hover,
+.artefact-hotspots li:focus-within {
+  border-left-color: var(--bp-redline);
+}
+
+.artefact-hotspots strong {
+  font-family: var(--bp-sheet-font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--bp-chalk-dim);
+}
+
+:is(.artefact, .inspect) a {
+  color: var(--bp-redline);
+  text-underline-offset: 2px;
+}
+
+/* Inspect the artefact: a native modal dialog with a turntable canvas and the parts beside it. */
+.inspect-open,
+.inspect-close,
+.inspect-parts button {
+  background: transparent;
+  color: var(--bp-chalk);
+  border: 1px solid var(--bp-chalk-dim);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
+}
+
+.inspect-open {
+  margin: 0 0 1rem;
+  border-color: var(--bp-redline);
+  color: var(--bp-redline);
+}
+
+.inspect-open:hover,
+.inspect-close:hover,
+.inspect-parts button:hover {
+  border-color: var(--bp-redline);
+}
+
+.inspect-parts button[aria-pressed="true"] {
+  border-color: var(--bp-redline);
+  background: color-mix(in srgb, var(--bp-redline) 18%, transparent);
+  color: var(--bp-gold-soft);
+}
+
+.inspect {
+  width: min(64rem, 100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  overflow: auto;
+  background: var(--bp-print);
+  color: var(--bp-ink);
+  border: 1px solid var(--bp-rule);
+}
+
+.inspect::backdrop {
+  background: color-mix(in srgb, var(--bp-prussian) 80%, transparent);
+}
+
+.inspect :focus-visible {
+  outline: 2px solid var(--bp-redline);
+  outline-offset: 2px;
+}
+
+.inspect-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--bp-rule);
+}
+
+.inspect-head h2 {
+  margin: 0;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.inspect-body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+}
+
+.inspect-canvas {
+  position: relative;
+  height: min(30rem, 70dvh);
+  background: var(--bp-prussian);
+}
+
+.inspect-canvas canvas {
+  touch-action: none;
+}
+
+.inspect-loading {
+  margin: 0;
+  padding: 1rem;
+  color: var(--bp-chalk-dim);
+}
+
+.inspect-side {
+  padding: 1rem;
+  border-left: 1px solid var(--bp-rule);
+}
+
+.inspect-side h3 {
+  margin: 0.75rem 0 0.4rem;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bp-chalk-dim);
+}
+
+.inspect-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.inspect-text {
+  margin: 0;
+  min-height: 4.5em;
+  font-family: var(--font-body), Literata, serif;
+  line-height: 1.55;
+}
+
+@media (max-width: 700px) {
+  .inspect-body {
+    grid-template-columns: 1fr;
+  }
+
+  .inspect-canvas {
+    height: 44dvh;
+  }
+
+  .inspect-side {
+    border-left: 0;
+    border-top: 1px solid var(--bp-rule);
   }
 }

@@ -13,6 +13,7 @@ import { CHALK } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
 import { FigurePlate } from "../FigurePlate";
 import { Monument } from "../Monument";
+import { hasArtefact, LABEL_ABOVE_ARTEFACT, PlinthArtefact } from "../artefacts/PlinthArtefact";
 import { Ink } from "./roomKit";
 
 export function PrecursorsRoom({
@@ -45,7 +46,10 @@ export function PrecursorsRoom({
   const byId = new Map(members.map((node) => [node.id, node]));
   const plaque = byId.get(ENTRANCE_PLAQUE_ID);
   const plaqueSpot = spots.find((spot) => spot.id === ENTRANCE_PLAQUE_ID);
-  const focusedIndex = Math.max(0, stations.findIndex((spot) => spot.id === focusedId));
+  // The entrance plaque stands just before station 0; focus outside this hall loads nothing.
+  const stationIndex = stations.findIndex((spot) => spot.id === focusedId);
+  const focusedIndex = focusedId === ENTRANCE_PLAQUE_ID ? -1 : stationIndex;
+  const inHall = focusedId === ENTRANCE_PLAQUE_ID || stationIndex >= 0;
   const lastZ = stations.at(-1)?.z ?? 0;
   const spanStart = 2.7;
   const spanEnd = lastZ - 1.6;
@@ -67,7 +71,7 @@ export function PrecursorsRoom({
         if (!node) return null;
         const position: [number, number, number] = [spot.x, spot.y, spot.z];
         const ghost = node.startYear > year;
-        const load = Math.abs(index - focusedIndex) <= 1;
+        const load = inHall && Math.abs(index - focusedIndex) <= 1;
         return (
           <group key={node.id}>
             <mesh position={[0, spot.y - 0.04, spot.z]}>
@@ -99,6 +103,15 @@ export function PrecursorsRoom({
               ghost={ghost}
               onFocus={onFocus}
               showLabel={node.id === focusedId}
+              labelY={hasArtefact(node.id) ? LABEL_ABOVE_ARTEFACT : undefined}
+            />
+            <PlinthArtefact
+              exhibitId={node.id}
+              position={position}
+              focused={node.id === focusedId}
+              load={load}
+              ghost={ghost}
+              onFocus={onFocus}
             />
             <group position={[position[0], position[1] + 0.55, position[2] + 0.5]}>
               <FigurePlate src={node.figure?.src} id={node.id} load={load} ghost={ghost} />
@@ -120,7 +133,7 @@ export function PrecursorsRoom({
             <FigurePlate
               src={plaque.figure?.src}
               id={plaque.id}
-              load={focusedId === plaque.id || focusedIndex === 0}
+              load={focusedId === plaque.id || stationIndex === 0}
               ghost={plaque.startYear > year}
             />
           </group>

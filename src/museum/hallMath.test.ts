@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Hall } from "../domain/layout";
 import { precursorsLayout } from "./precursorsRoom";
-import { focusedPedestal, hallLength, hallOrigin, hallSpan, pedestalPosition } from "./hallMath";
+import { focusedPedestal, hallLength, hallOrigin, hallSpan, loadsNear, pedestalPosition } from "./hallMath";
 
 function hall(id: string, exhibitIds: string[], overrides: Partial<Hall> = {}): Hall {
   return {
@@ -70,5 +70,15 @@ describe("hallSpan", () => {
 
   it("joins the start and end years with an en dash", () => {
     expect(hallSpan(hall("p", [], { startYear: 1956, endYear: 1974 }))).toBe(" 1956–1974");
+  });
+});
+
+describe("loadsNear", () => {
+  it("loads the focused spot and its neighbours only", () => {
+    expect([0, 1, 2, 3].map((i) => loadsNear(i, 1))).toEqual([true, true, true, false]);
+  });
+
+  it("loads nothing in a hall that does not hold the focus", () => {
+    expect([0, 1].map((i) => loadsNear(i, -1))).toEqual([false, false]);
   });
 });

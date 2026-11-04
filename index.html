@@ -1,0 +1,725 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUSEUM OF ARTIFICIAL MINDS — A History of AI · 1900–2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07070d; --bg2:#0c0d17; --gold:#d4af37; --gold-l:#f0d68a;
+    --cyan:#5eead4; --ink:#e8e6f0; --muted:#8b8aa3;
+  }
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg); color:var(--ink); font-family:'Space Grotesk',sans-serif; overflow-x:hidden;}
+  .serif{font-family:'Cormorant Garamond',serif;}
+  .gold-text{background:linear-gradient(120deg,#f0d68a,#d4af37 40%,#9a7b1e 70%,#f0d68a); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .glass{background:rgba(20,20,35,.55); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid rgba(212,175,55,.18);}
+  .noise:after{content:''; position:fixed; inset:0; pointer-events:none; z-index:70; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");}
+  .vignette:before{content:''; position:fixed; inset:0; pointer-events:none; z-index:69;
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);}
+
+  /* Loader */
+  #loader{position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:18px; transition:opacity .8s, visibility .8s;}
+  #loader.done{opacity:0; visibility:hidden;}
+  .load-ring{width:54px;height:54px;border:2px solid rgba(212,175,55,.2); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Progress bar */
+  #progress{position:fixed; top:0; left:0; height:3px; width:0; z-index:80;
+    background:linear-gradient(90deg,var(--gold),var(--cyan)); box-shadow:0 0 12px rgba(212,175,55,.7);}
+
+  /* Hero */
+  #heroCanvas{position:absolute; inset:0; width:100%; height:100%; cursor:grab;}
+  #heroCanvas:active{cursor:grabbing;}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .floaty{animation:floaty 6s ease-in-out infinite;}
+  @keyframes pulseglow{0%,100%{opacity:.5}50%{opacity:1}}
+  .scroll-hint span{display:block;width:22px;height:22px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(45deg);animation:hint 1.6s infinite;margin:0 auto;}
+  .scroll-hint{animation:none;}
+  @keyframes hint{0%{opacity:0;transform:translateY(-8px)}50%{opacity:1}100%{opacity:0;transform:translateY(10px)}}
+
+  /* Marquee */
+  .marquee{overflow:hidden; white-space:nowrap;}
+  .marquee-inner{display:inline-block; animation:marq 40s linear infinite;}
+  @keyframes marq{to{transform:translateX(-50%)}}
+
+  /* Timeline cards */
+  #timeline{scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  #timeline::-webkit-scrollbar{display:none;}
+  .era-card{scroll-snap-align:center; transform-style:preserve-3d; transition:transform .18s ease, box-shadow .3s; will-change:transform;}
+  .era-card:hover{box-shadow:0 30px 60px -20px rgba(212,175,55,.35); z-index:5;}
+  .era-card img{transition:transform .6s ease;}
+  .era-card:hover img{transform:scale(1.07);}
+
+  /* Flip cards */
+  .flip{perspective:1200px; cursor:pointer;}
+  .flip-inner{position:relative; width:100%; height:100%; transition:transform .8s cubic-bezier(.2,.8,.25,1); transform-style:preserve-3d;}
+  .flip.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:14px; overflow:hidden;}
+  .flip-back{transform:rotateY(180deg);}
+
+  /* Hall */
+  #hallWrap{height:700vh; position:relative;}
+  #hallSticky{position:sticky; top:0; height:100vh; overflow:hidden;}
+  #hallCanvas{position:absolute; inset:0; width:100%; height:100%;}
+  #hallTip{position:absolute; pointer-events:none; z-index:5; opacity:0; transition:opacity .2s; transform:translate(-50%,-140%);
+    padding:6px 14px; font-size:12px; letter-spacing:.15em; text-transform:uppercase; white-space:nowrap;}
+  .hall-hud{position:absolute; left:0; right:0; bottom:26px; z-index:4; pointer-events:none;}
+
+  /* Modal */
+  #modal{position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center; padding:16px;}
+  #modal.open{display:flex;}
+  #modalBack{position:absolute; inset:0; background:rgba(4,4,10,.85); backdrop-filter:blur(8px);}
+  #modalPanel{position:relative; z-index:2; width:min(1040px,96vw); max-height:92vh; overflow-y:auto; animation:rise .45s cubic-bezier(.2,.9,.3,1);}
+  @keyframes rise{from{opacity:0; transform:translateY(40px) scale(.97)}to{opacity:1; transform:none}}
+  #modalPanel::-webkit-scrollbar{width:6px} #modalPanel::-webkit-scrollbar-thumb{background:rgba(212,175,55,.4); border-radius:3px}
+
+  /* Video player */
+  .vp-shell{position:relative; background:#000; border:1px solid rgba(212,175,55,.25); border-radius:12px; overflow:hidden;}
+  video{display:block; width:100%;}
+  .vp-bigplay{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.35); transition:opacity .3s; cursor:pointer;}
+  .vp-bigplay svg{width:72px;height:72px; filter:drop-shadow(0 0 18px rgba(212,175,55,.6));}
+  .vp-controls{position:absolute; left:0; right:0; bottom:0; padding:10px 14px; background:linear-gradient(transparent,rgba(0,0,0,.85)); display:flex; align-items:center; gap:12px; opacity:0; transition:opacity .3s;}
+  .vp-shell:hover .vp-controls, .vp-shell.playing .vp-controls{opacity:1;}
+  .vp-btn{background:none;border:none;color:var(--gold-l);cursor:pointer;display:flex;align-items:center;}
+  .vp-btn:hover{color:#fff;}
+  .vp-seek{flex:1; appearance:none; height:4px; border-radius:2px; background:rgba(255,255,255,.2); cursor:pointer; outline:none;}
+  .vp-seek::-webkit-slider-thumb{appearance:none; width:12px;height:12px;border-radius:50%;background:var(--gold); box-shadow:0 0 8px rgba(212,175,55,.8);}
+
+  .reel-btn{transition:all .25s; border:1px solid rgba(212,175,55,.15);}
+  .reel-btn.active{border-color:var(--gold); background:rgba(212,175,55,.1); transform:translateX(6px);}
+
+  .divider{height:1px; background:linear-gradient(90deg,transparent,rgba(212,175,55,.5),transparent);}
+  .frame{position:relative;}
+  .frame:after{content:''; position:absolute; inset:0; border:1px solid rgba(212,175,55,.35); border-radius:inherit; pointer-events:none;}
+
+  @keyframes shimmer{0%{background-position:-500px 0}100%{background-position:500px 0}}
+  .future-bg{background:radial-gradient(1200px 600px at 70% 20%, rgba(94,234,212,.12), transparent 60%),
+              radial-gradient(1000px 700px at 20% 80%, rgba(212,175,55,.12), transparent 60%), var(--bg2);}
+  .stat-num{font-variant-numeric:tabular-nums;}
+  .plaque{letter-spacing:.05em;}
+  @media (max-width:768px){ .hall-hud{bottom:14px} }
+</style>
+</head>
+<body class="noise vignette antialiased">
+
+<!-- Loader -->
+<div id="loader">
+  <div class="load-ring"></div>
+  <p class="text-xs tracking-[.4em] uppercase" style="color:var(--muted)">Curating exhibits · 1900 → 2026</p>
+</div>
+
+<div id="progress"></div>
+
+<!-- NAV -->
+<nav class="fixed top-0 inset-x-0 z-50 glass">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3">
+      <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17" stroke="#d4af37" stroke-width="1.2"/><circle cx="20" cy="20" r="9" stroke="#5eead4" stroke-width="1"/><circle cx="20" cy="20" r="2.5" fill="#d4af37"/><path d="M20 3v34M3 20h34" stroke="rgba(212,175,55,.3)" stroke-width=".7"/></svg>
+      <span class="serif text-xl gold-text font-bold tracking-wide">Artificial Minds</span>
+    </a>
+    <div class="hidden md:flex items-center gap-8 text-xs tracking-[.25em] uppercase" style="color:var(--muted)">
+      <a href="#timeline-sec" class="hover:text-white transition">Timeline</a>
+      <a href="#hall" class="hover:text-white transition">3D Hall</a>
+      <a href="#theater" class="hover:text-white transition">Theater</a>
+      <a href="#vault" class="hover:text-white transition">Vault</a>
+      <a href="#future" class="hover:text-white transition">2026</a>
+    </div>
+    <a href="#hall" class="md:hidden text-xs tracking-[.25em] uppercase px-4 py-2 rounded-full border" style="border-color:rgba(212,175,55,.4); color:var(--gold-l)">Enter</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header id="top" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <canvas id="heroCanvas"></canvas>
+  <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(700px 500px at 50% 60%, transparent 30%, rgba(7,7,13,.75) 100%)"></div>
+  <div class="relative z-10 text-center px-6 max-w-4xl">
+    <p class="text-[11px] md:text-xs tracking-[.5em] uppercase mb-6" style="color:var(--gold)">Est. 2026 · Online Museum Wing</p>
+    <h1 class="serif font-bold leading-[0.95] text-5xl md:text-8xl">
+      The Dawn of the<br><span class="gold-text italic">Machine Mind</span>
+    </h1>
+    <div class="divider w-48 mx-auto my-8"></div>
+    <p class="text-base md:text-lg max-w-xl mx-auto mb-10" style="color:var(--muted)">
+      Walk through 126 years of human ambition — from a single artificial neuron in 1943 to reasoning agents in 2026. Drag the constellation. Enter the hall.
+    </p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#timeline-sec" class="px-8 py-3.5 rounded-full text-sm tracking-[.2em] uppercase font-medium text-black transition hover:scale-105"
+         style="background:linear-gradient(120deg,#f0d68a,#d4af37); box-shadow:0 10px 40px -8px rgba(212,175,55,.5)">Begin the Tour</a>
+      <a href="#hall" class="px-8 py-3.5 rounded-full text-sm tracking-[.2em] uppercase border transition hover:bg-white/5"
+         style="border-color:rgba(212,175,55,.45); color:var(--gold-l)">Enter 3D Hall</a>
+    </div>
+  </div>
+  <div class="scroll-hint absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-center">
+    <span></span>
+    <p class="text-[10px] tracking-[.4em] uppercase mt-4" style="color:var(--muted)">Scroll</p>
+  </div>
+</header>
+
+<!-- QUOTE MARQUEE -->
+<section class="py-6 border-y border-white/5 overflow-hidden" style="background:var(--bg2)">
+  <div class="marquee">
+    <div class="marquee-inner serif italic text-xl md:text-2xl px-6" style="color:rgba(232,230,240,.55)">
+      “I propose to consider the question, ‘Can machines think?’” — Turing, 1950 &nbsp;&nbsp;·&nbsp;&nbsp; “AI is the science of making machines do things that would require intelligence if done by men” — Minsky &nbsp;&nbsp;·&nbsp;&nbsp; “The Singularity is near.” — Kurzweil &nbsp;&nbsp;·&nbsp;&nbsp; “Move 37 was… creative.” — Michael Burke &nbsp;&nbsp;·&nbsp;&nbsp; “I propose to consider the question, ‘Can machines think?’” — Turing, 1950 &nbsp;&nbsp;·&nbsp;&nbsp; “AI is the science of making machines do things that would require intelligence if done by men” — Minsky &nbsp;&nbsp;·&nbsp;&nbsp; “The Singularity is near.” — Kurzweil &nbsp;&nbsp;·&nbsp;&nbsp; “Move 37 was… creative.” — Michael Burke
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section id="timeline-sec" class="py-24 md:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div>
+      <p class="text-[11px] tracking-[.5em] uppercase mb-4" style="color:var(--gold)">Gallery I</p>
+      <h2 class="serif text-4xl md:text-6xl font-bold">The <span class="italic gold-text">Timeline</span> of Thought</h2>
+    </div>
+    <p class="max-w-sm text-sm" style="color:var(--muted)">Eleven eras of machine intelligence. Drag or scroll the exhibit wall — tap any plaque to open its full record, film reel and artifacts.</p>
+  </div>
+  <div id="timeline" class="flex gap-6 overflow-x-auto px-5 md:px-[8vw] pb-10 pt-4"></div>
+  <p class="text-center text-[10px] tracking-[.4em] uppercase md:hidden" style="color:var(--muted)">Swipe to travel through time →</p>
+</section>
+
+<!-- 3D HALL -->
+<section id="hall" class="relative">
+  <div id="hallWrap">
+    <div id="hallSticky">
+      <canvas id="hallCanvas"></canvas>
+      <div id="hallTip" class="glass rounded-full serif italic text-sm" style="color:var(--gold-l)"></div>
+      <div class="hall-hud px-5">
+        <div class="max-w-3xl mx-auto glass rounded-2xl px-6 py-4 text-center">
+          <p class="text-[10px] tracking-[.45em] uppercase" style="color:var(--gold)">Gallery II · The Corridor of Minds</p>
+          <p class="text-sm mt-2" style="color:var(--muted)">Keep scrolling — the camera walks the hall for you. <span class="hidden md:inline">Hover a frame to inspect it, click to open its record.</span></p>
+        </div>
+      </div>
+      <div id="hallProg" class="absolute top-20 right-5 md:right-10 z-[4] text-right">
+        <p class="serif text-3xl gold-text font-bold" id="hallYear">1943</p>
+        <p class="text-[10px] tracking-[.3em] uppercase" style="color:var(--muted)">Now approaching</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIDEO THEATER -->
+<section id="theater" class="py-24 md:py-32" style="background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 50%,var(--bg) 100%)">
+  <div class="max-w-7xl mx-auto px-5">
+    <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <p class="text-[11px] tracking-[.5em] uppercase mb-4" style="color:var(--gold)">Gallery III</p>
+        <h2 class="serif text-4xl md:text-6xl font-bold">The Film <span class="italic gold-text">Theater</span></h2>
+      </div>
+      <p class="max-w-sm text-sm" style="color:var(--muted)">Restored footage from the museum archive. Choose a reel — you control the projector: play, scrub, mute and fullscreen.</p>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2">
+        <div class="vp-shell frame" id="vpShell">
+          <video id="vpVideo" playsinline poster=""></video>
+          <div class="vp-bigplay" id="vpBigPlay">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="rgba(212,175,55,.15)" stroke="#d4af37" stroke-width="1.5"/><polygon points="40,32 40,68 72,50" fill="#f0d68a"/></svg>
+          </div>
+          <div class="vp-controls">
+            <button class="vp-btn" id="vpToggle" aria-label="play">
+              <svg id="vpIconPlay" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 21,12 6,21"/></svg>
+              <svg id="vpIconPause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="hidden"><rect x="5" y="4" width="5" height="16"/><rect x="14" y="4" width="5" height="16"/></svg>
+            </button>
+            <input type="range" class="vp-seek" id="vpSeek" value="0" min="0" max="100" step="0.1">
+            <span class="text-[11px] tabular-nums" style="color:var(--gold-l)" id="vpTime">0:00 / 0:00</span>
+            <button class="vp-btn" id="vpMute"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l6 5V4L8 9H4z"/><path id="vpVolWaves" d="M16 8c1.5 1 1.5 7 0 8M18.5 5.5c3 2.5 3 11 0 13" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></button>
+            <button class="vp-btn" id="vpFull"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          </div>
+        </div>
+        <div class="mt-5 flex items-baseline justify-between gap-4">
+          <h3 class="serif text-2xl md:text-3xl" id="vpTitle">—</h3>
+          <span class="serif italic text-lg gold-text" id="vpYear"></span>
+        </div>
+        <p class="mt-2 text-sm leading-relaxed max-w-2xl" style="color:var(--muted)" id="vpDesc"></p>
+      </div>
+      <div>
+        <p class="text-[10px] tracking-[.4em] uppercase mb-4" style="color:var(--muted)">Archive Reels</p>
+        <div id="vpPlaylist" class="space-y-3"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VAULT : FLIP CARDS -->
+<section id="vault" class="py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5">
+    <div class="mb-12 text-center">
+      <p class="text-[11px] tracking-[.5em] uppercase mb-4" style="color:var(--gold)">Gallery IV</p>
+      <h2 class="serif text-4xl md:text-6xl font-bold">The Artifact <span class="italic gold-text">Vault</span></h2>
+      <p class="mt-4 text-sm max-w-md mx-auto" style="color:var(--muted)">Six relics under glass. Flip each card to read its museum plaque.</p>
+    </div>
+    <div id="vaultGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+</section>
+
+<!-- FUTURE 2026 -->
+<section id="future" class="future-bg py-24 md:py-32 relative overflow-hidden">
+  <div class="max-w-5xl mx-auto px-5 text-center relative z-10">
+    <p class="text-[11px] tracking-[.5em] uppercase mb-6" style="color:var(--cyan)">Final Wing · The Present</p>
+    <h2 class="serif text-4xl md:text-7xl font-bold leading-tight">2026: The <span class="gold-text italic">Agent</span> Era</h2>
+    <div class="divider w-40 mx-auto my-8"></div>
+    <p class="max-w-2xl mx-auto text-base md:text-lg mb-14" style="color:var(--muted)">
+      Machines no longer just answer — they plan, browse, code, negotiate and remember. As this museum's final wing is still being built, its first brick is you.
+    </p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats"></div>
+  </div>
+  <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full floaty" style="background:radial-gradient(circle,rgba(94,234,212,.15),transparent 70%)"></div>
+  <div class="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full floaty" style="background:radial-gradient(circle,rgba(212,175,55,.15),transparent 70%); animation-delay:2s"></div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/5 py-14" style="background:var(--bg)">
+  <div class="max-w-7xl mx-auto px-5 flex flex-col md:flex-row items-center justify-between gap-8">
+    <div class="flex items-center gap-3">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17" stroke="#d4af37" stroke-width="1.2"/><circle cx="20" cy="20" r="9" stroke="#5eead4" stroke-width="1"/><circle cx="20" cy="20" r="2.5" fill="#d4af37"/></svg>
+      <div>
+        <p class="serif text-lg gold-text font-bold">Museum of Artificial Minds</p>
+        <p class="text-[10px] tracking-[.3em] uppercase" style="color:var(--muted)">1900 — 2026 · Online Wing</p>
+      </div>
+    </div>
+    <p class="serif italic text-center text-sm" style="color:var(--muted)">“The question of whether a computer can think is no more interesting than whether a submarine can swim.” — E. W. Dijkstra</p>
+    <div class="text-xs tracking-[.25em] uppercase flex gap-6" style="color:var(--muted)">
+      <a href="#timeline-sec" class="hover:text-white transition">Eras</a>
+      <a href="#hall" class="hover:text-white transition">Hall</a>
+      <a href="#top" class="hover:text-white transition">Top</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div id="modal">
+  <div id="modalBack"></div>
+  <div id="modalPanel" class="glass rounded-2xl p-6 md:p-10">
+    <button id="modalClose" class="absolute top-4 right-4 w-10 h-10 rounded-full border border-white/15 flex items-center justify-center hover:bg-white/10 transition z-10">
+      <svg width="16" height="16" viewBox="0 0 24 24" stroke="#e8e6f0" stroke-width="2" fill="none"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div>
+        <div class="relative rounded-xl overflow-hidden border" style="border-color:rgba(212,175,55,.25)">
+          <img id="mImg" alt="" class="w-full h-64 md:h-80 object-cover">
+          <div class="absolute inset-0" style="background:linear-gradient(transparent 60%,rgba(0,0,0,.6))"></div>
+          <p class="absolute bottom-3 left-4 serif italic text-sm" style="color:var(--gold-l)" id="mCaption"></p>
+        </div>
+        <div class="mt-4 vp-shell" style="border-radius:10px">
+          <video id="mVideo" class="h-44 md:h-56 object-cover" playsinline controls></video>
+        </div>
+      </div>
+      <div>
+        <p class="text-[10px] tracking-[.45em] uppercase mb-3" style="color:var(--gold)" id="mKicker"></p>
+        <h3 class="serif text-3xl md:text-5xl font-bold leading-tight mb-2" id="mTitle"></h3>
+        <p class="serif italic text-xl gold-text mb-5" id="mSubtitle"></p>
+        <div class="divider mb-5"></div>
+        <p class="text-sm leading-relaxed" style="color:var(--muted)" id="mDesc"></p>
+        <div class="mt-6 space-y-3" id="mFacts"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const VIDEOS = [
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+  'https://www.w3schools.com/html/mov_bbb.mp4',
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4'
+];
+const img = (seed,w=900,h=600)=>`https://picsum.photos/seed/${seed}/${w}/${h}.jpg`;
+
+const ERAS = [
+ {year:'1943', title:'The Artificial Neuron', subtitle:'McCulloch & Pitts',
+  desc:'Warren McCulloch and Walter Pitts publish "A Logical Calculus of the Ideas Immanent in Nervous Activity" — the first mathematical model of a neural network. A single artificial neuron could, in principle, compute any logical function. The seed of every modern network is planted on paper.',
+  facts:['First mathematical neuron model','Proved neurons could compute logic','Written before modern computers existed'], seed:'ai-neuron-1943'},
+ {year:'1950', title:'The Imitation Game', subtitle:'Alan Turing',
+  desc:'In "Computing Machinery and Intelligence", Alan Turing asks the founding question of the field: can machines think? He replaces the unanswerable question with a practical test — if a machine converses indistinguishably from a human, must we not grant it a mind?',
+  facts:['The Turing Test is proposed','Predicted machine learning by 2000','Published in the journal Mind'], seed:'ai-turing-1950'},
+ {year:'1956', title:'The Naming of a Field', subtitle:'Dartmouth Workshop',
+  desc:'John McCarthy, Marvin Minsky, Claude Shannon and Nathaniel Rochester convene the Dartmouth Summer Research Project — the event that coins the term "Artificial Intelligence". The proposal optimistically predicts major breakthroughs within a summer. The field takes decades longer — but it is born here.',
+  facts:['The term "AI" is invented','8-week workshop, funded in part by the Rockefeller Foundation','Attendants went on to found MIT & Stanford AI labs'], seed:'ai-dartmouth-1956'},
+ {year:'1966', title:'ELIZA Speaks', subtitle:'Joseph Weizenbaum',
+  desc:'ELIZA, a pattern-matching "psychotherapist" running on a mainframe at MIT, becomes the first chatbot. Users pour out their hearts to a 200-line program. Weizenbaum is so disturbed by the emotional attachment it inspires that he becomes a lifelong critic of AI.',
+  facts:['First natural language chatbot','Famous "DOCTOR" persona','Shocked its own creator'], seed:'ai-eliza-1966'},
+ {year:'1974', title:'The First Winter', subtitle:'Funding Freezes',
+  desc:'Grand promises meet harsh limits of 1970s hardware. The Lighthill Report in the UK and DARPA cuts in the US trigger the first "AI Winter" — research funding collapses, the term "AI" becomes taboo in grant applications, and the field survives only in quiet corners of academia.',
+  facts:['Lighthill Report, 1973','DARPA cuts academic funding','"AI" banned from grant proposals'], seed:'ai-winter-1974'},
+ {year:'1997', title:'Deep Blue Triumphs', subtitle:'Machine beats Champion',
+  desc:'IBM\'s Deep Blue defeats world chess champion Garry Kasparov 3½–2½ in a rematch watched by millions. For the first time, a machine out-thinks the best human at the game long considered the purest test of intellect. Brute-force search, elegantly optimized, wins the day.',
+  facts:['200 million positions/second','Kasparov accused it of human intervention','A landmark in symbolic AI'], seed:'ai-deepblue-1997'},
+ {year:'2012', title:'The Deep Awakening', subtitle:'AlexNet & ImageNet',
+  desc:'A neural network trained by Hinton\'s students — AlexNet — crushes the ImageNet competition, halving the error rate of hand-engineered systems. GPUs + data + deep learning prove an unstoppable combination. Within five years, deep learning rewrites the entire field.',
+  facts:['Error rate dropped 41% → 15.3%','Trained on two consumer GPUs','Sparked the deep learning revolution'], seed:'ai-alexnet-2012'},
+ {year:'2016', title:'Move 37', subtitle:'AlphaGo vs Lee Sedol',
+  desc:'DeepMind\'s AlphaGo defeats 18-time world champion Lee Sedol in Go — a game with more positions than atoms in the universe. In game two, it plays Move 37: a move no human would make, so alien that commentators first call it a mistake. It wasn\'t. It was creativity.',
+  facts:['Trained via self-play & reinforcement','Move 37: 1-in-10,000 human choice','Lee Sedol retired: "AI cannot be defeated"'], seed:'ai-alphago-2016'},
+ {year:'2020', title:'The Transformer Age', subtitle:'GPT-3 & the Scale Law',
+  desc:'With 175 billion parameters, OpenAI\'s GPT-3 writes essays, code and poetry from a simple text prompt. The "scaling laws" reveal an uncomfortable truth: intelligence might simply be a matter of data, compute and parameters. Language models become the new interface to computing.',
+  facts:['175 billion parameters','"Prompt engineering" becomes a job','Scaling laws published, 2020'], seed:'ai-gpt3-2020'},
+ {year:'2022', title:'The Generative Explosion', subtitle:'ChatGPT & Diffusion',
+  desc:'In November 2022, ChatGPT reaches 100 million users in two months — the fastest-adopted product in history. Simultaneously, diffusion models paint, film and compose. For the first time, the whole world personally converses with a machine mind.',
+  facts:['100M users in 2 months','Stable Diffusion open-sourced','Generative AI enters mainstream culture'], seed:'ai-gen-2022'},
+ {year:'2026', title:'The Agent Era', subtitle:'Minds that Act',
+  desc:'AI no longer merely answers — it plans, browses, writes and executes entire projects autonomously. Multimodal reasoning agents negotiate the digital world on our behalf. The museum\'s final wing is under construction… its exhibits are being written right now.',
+  facts:['Autonomous multi-step agents','Real-time world models','This wing is still being built — by you'], seed:'ai-agents-2026'}
+];
+ERAS.forEach((e,i)=>{ e.img=img(e.seed); e.video=VIDEOS[i%VIDEOS.length]; e.poster=img(e.seed+'-poster',800,450); });
+
+const ARTIFACTS = [
+ {t:'Punched Thought Cards', e:'1943', d:'Paper notes on which McCulloch & Pitts sketched the first logical neurons — the circuit diagrams of the machine mind.'},
+ {t:'The Turing Test Papers', e:'1950', d:'First edition of Mind, Vol. LIX, carrying Turing\'s question that opened a century of inquiry.'},
+ {t:'ELIZA Printout', e:'1966', d:'A teletype transcript of a human pouring their heart out to 200 lines of BASIC.'},
+ {t:'Deep Blue\'s Board', e:'1997', d:'A reconstruction of Game 6 — 19 moves, after which the world champion conceded.'},
+ {t:'The Move 37 Goban', e:'2016', d:'A Go board marked with the stone no human would ever have played.'},
+ {t:'First Prompt', e:'2022', d:'Archived screenshot of a first conversation with ChatGPT — "Hello, who are you?"'}
+];
+
+/* ================= UTILITIES ================= */
+const $ = s=>document.querySelector(s);
+window.addEventListener('load',()=>setTimeout(()=>$('#loader').classList.add('done'),600));
+addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  $('#progress').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+},{passive:true});
+
+/* ================= HERO 3D ================= */
+(function(){
+  const canvas=$('#heroCanvas'), renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(55,1,.1,100); camera.position.set(0,0,7.5);
+
+  function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  resize(); addEventListener('resize',resize);
+
+  // Neural constellation sphere
+  const N=240, pos=new Float32Array(N*3), pts=[];
+  for(let i=0;i<N;i++){
+    const phi=Math.acos(1-2*(i+.5)/N), th=Math.PI*(1+Math.sqrt(5))*i, r=2.6;
+    pos[i*3]=r*Math.sin(phi)*Math.cos(th); pos[i*3+1]=r*Math.sin(phi)*Math.sin(th); pos[i*3+2]=r*Math.cos(phi);
+    pts.push(new THREE.Vector3(pos[i*3],pos[i*3+1],pos[i*3+2]));
+  }
+  const pGeo=new THREE.BufferGeometry(); pGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const cloud=new THREE.Points(pGeo,new THREE.PointsMaterial({color:0xd4af37,size:.075,transparent:true,opacity:.95}));
+  scene.add(cloud);
+
+  // Synapse lines (each node → 2 nearest neighbours)
+  const lp=[];
+  pts.forEach((p,i)=>{
+    const d=pts.map((q,j)=>({j,d:p.distanceTo(q)})).filter(o=>o.j!==i).sort((a,b)=>a.d-b.d).slice(0,2);
+    d.forEach(o=>lp.push(p.x,p.y,p.z,pts[o.j].x,pts[o.j].y,pts[o.j].z));
+  });
+  const lGeo=new THREE.BufferGeometry(); lGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(lp),3));
+  const lines=new THREE.LineSegments(lGeo,new THREE.LineBasicMaterial({color:0x5eead4,transparent:true,opacity:.22}));
+  scene.add(lines);
+
+  // Wireframe shells
+  const shell=new THREE.Mesh(new THREE.IcosahedronGeometry(4.4,1),new THREE.MeshBasicMaterial({color:0xd4af37,wireframe:true,transparent:true,opacity:.08}));
+  scene.add(shell);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(3.6,.012,8,120),new THREE.MeshBasicMaterial({color:0xd4af37,transparent:true,opacity:.35}));
+  ring.rotation.x=Math.PI/2.4; scene.add(ring);
+
+  // Ambient dust
+  const DN=500, dp=new Float32Array(DN*3);
+  for(let i=0;i<DN*3;i++) dp[i]=(Math.random()-.5)*22;
+  const dGeo=new THREE.BufferGeometry(); dGeo.setAttribute('position',new THREE.BufferAttribute(dp,3));
+  const dust=new THREE.Points(dGeo,new THREE.PointsMaterial({color:0xffffff,size:.03,transparent:true,opacity:.5}));
+  scene.add(dust);
+
+  const brain=new THREE.Group(); brain.add(cloud,lines); scene.add(brain);
+
+  // Interaction
+  let mx=0,my=0,drag=false,px=0,py=0,vx=0,vy=0;
+  addEventListener('pointermove',e=>{ mx=(e.clientX/innerWidth-.5)*2; my=(e.clientY/innerHeight-.5)*2;
+    if(drag){vx=(e.clientX-px)*.005; vy=(e.clientY-py)*.005;} });
+  canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;});
+  addEventListener('pointerup',()=>drag=false);
+
+  const clock=new THREE.Clock();
+  (function anim(){
+    requestAnimationFrame(anim);
+    const t=clock.getElapsedTime();
+    brain.rotation.y+=.0022+vx; brain.rotation.x+=vy; vx*=.92; vy*=.92;
+    brain.rotation.x+=((my*.25)-brain.rotation.x%1)*.01;
+    shell.rotation.y=-t*.05; shell.rotation.x=t*.03;
+    ring.rotation.z=t*.15;
+    brain.position.y=Math.sin(t*.6)*.15;
+    camera.position.x+=(mx*.6-camera.position.x)*.04;
+    camera.position.y+=(-my*.4-camera.position.y)*.04;
+    camera.lookAt(0,0,0);
+    renderer.render(scene,camera);
+  })();
+})();
+
+/* ================= TIMELINE CARDS ================= */
+(function(){
+  const wrap=$('#timeline');
+  ERAS.forEach((e,i)=>{
+    const c=document.createElement('div');
+    c.className='era-card relative flex-shrink-0 w-[78vw] sm:w-80 glass rounded-2xl overflow-hidden cursor-pointer group';
+    c.innerHTML=`
+      <div class="h-52 overflow-hidden relative">
+        <img src="${e.img}" alt="${e.title}" loading="lazy" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition">
+        <div class="absolute inset-0" style="background:linear-gradient(transparent 40%,rgba(7,7,13,.95))"></div>
+        <span class="absolute top-4 left-4 serif text-5xl font-bold gold-text">${e.year}</span>
+      </div>
+      <div class="p-6 pt-2">
+        <p class="text-[9px] tracking-[.4em] uppercase mb-2" style="color:var(--gold)">${e.subtitle}</p>
+        <h3 class="serif text-2xl font-bold mb-2">${e.title}</h3>
+        <p class="text-xs leading-relaxed line-clamp-3" style="color:var(--muted)">${e.desc}</p>
+        <p class="mt-4 text-[10px] tracking-[.3em] uppercase" style="color:var(--gold-l)">Open exhibit →</p>
+      </div>`;
+    c.addEventListener('click',()=>openModal(i));
+    // 3D tilt (desktop)
+    if(matchMedia('(hover:hover)').matches){
+      c.addEventListener('mousemove',ev=>{
+        const r=c.getBoundingClientRect(), x=(ev.clientX-r.left)/r.width-.5, y=(ev.clientY-r.top)/r.height-.5;
+        c.style.transform=`perspective(900px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-6px) scale(1.02)`;
+      });
+      c.addEventListener('mouseleave',()=>c.style.transform='');
+    }
+    wrap.appendChild(c);
+  });
+})();
+
+/* ================= 3D HALL ================= */
+const hall=(function(){
+  const wrapEl=$('#hallWrap'), canvas=$('#hallCanvas'), tip=$('#hallTip'), yearEl=$('#hallYear');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x07070d,.028);
+  const camera=new THREE.PerspectiveCamera(60,1,.1,300); camera.position.set(0,1.7,6);
+  const loader=new THREE.TextureLoader(); loader.setCrossOrigin('anonymous');
+
+  function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  resize(); addEventListener('resize',resize);
+
+  // Floor
+  const grid=new THREE.GridHelper(400,400,0xd4af37,0x1a1a2e);
+  grid.material.transparent=true; grid.material.opacity=.35; grid.position.y=0; scene.add(grid);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(400,400),new THREE.MeshStandardMaterial({color:0x0a0a14,roughness:.9,metalness:.2}));
+  floor.rotation.x=-Math.PI/2; floor.position.y=-.01; scene.add(floor);
+
+  // End & start portals
+  const portalMat=new THREE.MeshBasicMaterial({color:0x5eead4,transparent:true,opacity:.1});
+  const endPortal=new THREE.Mesh(new THREE.RingGeometry(2.2,3.4,64),portalMat);
+  endPortal.position.set(0,2.2,-((ERAS.length-1)*16)-14); scene.add(endPortal);
+
+  // Exhibits
+  const GAP=16, pick=[]; // raycast targets
+  function makeLabel(text){
+    const cv=document.createElement('canvas'); cv.width=512; cv.height=128;
+    const ctx=cv.getContext('2d');
+    ctx.font='600 64px Georgia, serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#f0d68a'; ctx.fillText(text,256,64);
+    const tex=new THREE.CanvasTexture(cv);
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true})); sp.scale.set(4.6,1.15,1);
+    return sp;
+  }
+  ERAS.forEach((era,i)=>{
+    const side=i%2===0?-1:1, z=-8-i*GAP;
+    const g=new THREE.Group();
+    // frame
+    const frame=new THREE.Mesh(new THREE.BoxGeometry(5,4,.25),new THREE.MeshStandardMaterial({color:0x8a6d1f,metalness:.8,roughness:.35,emissive:0x2a2005}));
+    // artwork
+    const tex=loader.load(era.img,undefined,undefined,()=>{});
+    const art=new THREE.Mesh(new THREE.PlaneGeometry(4.5,3.4),new THREE.MeshBasicMaterial({map:tex}));
+    art.position.z=.14; g.add(frame,art);
+    // pedestal glow
+    const glow=new THREE.PointLight(0xd4af37,.0,9); glow.position.set(0,-1,1.2); g.add(glow);
+    // label
+    const lab=makeLabel(era.year+' · '+era.title); lab.position.set(0,-2.9,.3); g.add(lab);
+    g.position.set(side*6.2,2.6,z); g.lookAt(0,1.7,z+10>0?0:z+1000); g.lookAt(new THREE.Vector3(0,1.7,z-40));
+    scene.add(g); g.userData={index:i,glow,base:1};
+    art.userData.index=i; frame.userData.index=i; pick.push(art,frame);
+  });
+  // corridor lights along path
+  for(let i=0;i<ERAS.length+2;i++){
+    const l=new THREE.PointLight(0xd4af37,.5,26,2); l.position.set((i%2?4.5:-4.5),4.2,-4-i*GAP); scene.add(l);
+  }
+  scene.add(new THREE.AmbientLight(0x334,1.2));
+  const camLight=new THREE.PointLight(0xffffff,.9,18,2); scene.add(camLight);
+
+  // Dust
+  const DN=350, dp=new Float32Array(DN*3);
+  for(let i=0;i<DN;i++){dp[i*3]=(Math.random()-.5)*16;dp[i*3+1]=Math.random()*6;dp[i*3+2]=-Math.random()*220+6;}
+  const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+  scene.add(new THREE.Points(dg,new THREE.PointsMaterial({color:0xd4af37,size:.05,transparent:true,opacity:.5})));
+
+  // Scroll-driven camera
+  const maxZ=-8-(ERAS.length-1)*GAP-6;
+  let targetZ=6;
+  addEventListener('scroll',()=>{
+    const r=wrapEl.getBoundingClientRect();
+    const total=wrapEl.offsetHeight-innerHeight;
+    const p=Math.min(1,Math.max(0,-r.top/total));
+    targetZ=6+(maxZ-6)*p;
+    // HUD year
+    const idx=Math.min(ERAS.length-1,Math.max(0,Math.floor((6-targetZ+2)/GAP)));
+    yearEl.textContent=ERAS[idx].year;
+  },{passive:true});
+
+  // Raycast hover/click
+  const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let hovered=null;
+  function pickAt(ev){
+    const r=canvas.getBoundingClientRect();
+    ndc.x=((ev.clientX-r.left)/r.width)*2-1; ndc.y=-((ev.clientY-r.top)/r.height)*2+1;
+    ray.setFromCamera(ndc,camera);
+    const hit=ray.intersectObjects(pick)[0];
+    return hit?hit.object.userData.index:null;
+  }
+  canvas.addEventListener('pointermove',ev=>{
+    const i=pickAt(ev);
+    if(i!==null){
+      const g=pick.find(o=>o.userData.index===i).parent;
+      canvas.style.cursor='pointer';
+      tip.style.opacity=1; tip.style.left=(ev.clientX-$('#hallSticky').getBoundingClientRect().left)+'px'; tip.style.top=(ev.clientY-$('#hallSticky').getBoundingClientRect().top)+'px';
+      tip.textContent=ERAS[i].year+' — '+ERAS.title2(ERAS[i])||ERAS[i].title; tip.textContent=ERAS[i].title;
+      hovered=i;
+    } else { canvas.style.cursor='grab'; tip.style.opacity=0; hovered=null; }
+  });
+  canvas.addEventListener('click',ev=>{ const i=pickAt(ev); if(i!==null) openModal(i); });
+
+  (function anim(){
+    requestAnimationFrame(anim);
+    camera.position.z+=(targetZ-camera.position.z)*.06;
+    camera.position.x+=Math.sin(camera.position.z*.35)*.4;
+    camLight.position.set(camera.position.x,2.5,camera.position.z-2);
+    // gentle bob
+    camera.position.y=1.7+Math.sin(Date.now()*.001)*.04;
+    camera.lookAt(camera.position.x*.3,1.7,camera.position.z-10);
+    // hover glow + breathing portals
+    pick.forEach(o=>{
+      const g=o.parent, on=g.userData.index===hovered;
+      g.userData.glow.intensity+=((on?2.2:.35)-g.userData.glow.intensity)*.15;
+      const s=on?1.06:1; g.scale.x+=(s-g.scale.x)*.15; g.scale.y+=(s-g.scale.y)*.15;
+    });
+    endPortal.rotation.z+=.002; endPortal.material.opacity=.08+Math.sin(Date.now()*.002)*.04;
+    renderer.render(scene,camera);
+  })();
+})();
+ERAS.title2=undefined;
+
+/* ================= VIDEO THEATER ================= */
+(function(){
+  const v=$('#vpVideo'), big=$('#vpBigPlay'), shell=$('#vpShell'),
+        seek=$('#vpSeek'), time=$('#vpTime'), toggle=$('#vpToggle'),
+        ip=$('#vpIconPlay'), ipa=$('#vpIconPause');
+  let active=0;
+  const list=$('#vpPlaylist');
+  ERAS.forEach((e,i)=>{
+    const b=document.createElement('button');
+    b.className='reel-btn w-full text-left rounded-xl px-4 py-3 flex items-center gap-3'+(i===0?' active':'');
+    b.innerHTML=`<span class="serif text-lg gold-text font-bold w-14">${e.year}</span>
+      <span class="flex-1"><span class="block text-sm">${e.title}</span>
+      <span class="block text-[10px] tracking-[.2em] uppercase" style="color:var(--muted)">${e.subtitle}</span></span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2"><path d="M9 6l10 6-10 6V6z" fill="#d4af37" stroke="none"/></svg>`;
+    b.addEventListener('click',()=>{ active=i; [...list.children].forEach((c,j)=>c.classList.toggle('active',j===i)); load(); });
+    list.appendChild(b);
+  });
+  function fmt(s){ s=Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+  function load(){
+    const e=ERAS[active];
+    v.poster=e.poster; v.src=e.video; v.load();
+    shell.classList.remove('playing'); big.style.opacity=1;
+    $('#vpTitle').textContent=e.title; $('#vpYear').textContent=e.year;
+    $('#vpDesc').textContent=e.desc;
+    seek.value=0;
+  }
+  function play(){ v.play(); }
+  function togglePlay(){ v.paused?play():v.pause(); }
+  big.addEventListener('click',()=>{play();});
+  toggle.addEventListener('click',togglePlay);
+  v.addEventListener('click',togglePlay);
+  v.addEventListener('play',()=>{shell.classList.add('playing'); big.style.opacity=0; ip.classList.add('hidden'); ipa.classList.remove('hidden');});
+  v.addEventListener('pause',()=>{ip.classList.remove('hidden'); ipa.classList.add('hidden'); if(v.currentTime<v.duration) big.style.opacity=1;});
+  v.addEventListener('timeupdate',()=>{
+    if(v.duration) seek.value=(v.currentTime/v.duration*100);
+    time.textContent=fmt(v.currentTime)+' / '+fmt(v.duration);
+  });
+  seek.addEventListener('input',()=>{ if(v.duration) v.currentTime=seek.value/100*v.duration; });
+  $('#vpMute').addEventListener('click',()=>{ v.muted=!v.muted; $('#vpVolWaves').style.opacity=v.muted?0:1; });
+  $('#vpFull').addEventListener('click',()=>{ if(!document.fullscreenElement) shell.requestFullscreen?.(); else document.exitFullscreen?.(); });
+  load();
+})();
+
+/* ================= VAULT FLIP CARDS ================= */
+(function(){
+  const grid=$('#vaultGrid');
+  ARTIFACTS.forEach((a,i)=>{
+    const era=ERAS[Math.min(i*2,ERAS.length-1)];
+    const c=document.createElement('div');
+    c.className='flip h-72';
+    c.innerHTML=`<div class="flip-inner">
+      <div class="flip-face frame">
+        <img src="${img('artifact-'+i,700,560)}" alt="${a.t}" loading="lazy" class="w-full h-full object-cover">
+        <div class="absolute inset-0 flex flex-col justify-end p-5" style="background:linear-gradient(transparent 45%,rgba(5,5,12,.92))">
+          <p class="text-[9px] tracking-[.4em] uppercase" style="color:var(--gold)">Relic ${String(i+1).padStart(2,'0')} · ${a.e}</p>
+          <h3 class="serif text-2xl font-bold">${a.t}</h3>
+        </div>
+        <p class="absolute top-3 right-3 text-[9px] tracking-[.3em] uppercase px-2.5 py-1 rounded-full glass" style="color:var(--gold-l)">Flip</p>
+      </div>
+      <div class="flip-face flip-back glass flex flex-col items-center justify-center text-center p-7">
+        <svg width="30" height="30" viewBox="0 0 40 40" fill="none" class="mb-4"><circle cx="20" cy="20" r="17" stroke="#d4af37" stroke-width="1.2"/><circle cx="20" cy="20" r="2.5" fill="#d4af37"/></svg>
+        <p class="text-[9px] tracking-[.4em] uppercase mb-3" style="color:var(--gold)">Museum Plaque · ${a.e}</p>
+        <h3 class="serif text-2xl font-bold mb-3">${a.t}</h3>
+        <p class="text-xs leading-relaxed" style="color:var(--muted)">${a.d}</p>
+      </div>
+    </div>`;
+    c.addEventListener('click',()=>c.classList.toggle('flipped'));
+    grid.appendChild(c);
+  });
+})();
+
+/* ================= MODAL ================= */
+function openModal(i){
+  const e=ERAS[i];
+  $('#mImg').src=e.img; $('#mImg').alt=e.title;
+  $('#mCaption').textContent='Archive image · '+e.year;
+  $('#mKicker').textContent='Exhibit '+(i+1)+' of '+ERAS.length+' · '+e.year;
+  $('#mTitle').textContent=e.title;
+  $('#mSubtitle').textContent=e.subtitle;
+  $('#mDesc').textContent=e.desc;
+  $('#mFacts').innerHTML=e.facts.map(f=>`
+    <div class="flex items-start gap-3">
+      <svg width="16" height="16" viewBox="0 0 24 24" class="mt-0.5 flex-shrink-0"><circle cx="12" cy="12" r="10" fill="none" stroke="#d4af37" stroke-width="1.4"/><path d="M8 12l3 3 5-6" fill="none" stroke="#5eead4" stroke-width="1.8"/></svg>
+      <p class="text-sm" style="color:var(--ink)">${f}</p>
+    </div>`).join('');
+  const mv=$('#mVideo'); mv.poster=e.poster; mv.src=e.video; mv.load();
+  $('#modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  $('#modal').classList.remove('open');
+  $('#mVideo').pause(); document.body.style.overflow='';
+}
+$('#modalClose').addEventListener('click',closeModal);
+$('#modalBack').addEventListener('click',closeModal);
+addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ================= FUTURE STATS COUNTERS ================= */
+(function(){
+  const stats=[{n:126,l:'Years of AI history'},{n:11,l:'Exhibits curated'},{n:100,l:'M users · ChatGPT (2 months)'},{n:2026,l:'The story continues'}];
+  const el=$('#stats');
+  el.innerHTML=stats.map((s,i)=>`
+    <div class="glass rounded-2xl py-8 px-4 frame">
+      <p class="serif stat-num text-4xl md:text-5xl font-bold gold-text" data-target="${s.n}">0</p>
+      <p class="text-[10px] tracking-[.25em] uppercase mt-2" style="color:var(--muted)">${s.l}</p>
+    </div>`).join('');
+  let done=false;
+  new IntersectionObserver((ents)=>{
+    if(done||!ents[0].isIntersecting) return; done=true;
+    el.querySelectorAll('.stat-num').forEach(p=>{
+      const target=+p.dataset.target, t0=performance.now(), dur=1800;
+      (function step(t){
+        const k=Math.min(1,(t-t0)/dur), v=Math.floor(target*(1-Math.pow(1-k,3)));
+        p.textContent=target>1000?(2026===target?v:v.toLocaleString()):v;
+        if(k<1) requestAnimationFrame(step);
+      })(t0);
+    });
+  },{threshold:.4}).observe(el);
+})();
+</script>
+</body>
+</html>

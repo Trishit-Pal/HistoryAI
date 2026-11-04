@@ -35,7 +35,7 @@ export function FirstWinterRoom({
           <Ink tone="winter" />
         </mesh>
       ))}
-      <HallTitle position={[0, 1.45, -0.35]} label={hall.label} />
+      <HallTitle position={[0, 1.62, -0.35]} label={hall.label} />
       <RoomExhibits members={members} spots={spots} year={year} focusedId={focusedId} onFocus={onFocus} />
       <NextMark low z={-4.3} nextLabel={nextLabel} nextYear={nextYear} nextSealed={nextSealed} onNext={() => onHall(hallIndex + 1)} />
     </group>

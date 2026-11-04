@@ -2,8 +2,10 @@
 
 import type { MuseumNode } from "../src/museum/view";
 import { eraById } from "../src/domain/eras";
+import { ArtefactCredit } from "./ArtefactCredit";
 import { FigureCredit } from "./FigureCredit";
 import { HallOrderNav } from "./HallOrderNav";
+import { InspectArtefact } from "./InspectArtefact";
 import { SafeLink } from "./SafeLink";
 
 export function Dossier({
@@ -14,6 +16,8 @@ export function Dossier({
   later,
   onFocus,
   sheet,
+  onHotspot,
+  onInspect,
 }: {
   node?: MuseumNode;
   hallLabel?: string;
@@ -22,6 +26,8 @@ export function Dossier({
   later?: string;
   onFocus: (id: string) => void;
   sheet?: { number: number; total: number };
+  onHotspot?: (part: string | null) => void;
+  onInspect?: (open: boolean) => void;
 }) {
   if (!node) {
     return (
@@ -69,6 +75,8 @@ export function Dossier({
       {openedLabel ? <p className="years">{openedLabel}</p> : null}
       <h1>{node.title}</h1>
       <FigureCredit figure={node.figure} />
+      <ArtefactCredit exhibitId={node.id} onHotspot={onHotspot} />
+      <InspectArtefact key={node.id} exhibitId={node.id} title={node.title} onOpenChange={onInspect} />
       <HallOrderNav earlier={earlier} later={later} onFocus={onFocus} />
       <p>{node.publicStory}</p>
       {node.editorialNote ? <p className="note">{node.editorialNote}</p> : null}

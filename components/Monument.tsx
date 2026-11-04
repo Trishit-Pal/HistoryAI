@@ -16,6 +16,7 @@ export function Monument({
   ghost,
   onFocus,
   showLabel = true,
+  labelY = 1.15,
 }: {
   node: MuseumNode;
   position: [number, number, number];
@@ -23,6 +24,7 @@ export function Monument({
   ghost: boolean;
   onFocus: (id: string) => void;
   showLabel?: boolean;
+  labelY?: number;
 }) {
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
@@ -88,7 +90,7 @@ export function Monument({
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       {showLabel ? (
-        <Html position={[0, 1.15, 0]} center distanceFactor={8} style={{ pointerEvents: "none" }}>
+        <Html position={[0, labelY, 0]} center distanceFactor={8} style={{ pointerEvents: "none" }}>
           <div className={`badge badge-${node.confidence ?? "unset"}${ghost ? " ghost" : ""}`}>
             {node.confidence ?? "unset"} · {node.title}
           </div>

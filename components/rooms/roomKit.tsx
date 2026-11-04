@@ -1,6 +1,7 @@
 "use client";
 
 import { Text } from "@react-three/drei";
+import { loadsNear } from "../../src/museum/hallMath";
 import type { Spot } from "../../src/museum/precursorsRoom";
 import { CHALK } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
@@ -8,6 +9,7 @@ import { FigurePlate } from "../FigurePlate";
 import { Ink } from "../Ink";
 import { LABEL_FONT } from "../labelFont";
 import { Monument } from "../Monument";
+import { hasArtefact, LABEL_ABOVE_ARTEFACT, PlinthArtefact } from "../artefacts/PlinthArtefact";
 
 export { Ink };
 
@@ -25,25 +27,37 @@ export function RoomExhibits({
   onFocus: (id: string) => void;
 }) {
   const byId = new Map(members.map((node) => [node.id, node]));
-  const focusedIndex = Math.max(0, spots.findIndex((spot) => spot.id === focusedId));
+  // -1 when the focus is in another hall: then nothing here loads.
+  const focusedIndex = spots.findIndex((spot) => spot.id === focusedId);
   return (
     <>
       {spots.map((spot, index) => {
         const node = byId.get(spot.id);
         if (!node) return null;
         const ghost = node.startYear > year;
+        const load = loadsNear(index, focusedIndex);
+        const position: [number, number, number] = [spot.x, spot.y, spot.z];
         return (
           <group key={node.id}>
             <Monument
               node={node}
-              position={[spot.x, spot.y, spot.z]}
+              position={position}
               focused={node.id === focusedId}
               ghost={ghost}
               onFocus={onFocus}
               showLabel={node.id === focusedId}
+              labelY={hasArtefact(node.id) ? LABEL_ABOVE_ARTEFACT : undefined}
+            />
+            <PlinthArtefact
+              exhibitId={node.id}
+              position={position}
+              focused={node.id === focusedId}
+              load={load}
+              ghost={ghost}
+              onFocus={onFocus}
             />
             <group position={[spot.x, spot.y + 0.55, spot.z + 0.5]}>
-              <FigurePlate src={node.figure?.src} id={node.id} load={Math.abs(index - focusedIndex) <= 1} ghost={ghost} />
+              <FigurePlate src={node.figure?.src} id={node.id} load={load} ghost={ghost} />
             </group>
           </group>
         );
