@@ -15,8 +15,8 @@ import { Dossier } from "./Dossier";
 import { EXHIBIT_PANEL_ID, ExhibitTabs, exhibitTabId } from "./ExhibitTabs";
 
 const VISITED_KEY = "historyai.visited";
-// Everything is always on show: the latest year seals no hall and ghosts no exhibit.
-const YEAR = 2026;
+// No cutoff: nothing is sealed or ghosted. Only ever compared, never printed or serialized.
+const YEAR = Number.POSITIVE_INFINITY;
 
 export function MuseumShell({
   nodes,

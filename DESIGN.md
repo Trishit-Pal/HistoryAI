@@ -68,8 +68,7 @@ Nine lane colours (in `theme.ts`) tell the domains apart, and each lane is also 
 ## Components
 
 - **Rail**: the sheet's top border, one slim row. Breadcrumbs (Timeline, then the hall), and on the right a "◀ previous era" / "next era ▶" pair that switches hall in place.
-- **Hall chip**: a sheet tab. Chalk outline; the current hall is lifted with a Redline underline; a sealed hall has a dashed outline and cannot be opened.
-- **Exhibit tabs**: the current hall's exhibits as a `tablist` under the plan. One tab stop, arrow keys, Home and End. This is the keyboard and screen-reader route to every monument. Future-year exhibits are dim chalk italic, never faded.
+- **Exhibit tabs**: the current hall's exhibits as a `tablist` under the plan. One tab stop, arrow keys, Home and End. This is the keyboard and screen-reader route to every monument.
 - **Dossier (title block)**: a dark panel with ruled cells for hall, years, kind, confidence and "Sheet n of N", then the single `h1`, story, sources, and the link to the full exhibit. It is a `tabpanel` named by the selected exhibit tab, and a status line announces changes.
 - **Badge**: word plus shape on a small plate. Unset says "unset".
 - **Scene**: no lights. A solid is filled in the ground colour so it hides the lines behind it, outlined in Chalk (Chalk-dim for walls and the winter halls). The focused monument is outlined in Redline with a Redline cap. Figure plates keep their light image.
@@ -84,6 +83,6 @@ Wide screens: the sheet is exactly one viewport. Plan and exhibit tabs on the le
 
 ## Motion
 
-Camera eases to the focused pedestal in about 1s; reduced motion snaps. The year rail is the only ornamental control: there are no drifting lights, pulsing threads or constant rotation in the corridor.
+Camera eases to the focused pedestal in about 1s; reduced motion snaps. There are no drifting lights, pulsing threads or constant rotation in the corridor.
 
 In the Atlas, motion is only ever an answer to the visitor. The one move the page makes on its own is the camera arriving on load (about 1.8s). After that: orbiting (damped), the camera easing to a chosen model (about 1.1s), and the dots gliding to their new height when the measure is switched (about 0.7s). Nothing drifts, pulses or rotates by itself. Reduced motion snaps every move and turns damping off.

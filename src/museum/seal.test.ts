@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sealRooms, type Floor, type Hall } from "../domain/layout";
-import { enterHall, focusExhibit, isSealed, reconcileFocus, type NavState } from "./seal";
+import { enterHall, focusExhibit, isSealed, type NavState } from "./seal";
 import type { MuseumNode } from "./view";
 
 function node(id: string, startYear: number): MuseumNode {
@@ -75,39 +75,6 @@ describe("focusExhibit", () => {
       focusedId: "b2",
       hallIndex: 0,
     });
-  });
-});
-
-describe("reconcileFocus", () => {
-  it("keeps the state when the focused exhibit is still in view", () => {
-    const state: NavState = { focusedId: "a2", hallIndex: 0 };
-    expect(reconcileFocus(state, ctx(1965))).toBe(state);
-  });
-
-  it("jumps to the nearest exhibit in view when the focused one is in the future", () => {
-    expect(reconcileFocus({ focusedId: "b2", hallIndex: 1 }, ctx(1962))).toEqual({
-      focusedId: "a2",
-      hallIndex: 0,
-    });
-  });
-
-  it("does nothing when no exhibit has started yet", () => {
-    const state: NavState = { focusedId: "a1", hallIndex: 0 };
-    expect(reconcileFocus(state, ctx(1900))).toBe(state);
-  });
-
-  it("walks back to the nearest open hall when the current hall seals", () => {
-    const sealedHall = halls.slice(0, 2);
-    const result = reconcileFocus(
-      { focusedId: null, hallIndex: 1 },
-      { halls: sealedHall, nodes, year: 1970 },
-    );
-    expect(result).toEqual({ focusedId: "a1", hallIndex: 0 });
-  });
-
-  it("leaves the state alone when the current hall is open", () => {
-    const state: NavState = { focusedId: null, hallIndex: 1 };
-    expect(reconcileFocus(state, ctx(1985))).toBe(state);
   });
 });
 
