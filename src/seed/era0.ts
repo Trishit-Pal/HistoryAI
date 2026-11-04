@@ -85,37 +85,6 @@ const shannon1938 = cite("https://doi.org/10.1109/t-aiee.1938.5057767", "IEEE");
 
 export const ERA0_NODES: SeedNode[] = [
   {
-    id: "evt_history_overview",
-    title: "Mechanical and logical precursors",
-    startYear: 1854,
-    eraId: "era_0_precursors",
-    kind: "idea",
-    layer: "context",
-    publicStory:
-      "Nilsson's history treats Aristotle's syllogism as important for its form, Boole's 1854 Laws of Thought as showing that some logical reasoning can be done by manipulating equations, and Babbage's engines as engineering clues in that quest.",
-    citations: [nilsson],
-    confidence: "reported",
-    tags: ["precursor"],
-    fieldChange: {
-      before: "A history of the field could open at the first meeting that used the name, and leave earlier logic and machinery outside it.",
-      after:
-        "Nilsson's survey places the form of the syllogism, Boole's 1854 equations, and Babbage's engines inside that history, as clues rather than as one technical result.",
-      citationUrls: [nilsson.url],
-    },
-    editorialNote:
-      "Framing plaque. Nilsson's pages say the print version is Cambridge University Press and ask readers not to cite this PDF. The URL is the file that was opened. Not a single technical result.",
-    figure: plate(
-      "/museum/era-0/overview.svg",
-      "A stepped line marked 1843, 1854, 1936, 1938, 1943, and 1948.",
-      "Original illustration of the years in this room. Not a plate from Nilsson.",
-      "original",
-      nilsson.url,
-      "redrawn",
-      "Nils J. Nilsson",
-      nilsson.url,
-    ),
-  },
-  {
     id: "ctx_1843_analytical_engine",
     title: "Sketch of the Analytical Engine",
     startYear: 1843,
@@ -130,17 +99,19 @@ export const ERA0_NODES: SeedNode[] = [
         "https://en.wikisource.org/wiki/Scientific_Memoirs/3/Sketch_of_the_Analytical_Engine_invented_by_Charles_Babbage,_Esq.",
         "Wikisource",
       ),
+      { url: "https://archive.org/details/india.history.resource.53369", publisher: "Internet Archive", retrieved: "2026-11-04" },
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["precursor"],
     fieldChange: {
       before: "A calculating engine was discussed as a machine for tables, without a published general procedure written for it.",
       after:
         "The 1843 translation of Menabrea's sketch, with Lovelace's Note G, works through a table for the Bernoulli numbers on the Analytical Engine.",
-      citationUrls: ["https://www.gutenberg.org/ebooks/75107"],
+      citationUrls: ["https://www.gutenberg.org/ebooks/75107", "https://archive.org/details/india.history.resource.53369"],
     },
     editorialNote:
-      "Gutenberg and the Wikisource sketch page answered. The separate Notes subpage returned 404, so it is not cited. Both are transcriptions, not the 1843 volume, so this stays reported.",
+      "Gutenberg and the Wikisource sketch page are transcriptions. The Internet Archive item is a scan of Scientific Memoirs volume III (1843), where the sketch begins on page 666 and Note G gives the Bernoulli table. The separate Wikisource Notes subpage returned 404, so it is not cited.",
     figure: plate(
       "/museum/era-0/bernoulli-note-g.jpg",
       "Note G diagram titled Diagram for the computation by the Engine of the Numbers of Bernoulli.",
@@ -167,7 +138,8 @@ export const ERA0_NODES: SeedNode[] = [
         "Wikisource",
       ),
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["precursor"],
     fieldChange: {
       before: "Logic was taught as a verbal art, apart from the manipulation of algebraic equations.",
@@ -204,7 +176,8 @@ export const ERA0_NODES: SeedNode[] = [
         retrieved: "2026-10-04",
       },
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["precursor"],
     fieldChange: {
       before:
@@ -243,7 +216,8 @@ export const ERA0_NODES: SeedNode[] = [
         retrieved: "2026-10-04",
       },
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["precursor"],
     fieldChange: {
       before: "Relay circuits were drawn as electrical arrangements, and symbolic logic was a separate study.",
@@ -310,7 +284,7 @@ export const ERA0_NODES: SeedNode[] = [
     kind: "idea",
     layer: "context",
     publicStory:
-      "A 1948 edition is catalogued as Norbert Wiener, Cybernetics; or, Control and communication in the animal and the machine, from The Technology Press.",
+      "A 1948 edition is catalogued as Norbert Wiener, Cybernetics; or, Control and communication in the animal and the machine, from The Technology Press. The Internet Archive scan cited here is the 1961 second edition from MIT Press, not the 1948 printing.",
     citations: [
       openLibrary,
       {
@@ -319,7 +293,8 @@ export const ERA0_NODES: SeedNode[] = [
         retrieved: "2026-10-04",
       },
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["precursor"],
     fieldChange: {
       before: "Control in machines and communication in animals were catalogued as separate subjects.",
@@ -355,7 +330,8 @@ export const ERA0_NODES: SeedNode[] = [
       cite("https://doi.org/10.1002/j.1538-7305.1948.tb01338.x", "Bell System Technical Journal"),
       cite("https://archive.org/details/bstj27-3-379", "Internet Archive"),
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
     fieldChange: {
       before: "Communication engineering had no shared measure for a choice among possible messages.",

@@ -44,7 +44,8 @@ test("an exhibit page opens the atlas on its model, and the atlas links back", a
 
   const detail = page.locator(".atlas-detail");
   await expect(detail.getByRole("heading", { name: "AlexNet" })).toBeVisible();
-  await expect(detail).toContainText("Reported");
+  await expect(detail).toContainText("Epoch AI estimate");
+  await expect(detail.getByRole("link", { name: "Epoch’s source for this model" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Back to the whole plot" })).toBeVisible();
 
   await detail.getByRole("link", { name: /Read the exhibit/ }).click();

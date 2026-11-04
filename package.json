@@ -9,6 +9,7 @@
     "test": "vitest run",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/db-seed.ts",
+    "db:audit": "tsx scripts/withdraw.ts",
     "snapshot": "tsx scripts/snapshot.ts --from-seed",
     "atlas:snapshot": "tsx scripts/atlas-snapshot.ts",
     "test:e2e": "playwright test",

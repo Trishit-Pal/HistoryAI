@@ -17,7 +17,7 @@ test("keyboard leaves Formal founding for Precursors and the plate stays readabl
   const precursors = await tabTo(page, /Previous era: Precursors/);
   await expect(precursors).toBeFocused();
   await precursors.press("Enter");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mechanical and logical precursors");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sketch of the Analytical Engine");
 
   const source = page.getByRole("link", { name: /Source:/ }).first();
   for (let step = 0; step < 40; step += 1) {

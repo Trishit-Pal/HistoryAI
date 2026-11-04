@@ -6,7 +6,6 @@ import type { GovernanceView } from "../../src/atlas/governance";
 import { VIEW_PRESETS, type ViewPresetName, YEAR_AXIS } from "../../src/atlas/projection";
 import type { LandmarkExhibit } from "../../src/atlas/landmarks";
 import type { AtlasMetric, AtlasTotals } from "../../src/atlas/types";
-import { CONFIDENCE_GLYPH } from "../../src/museum/theme";
 
 const METRIC_LABEL: Record<AtlasMetric, string> = {
   compute: "Training compute",
@@ -169,8 +168,7 @@ export function AtlasDetail({ facts, exhibit, marker }: DetailProps) {
             </p>
           ) : null}
           <p className="atlas-confidence">
-            <span aria-hidden="true">{CONFIDENCE_GLYPH.reported}</span> Reported: figures are estimates published by
-            Epoch AI.
+            Epoch AI estimate. The figures are published by Epoch AI.
           </p>
           <p className="atlas-links">
             <a href={facts.link} target="_blank" rel="noopener noreferrer">

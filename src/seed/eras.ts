@@ -1,9 +1,11 @@
 import type { Citation, Confidence, EraId, FieldChange, Figure, Kind, Layer, PublicationState } from "../domain/types";
-import type { ClaimWrite, ExhibitWrite, SourceWrite, SupportLink } from "../store/memory";
+import type { ClaimWrite, ExhibitWrite, SourceWrite, SupportLink, Write } from "../store/memory";
 import { MemoryStore } from "../store/memory";
 import { ERA0_NODES } from "./era0";
+import { WITHDRAWN_NODES } from "./withdrawn";
 
 const RETRIEVED = "2026-10-04";
+const AUDITED = "2026-11-04";
 
 export type SeedNode = {
   id: string;
@@ -34,6 +36,11 @@ function c(url: string, publisher: string): Citation {
   return { url, publisher, retrieved: RETRIEVED };
 }
 
+/** A URL added and opened by the November 2026 accuracy audit. */
+function audited(url: string, publisher: string): Citation {
+  return { url, publisher, retrieved: AUDITED };
+}
+
 function changed(before: string, after: string, ...citationUrls: string[]): FieldChange {
   return { before, after, citationUrls };
 }
@@ -52,7 +59,8 @@ export const SEED_NODES: SeedNode[] = [
       c("https://doi.org/10.1093/mind/LIX.236.433", "Mind"),
       c("https://en.wikipedia.org/wiki/Computing_Machinery_and_Intelligence", "Wikipedia"),
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["founding_event"],
     fieldChange: changed(
       "Asking whether a machine can think had no agreed operation that would settle the question.",
@@ -67,7 +75,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_1_founding",
     kind: "turning_point",
     publicStory:
-      "An eight-week workshop that coined the term artificial intelligence and is widely regarded as the field's founding event. Newell and Simon presented the Logic Theorist.",
+      "A summer workshop at Dartmouth, proposed in August 1955 as a “2 month, 10 man study of artificial intelligence”; the proposal's title introduced the term. It is widely regarded as the field's founding event.",
     citations: [
       c("https://home.dartmouth.edu/about/artificial-intelligence-ai-coined-dartmouth", "Dartmouth College"),
       c("https://en.wikipedia.org/wiki/Dartmouth_workshop", "Wikipedia"),
@@ -78,8 +86,8 @@ export const SEED_NODES: SeedNode[] = [
     officialPrimary: true,
     fieldChange: changed(
       "Research on machines and intelligence had no common name.",
-      "Dartmouth College's account says the name artificial intelligence was coined for the 1956 summer research project.",
-      "https://home.dartmouth.edu/about/artificial-intelligence-ai-coined-dartmouth",
+      "The 31 August 1955 proposal, A Proposal for the Dartmouth Summer Research Project on Artificial Intelligence, asks for a 2 month, 10 man study of artificial intelligence.",
+      "http://jmc.stanford.edu/articles/dartmouth/dartmouth.pdf",
     ),
   },
   {
@@ -89,12 +97,13 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_2_symbolic",
     kind: "system",
     publicStory:
-      "Frank Rosenblatt published the Perceptron, an early hardware neural-network learning system, amid press claims that went far beyond the demonstrated work.",
+      "Frank Rosenblatt published the Perceptron, a probabilistic model of a learning network, amid press claims that went far beyond the demonstrated work.",
     citations: [
       c("https://doi.org/10.1037/h0042519", "Psychological Review"),
       c("https://en.wikipedia.org/wiki/Perceptron", "Wikipedia"),
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
     fieldChange: changed(
       "A learning machine was a proposal, not a published model with a training rule.",
@@ -108,16 +117,17 @@ export const SEED_NODES: SeedNode[] = [
     startYear: 1965,
     eraId: "era_2_symbolic",
     kind: "system",
-    publicStory: "The DENDRAL project at Stanford is generally cited as the first expert system, identifying chemical structures.",
+    publicStory: "The DENDRAL project at Stanford identified chemical structures. Its builders' 1993 case study calls it the first expert system for scientific hypothesis formation.",
     citations: [
       c("https://doi.org/10.1016/0004-3702(93)90068-M", "Artificial Intelligence"),
       c("https://softwarepreservation.computerhistory.org/AI/DENDRAL/", "Computer History Museum"),
     ],
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
     fieldChange: changed(
       "A program that proposed a chemical structure from instrument data was a hope, not a recorded project.",
-      "The authors' 1993 case study describes DENDRAL as one of the first large programs to use detailed knowledge of organic chemistry to form hypotheses. The Computer History Museum keeps the project's papers.",
+      "The builders' 1993 case study calls DENDRAL the first expert system for scientific hypothesis formation. The Computer History Museum keeps the project's papers.",
       "https://doi.org/10.1016/0004-3702(93)90068-M",
     ),
   },
@@ -138,7 +148,8 @@ export const SEED_NODES: SeedNode[] = [
       "Weizenbaum's 1966 paper describes ELIZA as keyword rules that transform a sentence, and he writes that the relation of appearance to reality stays with the playwright.",
       "https://dl.acm.org/doi/10.1145/365153.365168",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["documented_failure"],
   },
   {
@@ -148,7 +159,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_2_symbolic",
     kind: "failure",
     publicStory:
-      "The Automatic Language Processing Advisory Committee report found machine translation had not delivered, cutting U.S. government MT funding.",
+      "The Automatic Language Processing Advisory Committee report found machine translation had not delivered, after which U.S. government MT funding was sharply reduced.",
     citations: [
       c(
         "https://nap.nationalacademies.org/catalog/9547/language-and-machines-computers-in-translation-and-linguistics",
@@ -161,7 +172,8 @@ export const SEED_NODES: SeedNode[] = [
       "The 1966 National Academies report, Language and Machines, is the committee's published finding that machine translation had not delivered what that funding assumed.",
       "https://nap.nationalacademies.org/catalog/9547/language-and-machines-computers-in-translation-and-linguistics",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["funding"],
   },
   {
@@ -171,19 +183,21 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_2_symbolic",
     kind: "failure",
     publicStory:
-      "Minsky and Papert's Perceptrons proved formal limits of single-layer networks, including XOR, which chilled neural-network funding for years.",
+      "Minsky and Papert's Perceptrons proved formal limits of single-layer networks, including XOR.",
     citations: [
       c("https://openlibrary.org/works/OL4981638W", "Open Library"),
       c("https://en.wikipedia.org/wiki/Perceptrons_(book)", "Wikipedia"),
+      audited("https://doi.org/10.7551/mitpress/11301.001.0001", "MIT Press (2017 reissue)"),
     ],
     editorialNote:
-      "The MIT Press page returned 403 and was not read. Open Library catalogues the 1969 book. The XOR limit is stated on the Wikipedia book page.",
+      "The MIT Press DOI is the 2017 reissue of the book; its page returned 403 and was not read. Open Library catalogues the 1969 printing. The XOR limit is also stated on the Wikipedia book page.",
     fieldChange: changed(
       "A single layer of neuron-like units was treated as a route to any classification that mattered.",
-      "The Wikipedia account of Minsky and Papert's 1969 book states formal limits of a single-layer perceptron, including exclusive-or. Open Library catalogues that book.",
-      "https://en.wikipedia.org/wiki/Perceptrons_(book)",
+      "Minsky and Papert's book, cited here in the MIT Press 2017 reissue, states formal limits of a single-layer perceptron, including exclusive-or. Open Library catalogues the 1969 printing.",
+      "https://doi.org/10.7551/mitpress/11301.001.0001",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["documented_failure"],
   },
   {
@@ -193,7 +207,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_3_first_winter",
     kind: "turning_point",
     publicStory:
-      "The Lighthill Report to the UK Science Research Council concluded AI had failed to produce the promised major impact, triggering deep UK funding cuts.",
+      "The Lighthill Report to the UK Science Research Council concluded AI had failed to produce the promised major impact, and was followed by deep UK funding cuts.",
     citations: [
       c("https://www.aiai.ed.ac.uk/events/lighthill1973/lighthill.pdf", "University of Edinburgh"),
       c("https://en.wikipedia.org/wiki/Lighthill_report", "Wikipedia"),
@@ -203,75 +217,11 @@ export const SEED_NODES: SeedNode[] = [
       "Lighthill's survey, in the Edinburgh copy, says that in no part of the field had the discoveries produced the major impact that was then promised. The Chilton host did not answer, so it is not cited.",
       "https://www.aiai.ed.ac.uk/events/lighthill1973/lighthill.pdf",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["funding", "winter"],
-  },
-  {
-    id: "evt_1974_first_winter",
-    title: "First AI winter",
-    startYear: 1974,
-    eraId: "era_3_first_winter",
-    kind: "period",
-    publicStory:
-      "Retrospectives treat 1974–1980 as the first AI winter, when inflated promises met computational and theoretical limits of symbolic AI.",
-    citations: [
-      c("https://ai.stanford.edu/~nilsson/QAI/qai.pdf", "Nils J. Nilsson"),
-      c("https://en.wikipedia.org/wiki/AI_winter", "Wikipedia"),
-    ],
-    fieldChange: changed(
-      "The funding cuts after 1973 were separate decisions, not yet one named period.",
-      "Nilsson's survey is one later history that places those years in a longer story. The name AI winter is the label on the Wikipedia page for 1974–1980, not a name from 1974 itself.",
-      "https://ai.stanford.edu/~nilsson/QAI/qai.pdf",
-      "https://en.wikipedia.org/wiki/AI_winter",
-    ),
-    confidence: "reported",
-    tags: ["winter"],
-    endYear: 1980,
-  },
-  {
-    id: "evt_1985_expert_spend",
-    title: "Expert systems commercial boom",
-    startYear: 1985,
-    eraId: "era_4_expert_systems",
-    kind: "institution",
-    publicStory:
-      "A 1985 government report estimated AI-related activity funded by government and industry at about $400 million that year. A separate 1985 note put sales of AI software and hardware at about $150 million a year.",
-    citations: [
-      c("https://www.osti.gov/servlets/purl/5692492", "OSTI"),
-      c("https://www.osti.gov/biblio/5249661", "OSTI"),
-    ],
-    confidence: "reported",
-    tags: ["capability_breakthrough"],
     editorialNote:
-      "The billion-dollar sentence was not on an institutional page opened for this edit. The $400 million estimate is the 1985 Argonne report. The $150 million sales figure is a 1985 journal note.",
-    fieldChange: changed(
-      "Expert systems were laboratory programs, without a published government estimate of that year's spending.",
-      "The Argonne report opened on OSTI estimates AI-related activity, government and industry, at about $400 million in 1985.",
-      "https://www.osti.gov/servlets/purl/5692492",
-    ),
-  },
-  {
-    id: "evt_1987_lisp_collapse",
-    title: "LISP-machine market collapse",
-    startYear: 1987,
-    eraId: "era_5_second_winter",
-    kind: "failure",
-    publicStory:
-      "General-purpose workstations matched specialized LISP-machine performance at lower cost. The LISP-hardware market collapsed, taking much of the expert-systems industry with it.",
-    citations: [
-      c(
-        "https://ocw.mit.edu/courses/6-933j-the-structure-of-engineering-revolutions-fall-2001/30eb0d06f5903c7a4256d397a92f6628_Symbolics.pdf",
-        "MIT OpenCourseWare",
-      ),
-      c("https://en.wikipedia.org/wiki/AI_winter", "Wikipedia"),
-    ],
-    fieldChange: changed(
-      "Specialized Lisp machines were the machines on which U.S. expert-systems work was expected to run.",
-      "A Symbolics history in an MIT course records a 1987 crisis: product revenue fell from $101.6 million in 1986 to $82.1 million in 1987 and $55.6 million in 1988, as general workstations became usable for Lisp.",
-      "https://ocw.mit.edu/courses/6-933j-the-structure-of-engineering-revolutions-fall-2001/30eb0d06f5903c7a4256d397a92f6628_Symbolics.pdf",
-    ),
-    confidence: "reported",
-    tags: ["winter", "documented_failure"],
+      "The report is dated July 1972 and was published in 1973. The funding cuts that followed are stated on the Wikipedia page, not in the report.",
   },
   {
     id: "evt_1997_deep_blue",
@@ -280,7 +230,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_6_statistical",
     kind: "turning_point",
     publicStory:
-      "IBM's Deep Blue defeated world chess champion Garry Kasparov, closing a games chapter opened at Dartmouth.",
+      "IBM's Deep Blue defeated world chess champion Garry Kasparov.",
     citations: [
       c("https://www.ibm.com/history/deep-blue", "IBM"),
       c("https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)", "Wikipedia"),
@@ -290,7 +240,8 @@ export const SEED_NODES: SeedNode[] = [
       "IBM's history says Deep Blue defeated Garry Kasparov in 1997, after Kasparov had won their 1996 match.",
       "https://www.ibm.com/history/deep-blue",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
   },
   {
@@ -299,7 +250,7 @@ export const SEED_NODES: SeedNode[] = [
     startYear: 2011,
     eraId: "era_6_statistical",
     kind: "system",
-    publicStory: "IBM Watson won Jeopardy! against human champions, a public demonstration of large-scale statistical NLP and retrieval.",
+    publicStory: "IBM Watson won Jeopardy! against the champions Brad Rutter and Ken Jennings in February 2011.",
     citations: [
       c("https://www.ibm.com/history/watson-jeopardy", "IBM"),
       c("https://en.wikipedia.org/wiki/History_of_artificial_intelligence", "Wikipedia"),
@@ -309,7 +260,8 @@ export const SEED_NODES: SeedNode[] = [
       "IBM's history says Watson defeated Brad Rutter and Ken Jennings on Jeopardy! in February 2011.",
       "https://www.ibm.com/history/watson-jeopardy",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
   },
   {
@@ -319,7 +271,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_7_deep_learning",
     kind: "turning_point",
     publicStory:
-      "AlexNet won the ImageNet Large Scale Visual Recognition Challenge, cutting the top-5 error rate from 26.2 percent to 15.3 percent with a GPU-trained convolutional network.",
+      "AlexNet won the ImageNet Large Scale Visual Recognition Challenge with a GPU-trained convolutional network, with a top-5 error rate of 15.3 percent, against 26.2 percent for the second-best entry.",
     citations: [
       c(
         "https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
@@ -332,7 +284,8 @@ export const SEED_NODES: SeedNode[] = [
       "The NeurIPS 2012 paper reports that an average of convolutional networks reached 15.3 percent top-5 error on ILSVRC-2012.",
       "https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
   },
   {
@@ -351,29 +304,9 @@ export const SEED_NODES: SeedNode[] = [
       "The 2014 paper proposes two models trained together: a generator, and a discriminator that estimates whether a sample came from the training data.",
       "https://arxiv.org/abs/1406.2661",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
-  },
-  {
-    id: "evt_2015_google_photos",
-    title: "Google Photos gorilla mislabel",
-    startYear: 2015,
-    eraId: "era_7_deep_learning",
-    kind: "failure",
-    publicStory:
-      "Google Photos labeled Black users as gorillas. Reporting describes a later fix that removed the word gorilla from the label set rather than retraining the model.",
-    citations: [
-      c("https://incidentdatabase.ai/reports/648", "AI Incident Database"),
-      c("https://gigazine.net/gsc_news/en/20230523-google-photo-ai-prevent-labeled-gorillas", "Gigazine"),
-    ],
-    fieldChange: changed(
-      "A wrong photo label was treated as a mistake a retrained model would simply stop making.",
-      "The incident report records the gorilla label. Gigazine describes a later fix that removed the word from the label set rather than retraining the model.",
-      "https://incidentdatabase.ai/reports/648",
-      "https://gigazine.net/gsc_news/en/20230523-google-photo-ai-prevent-labeled-gorillas",
-    ),
-    confidence: "reported",
-    tags: ["documented_bias_failure"],
   },
   {
     id: "evt_2016_tay",
@@ -382,7 +315,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_7_deep_learning",
     kind: "failure",
     publicStory:
-      "Microsoft's Tay chatbot posted racist and extremist content within 16 hours of its March 2016 Twitter launch.",
+      "Microsoft took its Tay chatbot offline within a day of its March 2016 Twitter launch, after Tay posted what Microsoft called wildly inappropriate and reprehensible words and images.",
     citations: [
       c("https://blogs.microsoft.com/blog/2016/03/25/learning-tays-introduction/", "Microsoft"),
       c("https://incidentdatabase.ai/reports/928", "AI Incident Database"),
@@ -393,7 +326,8 @@ export const SEED_NODES: SeedNode[] = [
       "https://blogs.microsoft.com/blog/2016/03/25/learning-tays-introduction/",
       "https://incidentdatabase.ai/reports/928",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["documented_safety_failure"],
   },
   {
@@ -403,18 +337,20 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_7_deep_learning",
     kind: "system",
     publicStory:
-      "DeepMind's AlphaGo defeated Go player Lee Sedol 4–1. Game 2's Move 37 became a canonical case in debates about machine play that humans did not expect.",
+      "DeepMind's AlphaGo defeated Go player Lee Sedol 4–1 in Seoul in March 2016. In game two it played Move 37, which DeepMind's account says upended centuries of traditional wisdom.",
     citations: [
       c("https://www.nature.com/articles/nature16961", "Nature"),
       c("https://en.wikipedia.org/wiki/Google_DeepMind", "Wikipedia"),
+      audited("https://deepmind.google/research/breakthroughs/alphago/", "Google DeepMind"),
     ],
     fieldChange: changed(
       "A published Go program had not yet played a match against a player of Lee Sedol's standing.",
-      "Nature's 2016 paper is the account of the network-and-search program. The 4–1 result against Lee Sedol is a later match that year; the DeepMind page is the secondary account of that match, not the January paper.",
+      "Nature's January 2016 paper is the account of the network-and-search program. DeepMind's own page is the record of the later match: a 4–1 win over Lee Sedol in Seoul in March 2016.",
       "https://www.nature.com/articles/nature16961",
-      "https://en.wikipedia.org/wiki/Google_DeepMind",
+      "https://deepmind.google/research/breakthroughs/alphago/",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
   },
   {
@@ -424,7 +360,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_8_transformers",
     kind: "system",
     publicStory:
-      "Eight Google researchers published Attention Is All You Need, introducing the Transformer. The paper reports 28.4 BLEU on WMT-2014 English–German and 41.8 BLEU on English–French, trained in 3.5 days on eight GPUs. Authors are credited as equal contributors.",
+      "Eight researchers at Google Brain and Google Research (one listed at the University of Toronto, with work performed at Google) published Attention Is All You Need, introducing the Transformer. The paper reports 28.4 BLEU on WMT-2014 English–German and 41.8 BLEU on English–French after 3.5 days of training on eight GPUs. Authors are credited as equal contributors.",
     citations: [
       c("https://arxiv.org/abs/1706.03762", "arXiv"),
       c("https://en.wikipedia.org/wiki/Attention_Is_All_You_Need", "Wikipedia"),
@@ -439,34 +375,13 @@ export const SEED_NODES: SeedNode[] = [
     ),
   },
   {
-    id: "evt_2017_transformer_citations",
-    title: "Transformer citation-count claim",
-    startYear: 2017,
-    eraId: "era_8_transformers",
-    kind: "idea",
-    publicStory:
-      "On 4 October 2026 the secondary page previously cited for a most-cited ranking did not answer, and no citation index was opened. This plaque does not state a rank.",
-    citations: [c("https://arxiv.org/abs/1706.03762", "arXiv")],
-    confidence: "reported",
-    tags: ["open_debate"],
-    editorialNote:
-      "The Jerry Cards page returned 403 and was removed. No citation index was opened. The rank is not stated. Not canon.",
-    fieldChange: changed(
-      "A ranking of the Transformer paper among the most-cited papers of the century was carried from a single secondary page.",
-      "That page did not answer. The arXiv record is the paper itself, not a citation count, so the museum states no rank.",
-      "https://arxiv.org/abs/1706.03762",
-    ),
-    publicationState: "provisional",
-    incomplete: true,
-  },
-  {
     id: "evt_2020_alphafold",
     title: "AlphaFold2",
     startYear: 2020,
     eraId: "era_9_generative",
     kind: "system",
     publicStory:
-      "DeepMind's AlphaFold2 made highly accurate protein-structure prediction from amino-acid sequence, a long-standing structural-biology challenge.",
+      "DeepMind's AlphaFold2 made highly accurate protein-structure prediction from amino-acid sequence possible, a long-standing structural-biology challenge.",
     citations: [
       c("https://www.nature.com/articles/s41586-021-03819-2", "Nature"),
       c("https://en.wikipedia.org/wiki/AlphaFold", "Wikipedia"),
@@ -476,7 +391,8 @@ export const SEED_NODES: SeedNode[] = [
       "The result shown at CASP14 in 2020 was published in Nature in 2021. The paper reports highly accurate structure prediction from amino-acid sequence. The plaque keeps 2020 as the year of that contest.",
       "https://www.nature.com/articles/s41586-021-03819-2",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["scientific_spillover"],
   },
   {
@@ -498,7 +414,8 @@ export const SEED_NODES: SeedNode[] = [
       "OpenAI's 30 November 2022 post introduces ChatGPT as a free research preview, trained to answer in dialogue.",
       "https://openai.com/index/chatgpt/",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["capability_breakthrough"],
   },
   {
@@ -508,20 +425,20 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_10_frontier",
     kind: "turning_point",
     publicStory:
-      "The Center for AI Safety's one-sentence statement on extinction-scale AI risk was signed by hundreds of researchers and lab leaders. A 2023 survey of AI-conference researchers found 38 percent assigned at least a 10 percent probability to an extremely bad outcome conditional on human-level AI. That figure is a survey statistic, not a consensus forecast.",
+      "The Center for AI Safety's one-sentence statement on extinction-scale AI risk was signed by AI researchers and the heads of major labs. A survey of AI-conference authors, published in January 2024, found that between 38 and 51 percent of respondents gave at least a 10 percent chance to advanced AI leading to outcomes as bad as human extinction. That range is a survey statistic, not a consensus forecast.",
     citations: [
       c("https://www.safe.ai/work/press-release-ai-risk", "Center for AI Safety"),
       c("https://arxiv.org/abs/2401.02843", "arXiv"),
     ],
     fieldChange: changed(
       "Extinction-scale risk from AI was a topic of talks, without one short public statement from lab leaders and without a counted survey of conference authors.",
-      "The Center for AI Safety published a one-sentence statement on that risk. The 2023 survey paper says 38 percent of respondents put at least a 10 percent chance on extremely bad outcomes, such as human extinction, assuming high-level machine intelligence is built.",
+      "The Center for AI Safety published a one-sentence statement on that risk. The survey paper, published in January 2024, says between 38 and 51 percent of respondents gave at least a 10 percent chance to advanced AI leading to outcomes as bad as human extinction.",
       "https://www.safe.ai/work/press-release-ai-risk",
       "https://arxiv.org/abs/2401.02843",
     ),
-    confidence: "reported",
-    tags: ["open_debate"],
+    confidence: "confirmed",
     officialPrimary: true,
+    tags: ["open_debate"],
   },
   {
     id: "evt_2024_eu_ai_act",
@@ -530,7 +447,7 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_10_frontier",
     kind: "turning_point",
     publicStory:
-      "Regulation (EU) 2024/1689 entered into force on 1 August 2024 as a horizontal AI law with a phased, risk-tiered timeline. Maximum penalty figures of up to €35 million or 7 percent of global annual turnover are reported for prohibited-practice breaches.",
+      "Regulation (EU) 2024/1689 entered into force on 1 August 2024 as a horizontal AI law with a phased, risk-tiered timeline. The regulation sets fines of up to €35 million or 7 percent of worldwide annual turnover, whichever is higher, for breaches of the Article 5 prohibitions.",
     citations: [
       c("https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng", "EUR-Lex"),
       c("https://en.wikipedia.org/wiki/Artificial_Intelligence_Act", "Wikipedia"),
@@ -540,7 +457,8 @@ export const SEED_NODES: SeedNode[] = [
       "Regulation (EU) 2024/1689, on EUR-Lex, sets a fine of up to EUR 35 000 000 or 7 percent of worldwide annual turnover, whichever is higher, for non-compliance with the prohibited practices in Article 5. The plaque dates entry into force, not a later consolidated text.",
       "https://eur-lex.europa.eu/eli/reg/2024/1689/oj/eng",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["regulation"],
   },
   {
@@ -550,71 +468,27 @@ export const SEED_NODES: SeedNode[] = [
     eraId: "era_10_frontier",
     kind: "turning_point",
     publicStory:
-      "The Nobel Prize in Physics was awarded to John Hopfield and Geoffrey Hinton for work enabling machine learning with artificial neural networks. The Nobel Prize in Chemistry was awarded to Demis Hassabis and John Jumper, with David Baker, for protein-structure work including AlphaFold.",
+      "The Nobel Prize in Physics was awarded to John Hopfield and Geoffrey Hinton for work enabling machine learning with artificial neural networks. The Nobel Prize in Chemistry was awarded half to David Baker for computational protein design, and half jointly to Demis Hassabis and John Jumper for protein structure prediction.",
     citations: [
       c("https://www.nobelprize.org/prizes/physics/2024/summary/", "Nobel Prize"),
       c("https://www.nobelprize.org/prizes/chemistry/2024/summary/", "Nobel Prize"),
+      audited("https://www.kva.se/en/news/nobelpriset-i-fysik-2024/", "Royal Swedish Academy of Sciences"),
+      audited("https://www.kva.se/en/news/nobelpriset-i-kemi-2024/", "Royal Swedish Academy of Sciences"),
     ],
     fieldChange: changed(
       "The physics and chemistry prizes had not been given for the machine-learning work named here.",
-      "The Nobel Foundation's 2024 summaries award physics to John J. Hopfield and Geoffrey Hinton for discoveries that enable machine learning with artificial neural networks, and chemistry to David Baker, Demis Hassabis, and John Jumper for computational protein design and protein structure prediction.",
+      "The Nobel Foundation's 2024 summaries award physics to John J. Hopfield and Geoffrey Hinton for discoveries that enable machine learning with artificial neural networks, and chemistry half to David Baker for computational protein design and half jointly to Demis Hassabis and John Jumper for protein structure prediction. The Royal Swedish Academy of Sciences says Hassabis and Jumper developed AlphaFold2.",
+      "https://www.kva.se/en/news/nobelpriset-i-kemi-2024/",
       "https://www.nobelprize.org/prizes/physics/2024/summary/",
       "https://www.nobelprize.org/prizes/chemistry/2024/summary/",
     ),
-    confidence: "reported",
+    confidence: "confirmed",
+    officialPrimary: true,
     tags: ["scientific_spillover"],
-  },
-  {
-    id: "evt_2025_winter_debate",
-    title: "2025 winter-or-bubble debate",
-    startYear: 2025,
-    eraId: "era_10_frontier",
-    kind: "idea",
-    publicStory:
-      "Commentary in 2025 explicitly compared the investment climate to the overpromise pattern of 1974 and 1987. The museum records this as an open debate.",
-    citations: [
-      c("https://chrishood.com/the-ai-winter-road-historys-lessons-warn-of-todays-bubble/", "Chris Hood"),
-      c("https://en.wikipedia.org/wiki/AI_winter", "Wikipedia"),
-    ],
-    editorialNote:
-      "Disputed. Forbes returned 403 and is not cited. One 2025 commentary makes the comparison. The Wikipedia history records the earlier winters and does not itself declare a 2025 winter.",
-    fieldChange: changed(
-      "The downturns of 1974 and 1987 were history, and a 2025 comparison had not been filed on this wall.",
-      "One 2025 commentary compares the investment climate to those years. The Wikipedia history of AI winters records the earlier periods. Neither page is a finding that a new winter has begun.",
-      "https://chrishood.com/the-ai-winter-road-historys-lessons-warn-of-todays-bubble/",
-      "https://en.wikipedia.org/wiki/AI_winter",
-    ),
-    confidence: "disputed",
-    tags: ["open_debate"],
-  },
-  {
-    id: "evt_2026_frontier_snapshot",
-    title: "September 2026 frontier model names",
-    startYear: 2026,
-    eraId: "era_10_frontier",
-    kind: "system",
-    publicStory:
-      "OpenAI's own page, dated 9 July 2026, presents the GPT-5.6 family. Anthropic's own page presents Claude Opus 5.5. Names that appear only on aggregator sites are not listed.",
-    citations: [
-      c("https://openai.com/index/gpt-5-6/", "OpenAI"),
-      c("https://www.anthropic.com/claude-opus-5-5", "Anthropic"),
-    ],
-    confidence: "reported",
-    tags: ["perishable"],
-    editorialNote:
-      "Perishable. Not canon. Names and dates in this node are expected to be wrong within weeks. Aggregator pages are not cited. GPT-6, Gemini, and Kimi were not on a lab page opened for this edit, so they are omitted.",
-    fieldChange: changed(
-      "A September 2026 aggregator list named models this museum had not opened on the labs' own pages.",
-      "The pages opened on 4 October 2026 are OpenAI's account of GPT-5.6 and Anthropic's account of Claude Opus 5.5.",
-      "https://openai.com/index/gpt-5-6/",
-      "https://www.anthropic.com/claude-opus-5-5",
-    ),
-    publicationState: "provisional",
-    incomplete: true,
   },
 ];
 
-function toWrite(node: SeedNode): ExhibitWrite {
+export function toWrite(node: SeedNode): ExhibitWrite {
   return {
     id: node.id,
     title: node.title,
@@ -638,20 +512,29 @@ function toWrite(node: SeedNode): ExhibitWrite {
   };
 }
 
+function applyOrThrow(store: MemoryStore, id: string, write: Write): void {
+  const result = store.apply(write, "editor");
+  if (!result.ok) {
+    throw new Error(`Seed failed for ${id}: ${result.violations.map((v) => v.message).join("; ")}`);
+  }
+}
+
 export function seedMuseum(store = new MemoryStore()): MemoryStore {
   for (const node of SEED_NODES) {
-    const result = store.apply(
-      {
-        exhibit: toWrite(node),
-        claims: node.claims,
-        sources: node.sources,
-        supports: node.supports,
-      },
-      "editor",
-    );
-    if (!result.ok) {
-      throw new Error(`Seed failed for ${node.id}: ${result.violations.map((v) => v.message).join("; ")}`);
-    }
+    applyOrThrow(store, node.id, {
+      exhibit: toWrite(node),
+      claims: node.claims,
+      sources: node.sources,
+      supports: node.supports,
+    });
+  }
+  // Withdrawn exhibits are written as first published, then withdrawn, so the changelog records both.
+  for (const node of WITHDRAWN_NODES) {
+    applyOrThrow(store, node.id, { exhibit: toWrite(node) });
+    applyOrThrow(store, node.id, {
+      exhibit: { ...toWrite(node), publicationState: "withdrawn" },
+      reason: `Withdrawn: ${node.withdrawnReason}`,
+    });
   }
   return store;
 }

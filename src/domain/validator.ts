@@ -44,7 +44,7 @@ const KINDS: readonly Kind[] = [
 ];
 const LAYERS: readonly Layer[] = ["technical", "context"];
 const CONFIDENCES: readonly Confidence[] = ["confirmed", "reported", "disputed", "rumored"];
-const PUBLICATION_STATES: readonly PublicationState[] = ["draft", "provisional", "proposed", "canon"];
+const PUBLICATION_STATES: readonly PublicationState[] = ["draft", "provisional", "proposed", "canon", "withdrawn"];
 
 function shapeViolations(exhibit: ExhibitWrite): Violation[] {
   const violations: Violation[] = [];

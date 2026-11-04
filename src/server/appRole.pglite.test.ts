@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { seedMuseum } from "../seed/eras";
+import { applyAudit } from "./audit";
 import { commitWrite, importSnapshot, loadGraph } from "./graph";
 import { createPgliteDb, migratePglite } from "./pglite";
 import { hit } from "./rateLimit";
@@ -69,10 +70,49 @@ describe("museum_app role", () => {
     expect(graph.exhibits.length).toBeGreaterThan(0);
     expect(graph.exhibits.some((e) => e.id === "role_probe")).toBe(false);
     const rows = await database.query<{ id: string }>(
-      `insert into suggestions (exhibit_id, kind, body, ip_hash) values ('evt_history_overview', 'correction', $1, 'h') returning id`,
+      `insert into suggestions (exhibit_id, kind, body, ip_hash) values ('evt_1956_dartmouth', 'correction', $1, 'h') returning id`,
       ["A suggestion body of at least twenty characters."],
     );
     expect(rows[0]?.id).toBeTruthy();
+  });
+
+  it("retracts a claim and withdraws an exhibit", async () => {
+    const claim = { id: "claim_retract", exhibitId: "role_probe", statement: "Retract me.", role: "what_changed" as const, status: "established" as const, publicationState: "draft" as const };
+    expect(await commitWrite(database, { exhibit, claims: [claim], reason: "Probe claim" }, "editor")).toEqual({ ok: true });
+    expect(await commitWrite(database, { retractClaimId: "claim_retract", reason: "Probe retract" }, "editor")).toEqual({ ok: true });
+    const claims = await database.query<{ status: string }>("select status from claims where id = $1", ["claim_retract"]);
+    expect(claims[0]?.status).toBe("retracted");
+    const audits = await database.query("select 1 from audits where change = $1", ["retracted claim_retract"]);
+    expect(audits).toHaveLength(1);
+
+    const withdrawn = await commitWrite(
+      database,
+      { exhibit: { ...exhibit, publicationState: "withdrawn" }, reason: "Withdrawn: probe" },
+      "editor",
+    );
+    expect(withdrawn).toEqual({ ok: true });
+    const rows = await database.query<{ publication_state: string }>("select publication_state from exhibits where id = $1", ["role_probe"]);
+    expect(rows[0]?.publication_state).toBe("withdrawn");
+  });
+
+  it("applies the accuracy audit to an older database, once", async () => {
+    // Pretend this database predates the audit: one exhibit back to reported, one withdrawal undone.
+    const graph = await loadGraph(database, { publicOnly: false });
+    const turing = graph.exhibits.find((e) => e.id === "evt_1950_turing")!;
+    const lisp = graph.exhibits.find((e) => e.id === "evt_1987_lisp_collapse")!;
+    expect(await commitWrite(database, { exhibit: { ...turing, confidence: "reported", officialPrimary: false }, reason: "Old" }, "editor")).toEqual({ ok: true });
+    expect(await commitWrite(database, { exhibit: { ...lisp, publicationState: "canon" }, reason: "Old" }, "editor")).toEqual({ ok: true });
+
+    const first = await applyAudit(database);
+    expect(first.failed).toBe(false);
+    expect(first.writes).toBe(2);
+    const after = await loadGraph(database, { publicOnly: false });
+    expect(after.exhibits.find((e) => e.id === "evt_1950_turing")).toMatchObject({ confidence: "confirmed", officialPrimary: true });
+    expect(after.exhibits.find((e) => e.id === "evt_1987_lisp_collapse")?.publicationState).toBe("withdrawn");
+    expect(after.versions.filter((v) => v.nodeId === "evt_1987_lisp_collapse").at(-1)?.reason).toMatch(/^Withdrawn: /);
+
+    const second = await applyAudit(database);
+    expect(second).toMatchObject({ failed: false, writes: 0 });
   });
 
   it("cannot delete exhibits", async () => {

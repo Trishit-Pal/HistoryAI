@@ -12,7 +12,7 @@ export async function GET() {
       const node = byId.get(line.nodeId);
       const path = node?.eraId ? `/rooms/${eraById(node.eraId).slug}/${line.nodeId}` : `/changelog`;
       return `<item>
-  <title>${escapeXml(node?.title ?? line.nodeId)} v${line.version}</title>
+  <title>${escapeXml(node?.title ?? line.title ?? line.nodeId)} v${line.version}</title>
   <description>${escapeXml(line.reason)}</description>
   <link>${site}${path}</link>
   <pubDate>${new Date(line.at).toUTCString()}</pubDate>

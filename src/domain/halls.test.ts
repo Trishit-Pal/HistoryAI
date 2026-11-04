@@ -28,11 +28,14 @@ describe("layoutHalls", () => {
     expect(halls.at(-1)?.exhibitIds).toEqual([]);
   });
 
-  it("gives every hall a one-line summary of at most 110 characters", () => {
+  it("gives every hall with sourced exhibits a one-line summary of at most 110 characters", () => {
     const halls = layoutHalls(ERAS.map((era, index) => node(`n${index}`, 2000, era.id)));
     expect(halls).toHaveLength(ERAS.length + 1);
-    for (const hall of halls) {
-      expect(hall.summary?.length ?? 0).toBeGreaterThan(0);
+    // These eras lost their only exhibits in the November 2026 audit, so nothing backs a summary.
+    const unsourced = ["era_4_expert_systems", "era_5_second_winter"];
+    expect(halls.filter((hall) => !hall.summary).map((hall) => hall.id)).toEqual(unsourced);
+    for (const hall of halls.filter((item) => item.summary)) {
+      expect(hall.summary!.length).toBeGreaterThan(0);
       expect(hall.summary!.length).toBeLessThanOrEqual(110);
     }
     expect(halls.at(-1)?.summary).toBe("Recent work still being sourced and checked.");

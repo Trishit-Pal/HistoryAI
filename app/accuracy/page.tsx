@@ -5,28 +5,26 @@ export default function AccuracyPage() {
     <main className="page plate">
       <h1>How this museum stays accurate</h1>
       <p>
-        Every public node carries at least one literal source URL. A confidence badge sits on the
-        node. Confirmed needs an official primary source and two independent domains. A single
-        secondary URL is reported at most. Conflicting material facts are disputed.
+        Every exhibit on the floor is confirmed. Confirmed means two things. One of its sources is
+        the primary record itself: the paper, the report, the law, or the official page of the
+        organisation involved. And its sources come from at least two different websites. An exhibit
+        that cannot meet that bar is not shown.
       </p>
       <ul className="rules">
         <li>
           <span className="badge badge-confirmed">confirmed</span>
-          <span>Official primary source and two independent domains.</span>
-        </li>
-        <li>
-          <span className="badge badge-reported">reported</span>
-          <span>A single secondary URL, at most.</span>
-        </li>
-        <li>
-          <span className="badge badge-disputed">disputed</span>
-          <span>Conflicting material facts in the record.</span>
-        </li>
-        <li>
-          <span className="badge badge-rumored">rumored</span>
-          <span>Thin or single-source rumor, unpublished.</span>
+          <span>A primary record, and sources from at least two different websites.</span>
         </li>
       </ul>
+      <h2>Withdrawals</h2>
+      <p>
+        In November 2026 every exhibit was checked against this rule. Exhibits that met it stayed, some
+        with corrected wording or an added primary source. Eight did not meet it and were withdrawn.
+        A withdrawn exhibit leaves the halls, but it is not erased: the <a href="/changelog">changelog</a>{" "}
+        keeps a line for it that says &ldquo;Withdrawn&rdquo;, the date, and the reason. Two eras, the
+        expert systems boom and the second AI winter, have no confirmed exhibit yet, so they have no
+        hall for now.
+      </p>
       <h2>Two layers</h2>
       <p>
         The technical canon is methods, systems, datasets, and benchmarks from 1943. A second
@@ -46,7 +44,7 @@ export default function AccuracyPage() {
       <p>
         The scale of AI page draws on published datasets and official records. Each is copied at a
         known date and shown with its licence. Figures are estimates published by their source, so
-        they carry the confidence word reported and never confirmed. Sources whose reuse is unclear
+        they are labelled as that source&apos;s estimates, not as confirmed exhibits. Sources whose reuse is unclear
         are linked, not redrawn.
       </p>
       <ul className="rules">

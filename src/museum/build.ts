@@ -31,6 +31,10 @@ export type MuseumData = {
   archivedAt?: string;
 };
 
+function isWithdrawn(store: MemoryStore, id: string): boolean {
+  return store.versions(id).at(-1)?.blob.publicationState === "withdrawn";
+}
+
 export function buildMuseumData(
   snapshot: MuseumSnapshot,
   meta: { source: "live" | "archive"; archivedAt?: string },
@@ -66,7 +70,8 @@ export function buildMuseumData(
   return {
     nodes,
     halls: museumHalls(store),
-    changelog: store.changelog().filter((line) => publicIds.has(line.nodeId)),
+    // A withdrawn exhibit leaves the floor but keeps its lines here, ending in "Withdrawn: <reason>".
+    changelog: store.changelog().filter((line) => publicIds.has(line.nodeId) || isWithdrawn(store, line.nodeId)),
     exhibits,
     source: meta.source,
     archivedAt: meta.archivedAt,

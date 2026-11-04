@@ -167,12 +167,16 @@ export async function loadGraph(database: Db, opts: { publicOnly: boolean }): Pr
   const sources = sourceIds.length
     ? await database.query<Row>(`select * from sources where id = any($1::text[])`, [sourceIds])
     : [];
-  const versions = ids.length
+  // The public changelog also lists withdrawn exhibits, so a withdrawal is never silent.
+  const versions = opts.publicOnly
     ? await database.query<Row>(
-        `select * from exhibit_versions where exhibit_id = any($1::text[]) order by version`,
+        `select v.* from exhibit_versions v
+         where v.exhibit_id = any($1::text[])
+            or v.exhibit_id in (select id from exhibits where publication_state = 'withdrawn')
+         order by v.at, v.version`,
         [ids],
       )
-    : [];
+    : await database.query<Row>(`select * from exhibit_versions order by at, version`);
   const evolution = ids.length
     ? await database.query<Row>(
         `select * from evolution where from_id = any($1::text[]) and to_id = any($1::text[])`,
@@ -215,6 +219,7 @@ export async function loadGraph(database: Db, opts: { publicOnly: boolean }): Pr
       (row): ChangelogLine => ({
         at: iso(row.at),
         nodeId: String(row.exhibit_id),
+        title: json<Partial<ExhibitWrite>>(row.blob, {}).title,
         version: Number(row.version),
         reason: String(row.reason),
         suggestionId: row.suggestion_id == null ? undefined : String(row.suggestion_id),

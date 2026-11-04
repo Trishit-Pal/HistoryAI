@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { seedMuseum } from "../seed/eras";
@@ -9,7 +9,9 @@ const client = new PGlite();
 const database = createPgliteDb(client);
 
 beforeAll(async () => {
-  await migratePglite(client, readFileSync("db/migrations/0001_schema.sql", "utf8"));
+  for (const file of readdirSync("db/migrations").filter((name) => name.endsWith(".sql")).sort()) {
+    await migratePglite(client, readFileSync(`db/migrations/${file}`, "utf8"));
+  }
   await importSnapshot(database, seedMuseum().snapshot());
 });
 
@@ -44,7 +46,7 @@ describe("postgres graph", () => {
     expect(publicGraph.exhibits.some((exhibit) => exhibit.id === "draft_db")).toBe(false);
 
     const before = await loadGraph(database, { publicOnly: false });
-    const plaque = before.exhibits.find((exhibit) => exhibit.id === "evt_history_overview");
+    const plaque = before.exhibits.find((exhibit) => exhibit.id === "ctx_1843_analytical_engine");
     expect(plaque).toBeTruthy();
     const revised = await commitWrite(
       database,
@@ -57,7 +59,7 @@ describe("postgres graph", () => {
     );
     expect(revised.ok).toBe(true);
     const after = await loadGraph(database, { publicOnly: false });
-    const versions = after.versions.filter((entry) => entry.nodeId === "evt_history_overview");
+    const versions = after.versions.filter((entry) => entry.nodeId === "ctx_1843_analytical_engine");
     expect(versions[0]?.blob.publicStory).not.toBe("A revised plaque.");
     expect(versions.at(-1)?.reason).toBe("Clarified the plaque");
   });
@@ -68,10 +70,10 @@ describe("postgres graph", () => {
       database,
       {
         exhibit: {
-          id: "evt_history_overview",
-          title: "Mechanical and logical precursors",
+          id: "ctx_1843_analytical_engine",
+          title: "Sketch of the Analytical Engine",
           kind: "idea",
-          startYear: 1854,
+          startYear: 1843,
           publicStory: "A framing plaque.",
           publicationState: "canon",
           incomplete: false,
@@ -88,7 +90,7 @@ describe("postgres graph", () => {
       database,
       {
         exhibit: {
-          ...(before.exhibits.find((exhibit) => exhibit.id === "evt_history_overview") as NonNullable<
+          ...(before.exhibits.find((exhibit) => exhibit.id === "ctx_1843_analytical_engine") as NonNullable<
             (typeof before.exhibits)[number]
           >),
           publicStory: "Stale.",
@@ -100,22 +102,22 @@ describe("postgres graph", () => {
     );
     expect(stale.ok).toBe(false);
     const after = await loadGraph(database, { publicOnly: false });
-    expect(after.exhibits.find((exhibit) => exhibit.id === "evt_history_overview")?.publicStory).toBe(
-      before.exhibits.find((exhibit) => exhibit.id === "evt_history_overview")?.publicStory,
+    expect(after.exhibits.find((exhibit) => exhibit.id === "ctx_1843_analytical_engine")?.publicStory).toBe(
+      before.exhibits.find((exhibit) => exhibit.id === "ctx_1843_analytical_engine")?.publicStory,
     );
   });
 
   it("refuses to rewrite a stored version and records an accepted suggestion", async () => {
     await expect(
-      database.query("update exhibit_versions set reason = 'tampered' where exhibit_id = $1", ["evt_history_overview"]),
+      database.query("update exhibit_versions set reason = 'tampered' where exhibit_id = $1", ["ctx_1843_analytical_engine"]),
     ).rejects.toThrow(/append-only/);
     const inserted = await database.query<{ id: string }>(
       `insert into suggestions (exhibit_id, kind, body, ip_hash) values ($1, 'correction', $2, 'hash') returning id`,
-      ["evt_history_overview", "The plaque year should mention the entrance, not a later machine."],
+      ["ctx_1843_analytical_engine", "The plaque year should mention the entrance, not a later machine."],
     );
     const id = inserted[0]?.id;
     const current = (await loadGraph(database, { publicOnly: false })).exhibits.find(
-      (exhibit) => exhibit.id === "evt_history_overview",
+      (exhibit) => exhibit.id === "ctx_1843_analytical_engine",
     );
     const saved = await commitWrite(
       database,
@@ -150,7 +152,7 @@ describe("postgres graph", () => {
 
   it("clears an omitted field on replace and refuses a create over an existing id", async () => {
     const graph = await loadGraph(database, { publicOnly: false });
-    const plaque = graph.exhibits.find((exhibit) => exhibit.id === "evt_history_overview")!;
+    const plaque = graph.exhibits.find((exhibit) => exhibit.id === "ctx_1843_analytical_engine")!;
     const noted = await commitWrite(
       database,
       {
@@ -163,7 +165,7 @@ describe("postgres graph", () => {
     );
     expect(noted.ok).toBe(true);
     const withNote = (await loadGraph(database, { publicOnly: false })).exhibits.find(
-      (exhibit) => exhibit.id === "evt_history_overview",
+      (exhibit) => exhibit.id === "ctx_1843_analytical_engine",
     )!;
     expect(withNote.editorialNote).toBe("Temporary note.");
     const { editorialNote: _dropped, ...withoutNote } = withNote;
@@ -174,7 +176,7 @@ describe("postgres graph", () => {
     );
     expect(cleared.ok).toBe(true);
     const after = (await loadGraph(database, { publicOnly: false })).exhibits.find(
-      (exhibit) => exhibit.id === "evt_history_overview",
+      (exhibit) => exhibit.id === "ctx_1843_analytical_engine",
     )!;
     expect(after.editorialNote).toBeUndefined();
     expect(after.tags).toEqual(withNote.tags);
@@ -211,10 +213,19 @@ describe("postgres graph", () => {
     expect(result.ok).toBe(false);
   });
 
+  it("keeps withdrawn exhibits off the floor but lists their versions in the public changelog", async () => {
+    const publicGraph = await loadGraph(database, { publicOnly: true });
+    expect(publicGraph.exhibits.some((exhibit) => exhibit.id === "evt_1987_lisp_collapse")).toBe(false);
+    const lines = publicGraph.changelog.filter((line) => line.nodeId === "evt_1987_lisp_collapse");
+    expect(lines.at(-1)?.reason).toMatch(/^Withdrawn: /);
+    expect(lines.at(-1)?.title).toBe("LISP-machine market collapse");
+    expect(publicGraph.changelog.some((line) => line.nodeId === "draft_db")).toBe(false);
+  });
+
   it("keeps draft claims off the public graph", async () => {
     await database.query(
       `insert into claims (id, exhibit_id, statement, role, status, publication_state)
-       values ('claim_draft_db', 'evt_history_overview', 'Not yet reviewed.', 'what_changed', 'asserted', 'draft')`,
+       values ('claim_draft_db', 'ctx_1843_analytical_engine', 'Not yet reviewed.', 'what_changed', 'asserted', 'draft')`,
     );
     const publicGraph = await loadGraph(database, { publicOnly: true });
     expect(publicGraph.claims.some((claim) => claim.id === "claim_draft_db")).toBe(false);

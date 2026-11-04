@@ -14,6 +14,8 @@ export default async function RoomPage({ params }: { params: Promise<{ era: stri
   const found = eraBySlug(era);
   if (!found) notFound();
   const data = await getMuseum();
+  // An era with no public exhibits has no hall (see layoutHalls), so its room does not exist.
+  if (!data.halls.some((hall) => hall.id === found.id)) notFound();
   return (
     <MuseumShell
       nodes={data.nodes}
