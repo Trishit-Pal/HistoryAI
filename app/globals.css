@@ -522,7 +522,7 @@ textarea {
 }
 
 .flatland h2 {
-  font-family: var(--bp-sheet-font);
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
   margin: 0 0 0.75rem;
   color: var(--bp-chalk);
@@ -700,8 +700,8 @@ textarea {
 }
 
 .dossier h1 {
-  font-family: var(--bp-sheet-font);
-  font-size: 1.9rem;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 2.4rem;
   font-weight: 600;
   line-height: 1.1;
   margin: 0 0 0.75rem;
@@ -709,9 +709,9 @@ textarea {
 }
 
 .dossier h2 {
-  font-family: var(--bp-sheet-font);
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   margin: 1.25rem 0 0.25rem;
 }
 
@@ -848,10 +848,6 @@ textarea {
   outline-offset: 2px;
 }
 
-.exhibit-page .exhibit-sheet :focus-visible {
-  outline-color: var(--bp-ink);
-}
-
 .exhibit-page .archive-banner {
   max-width: 46rem;
   margin: 0 auto;
@@ -860,6 +856,9 @@ textarea {
 }
 
 .exhibit-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
   max-width: 46rem;
   margin: 0 auto;
   padding: 1.25rem 1rem 0;
@@ -883,8 +882,8 @@ textarea {
 }
 
 .exhibit-sheet h1 {
-  font-family: var(--bp-sheet-font);
-  font-size: 2.2rem;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 2.8rem;
   font-weight: 600;
   line-height: 1.08;
   margin: 0 0 1rem;
@@ -892,8 +891,12 @@ textarea {
 
 .exhibit-sheet h2,
 .exhibit-sheet h3 {
-  font-family: var(--bp-sheet-font);
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
+}
+
+.exhibit-sheet h3 {
+  font-size: 1.4rem;
 }
 
 /* Each section is ruled off like a block on a drawing. */
@@ -901,7 +904,7 @@ textarea {
   margin: 1.75rem 0 0.35rem;
   padding-top: 0.6rem;
   border-top: 1px solid var(--bp-redline);
-  font-size: 1.3rem;
+  font-size: 1.7rem;
 }
 
 .exhibit-sheet p,
@@ -998,7 +1001,7 @@ textarea {
 .editor-form select {
   width: 100%;
   padding: 0.45rem 0.5rem;
-  border: 1px solid var(--bp-rule);
+  border: 1px solid var(--brass);
   background: var(--floor);
   color: var(--ink);
 }
