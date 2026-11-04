@@ -76,7 +76,7 @@ export function Dossier({
       <h1>{node.title}</h1>
       <FigureCredit figure={node.figure} />
       <ArtefactCredit exhibitId={node.id} onHotspot={onHotspot} />
-      <InspectArtefact exhibitId={node.id} title={node.title} onOpenChange={onInspect} />
+      <InspectArtefact key={node.id} exhibitId={node.id} title={node.title} onOpenChange={onInspect} />
       <HallOrderNav earlier={earlier} later={later} onFocus={onFocus} />
       <p>{node.publicStory}</p>
       {node.editorialNote ? <p className="note">{node.editorialNote}</p> : null}

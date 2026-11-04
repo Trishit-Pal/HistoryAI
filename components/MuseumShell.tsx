@@ -55,6 +55,9 @@ export function MuseumShell({
     setVisitedReady(true);
   }, []);
 
+  // A part lit from the hotspot list belongs to one exhibit: a new focus starts unlit.
+  useEffect(() => setHighlight(null), [focusedId]);
+
   useEffect(() => {
     if (!visitedReady || !focusedId) return;
     setVisited((prev) => (prev.includes(focusedId) ? prev : [...prev, focusedId]));

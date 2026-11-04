@@ -40,6 +40,20 @@ export function InspectArtefact({
     setWebgl(hasWebGL());
   }, []);
 
+  // If this unmounts while open (the exhibit changes under it), never leave the corridor paused.
+  const latest = useRef(onOpenChange);
+  const isOpen = useRef(false);
+  useEffect(() => {
+    latest.current = onOpenChange;
+    isOpen.current = open;
+  });
+  useEffect(
+    () => () => {
+      if (isOpen.current) latest.current?.(false);
+    },
+    [],
+  );
+
   if (!artefact || !webgl) return null;
   const titleId = `inspect-title-${exhibitId}`;
   const selected = artefact.hotspots.find((hotspot) => hotspot.id === part);

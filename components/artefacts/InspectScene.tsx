@@ -21,7 +21,7 @@ const FRAME_MARGIN = 1.3;
 
 type Fit = { centre: [number, number]; lookY: number; distance: number };
 
-// Measures the drawn model once, centres it on the turntable and frames the camera on it.
+// Measures the drawn model (again whenever the artefact changes), centres it on the turntable and frames the camera on it.
 function Framed({ artefact, highlight, reduced }: { artefact: Artefact; highlight?: string; reduced: boolean }) {
   const inner = useRef<Group>(null);
   const camera = useThree((state) => state.camera) as PerspectiveCamera;
@@ -41,7 +41,7 @@ function Framed({ artefact, highlight, reduced }: { artefact: Artefact; highligh
     camera.position.set(0, lookY + distance * Math.sin(ELEVATION), distance * Math.cos(ELEVATION));
     camera.lookAt(0, lookY, 0);
     setFit({ centre: [centre.x, centre.z], lookY, distance });
-  }, [camera, radius]);
+  }, [camera, radius, artefact.component, artefact.scale]);
 
   return (
     <>
@@ -75,7 +75,8 @@ export function InspectScene({ artefact, highlight, reduced }: { artefact: Artef
   return (
     <Canvas flat camera={{ fov: FOV, position: [0, 1, 3], near: 0.01, far: 50 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
       <color attach="background" args={[PRUSSIAN]} />
-      <Framed artefact={artefact} highlight={highlight} reduced={reduced} />
+      {/* Keyed so a new artefact remounts and is measured from a zero offset. */}
+      <Framed key={artefact.component} artefact={artefact} highlight={highlight} reduced={reduced} />
     </Canvas>
   );
 }

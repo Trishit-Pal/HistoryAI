@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Text } from "@react-three/drei";
 import { LABEL_FONT } from "./labelFont";
 import { Color, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader } from "three";
@@ -20,7 +20,8 @@ function isPhoto(src: string): boolean {
 
 // Line drawings on light paper are drawn as light linework on the dark plate: luminance is
 // inverted onto PRINT → CHALK, and any colour (the gold accents) keeps its chroma.
-function useLinework(map: Texture | null, opacity: number): ShaderMaterial {
+// Mounted only for drawings, so photos never build this material.
+function Linework({ map, opacity }: { map: Texture; opacity: number }) {
   const material = useMemo(
     () =>
       new ShaderMaterial({
@@ -48,10 +49,16 @@ function useLinework(map: Texture | null, opacity: number): ShaderMaterial {
     [],
   );
   useEffect(() => () => material.dispose(), [material]);
-  material.uniforms.map.value = map;
-  material.uniforms.opacity.value = opacity;
-  material.transparent = opacity < 1;
-  return material;
+  useLayoutEffect(() => {
+    material.uniforms.map.value = map;
+    material.uniforms.opacity.value = opacity;
+    material.transparent = opacity < 1;
+  }, [material, map, opacity]);
+  return (
+    <mesh position={[0, 0, 0.002]} material={material}>
+      <planeGeometry args={[W - 0.02, H - 0.02]} />
+    </mesh>
+  );
 }
 
 export function FigurePlate({
@@ -103,7 +110,6 @@ export function FigurePlate({
   }, [load, src]);
 
   const opacity = ghost ? 0.25 : 1;
-  const linework = useLinework(map, opacity);
   const photo = Boolean(map && src && isPhoto(src));
 
   return (
@@ -120,11 +126,7 @@ export function FigurePlate({
           <meshBasicMaterial color={PHOTO_DIM} map={map} transparent={ghost} opacity={opacity} />
         </mesh>
       ) : null}
-      {map && !photo ? (
-        <mesh position={[0, 0, 0.002]} material={linework}>
-          <planeGeometry args={[W - 0.02, H - 0.02]} />
-        </mesh>
-      ) : null}
+      {map && !photo ? <Linework map={map} opacity={opacity} /> : null}
       <Text font={LABEL_FONT} position={[0, -0.32, 0.02]} fontSize={0.04} color={INK} anchorX="center" anchorY="middle" maxWidth={0.7}>
         {id}
       </Text>

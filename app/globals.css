@@ -140,6 +140,11 @@ textarea {
   height: auto;
 }
 
+/* Photographed scans are dimmed a little on the night panel; drawn SVG figures keep full contrast. */
+.exhibit-figure img:is([src$=".jpg" i], [src$=".jpeg" i], [src$=".png" i], [src$=".webp" i]) {
+  filter: brightness(0.85);
+}
+
 .exhibit-figure figcaption {
   max-width: 65ch;
 }

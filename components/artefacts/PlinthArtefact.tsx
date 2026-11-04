@@ -14,7 +14,7 @@ import type { ArtefactProps } from "./motion";
 import { Protein } from "./Protein";
 import { Relay } from "./Relay";
 
-export const ARTEFACT_MODELS:Record<ArtefactKey, ComponentType<ArtefactProps>> = {
+export const ARTEFACT_MODELS: Record<ArtefactKey, ComponentType<ArtefactProps>> = {
   analyticalEngine: AnalyticalEngine,
   relay: Relay,
   markIPerceptron: MarkIPerceptron,

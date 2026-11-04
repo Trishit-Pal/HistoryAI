@@ -222,6 +222,9 @@ function Corridor({
 }
 
 function isTypingTarget(target: EventTarget | null): boolean {
+  // While a modal (the inspect dialog) is open, keys belong to it, not to the halls behind,
+  // wherever the event lands (a control in it, its canvas, or the body after a click).
+  if (document.querySelector("dialog[open]")) return true;
   if (!(target instanceof HTMLElement)) return false;
   if (target.closest("input, textarea, select, [role='tab'], [contenteditable='true']")) return true;
   return target.closest("input[type='range']") !== null;

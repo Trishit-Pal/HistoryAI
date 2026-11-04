@@ -33,6 +33,15 @@ test("inspect the perceptron: dialog opens, a part shows its source, Esc returns
   await expect(dialog.getByText("An array of 400 photocells arranged in a 20x20 grid.", { exact: false })).toBeVisible();
   await expect(dialog.locator(".inspect-text a")).toHaveAttribute("href", "https://en.wikipedia.org/wiki/Perceptron");
 
+  // Arrow keys belong to the dialog: the halls behind it must not move.
+  await page.keyboard.press("ArrowRight");
+  await part.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/\/rooms\/symbolic/);
+  // The page behind a modal is inert (out of the accessibility tree), so read the Dossier by class.
+  await expect(page.locator(".dossier h1")).toContainText("Perceptron");
+  await expect(dialog).toBeVisible();
+
   const axe = await new AxeBuilder({ page }).include(".inspect").analyze();
   expect(axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { type Artefact, artefactFor, creditParts } from "../src/museum/artefacts";
 import { SafeLink } from "./SafeLink";
 
@@ -23,9 +24,20 @@ export function ArtefactCredit({
   exhibitId: string;
   onHotspot?: (part: string | null) => void;
 }) {
+  // The part this list last lit: leaving an item clears only if it is still the lit one, so the
+  // mouse leaving item A never blanks item B that the keyboard has since focused (and vice versa).
+  const lit = useRef<string | null>(null);
   const artefact = artefactFor(exhibitId);
   if (!artefact) return null;
-  const clear = () => onHotspot?.(null);
+  const light = (part: string) => {
+    lit.current = part;
+    onHotspot?.(part);
+  };
+  const clear = (part: string) => {
+    if (lit.current !== part) return;
+    lit.current = null;
+    onHotspot?.(null);
+  };
   return (
     <section className="artefact" aria-label="Object on the plinth">
       <CreditLine artefact={artefact} />
@@ -33,10 +45,10 @@ export function ArtefactCredit({
         {artefact.hotspots.map((hotspot) => (
           <li
             key={hotspot.id}
-            onMouseEnter={() => onHotspot?.(hotspot.id)}
-            onMouseLeave={clear}
-            onFocus={() => onHotspot?.(hotspot.id)}
-            onBlur={clear}
+            onMouseEnter={() => light(hotspot.id)}
+            onMouseLeave={() => clear(hotspot.id)}
+            onFocus={() => light(hotspot.id)}
+            onBlur={() => clear(hotspot.id)}
           >
             <strong>{hotspot.label}.</strong> {hotspot.text} <SafeLink href={hotspot.sourceUrl}>Source</SafeLink>
           </li>

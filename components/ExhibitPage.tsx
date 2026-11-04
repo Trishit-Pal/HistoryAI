@@ -66,7 +66,7 @@ export function ExhibitPage({
         <h1>{node.title}</h1>
         <FigureCredit figure={node.figure} />
         <ArtefactCredit exhibitId={node.id} />
-        <InspectArtefact exhibitId={node.id} title={node.title} />
+        <InspectArtefact key={node.id} exhibitId={node.id} title={node.title} />
         <p>{node.publicStory}</p>
         {node.editorialNote ? <p className="note">{node.editorialNote}</p> : null}
         {node.technicalAccount ? (
