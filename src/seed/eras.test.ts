@@ -57,7 +57,10 @@ describe("era seed", () => {
     }
     // Owner decisions: no GPU count on Astra, and France only with a source that says so.
     expect(byId.get("evt_2026_gpt6_astra")?.publicStory).not.toMatch(/GPU|NVL|rack/i);
-    expect(byId.get("evt_2023_mistral_7b")?.citations.map((c) => c.url)).toContain("https://en.wikipedia.org/wiki/Mistral_AI");
+    const mistral = byId.get("evt_2023_mistral_7b");
+    expect(mistral?.citations.map((c) => c.url)).toContain("https://recherche-entreprises.api.gouv.fr/search?q=952418325");
+    expect(mistral?.citations.map((c) => c.url)).not.toContain("https://en.wikipedia.org/wiki/Mistral_AI");
+    expect(byId.get("evt_2024_o1")?.publicStory).not.toMatch(/previously called/);
   });
 
   it("keeps the eight withdrawn exhibits off the floor but in the changelog", () => {

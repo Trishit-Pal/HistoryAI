@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { seedMuseum } from "../seed/eras";
 import type { MuseumSnapshot } from "../store/memory";
-import { applyAudit, CONFIRM_REASON, INSERT_REASON } from "./audit";
+import { applyAudit, CONFIRM_REASON, insertReason } from "./audit";
 import { commitWrite, importSnapshot, loadGraph } from "./graph";
 import { createPgliteDb, migratePglite } from "./pglite";
 import { hit } from "./rateLimit";
@@ -120,10 +120,22 @@ describe("museum_app role", () => {
     expect(first.lines).toContain(`insert: ${MISSING}`);
     const graph = await loadGraph(database, { publicOnly: true });
     expect(graph.exhibits.find((e) => e.id === MISSING)).toMatchObject({ confidence: "confirmed", publicationState: "canon" });
-    expect(graph.versions.filter((v) => v.nodeId === MISSING).at(-1)?.reason).toBe(INSERT_REASON);
+    expect(graph.versions.filter((v) => v.nodeId === MISSING).at(-1)?.reason).toBe(insertReason("confirmed"));
+    expect(insertReason("reported")).not.toMatch(/confirmed/);
 
     const second = await applyAudit(database);
     expect(second).toMatchObject({ failed: false, writes: 0 });
+  });
+
+  it("db:audit leaves a seed exhibit withdrawn in the database alone", async () => {
+    const bert = (await loadGraph(database, { publicOnly: false })).exhibits.find((e) => e.id === "evt_2018_bert")!;
+    const withdrawn = { ...bert, publicationState: "withdrawn" as const, publicStory: "Edited before withdrawal." };
+    expect(await commitWrite(database, { exhibit: withdrawn, reason: "Withdrawn: probe" }, "editor")).toEqual({ ok: true });
+    const run = await applyAudit(database);
+    expect(run).toMatchObject({ failed: false, writes: 0 });
+    expect(run.lines).toContain("withdrawn, skipped: evt_2018_bert");
+    const after = (await loadGraph(database, { publicOnly: false })).exhibits.find((e) => e.id === "evt_2018_bert");
+    expect(after).toMatchObject({ publicationState: "withdrawn", publicStory: "Edited before withdrawal." });
   });
 
   it("applies the accuracy audit to an older database, once", async () => {

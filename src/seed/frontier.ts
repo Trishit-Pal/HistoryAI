@@ -22,7 +22,9 @@ const GPT4 = "https://arxiv.org/abs/2303.08774";
 const QWEN = "https://github.com/QwenLM/Qwen";
 const FALCON = "https://arxiv.org/abs/2311.16867";
 const MISTRAL = "https://mistral.ai/news/announcing-mistral-7b";
-const O1 = "https://cdn.openai.com/o1-system-card-20241205.pdf";
+// The official API behind annuaire-entreprises.data.gouv.fr; the human page is bot-walled.
+const MISTRAL_REGISTER = "https://recherche-entreprises.api.gouv.fr/search?q=952418325";
+const O1 ="https://cdn.openai.com/o1-system-card-20241205.pdf";
 const DEEPSEEK_V3 = "https://arxiv.org/abs/2412.19437";
 const R1_NATURE = "https://www.nature.com/articles/s41586-025-09422-z";
 const ASTRA = "https://deploymentsafety.openai.com/gpt-6-astra";
@@ -94,13 +96,14 @@ export const FRONTIER_NODES: SeedNode[] = [
     startYear: 2023,
     kind: "system",
     publicStory:
-      "Mistral AI, a French company headquartered in Paris, released Mistral 7B, a 7.3-billion-parameter model, on 27 September 2023 under the Apache 2.0 licence, so anyone could use it without restrictions. The company says it outperforms Llama 2 13B on all benchmarks.",
+      "Mistral AI, a company registered in Paris, released Mistral 7B, a 7.3-billion-parameter model, on 27 September 2023 under the Apache 2.0 licence, so anyone could use it without restrictions. The company says it outperforms Llama 2 13B on all benchmarks.",
     citations: [
       cite(MISTRAL, "Mistral AI"),
       cite("https://arxiv.org/abs/2310.06825", "arXiv"),
-      cite("https://en.wikipedia.org/wiki/Mistral_AI", "Wikipedia"),
+      cite(MISTRAL_REGISTER, "French business register (Annuaire des Entreprises API)"),
     ],
-    editorialNote: "Neither Mistral source states the country; the Wikipedia article says the company is French and headquartered in Paris.",
+    editorialNote:
+      "Neither Mistral source states the country. The French business register lists MISTRAL AI (SIREN 952 418 325) with its head office at 15 rue des Halles, 75001 Paris, and Arthur Mensch, an author of the Mistral 7B paper, as president.",
     fieldChange: changed(
       "Llama 2 13B, with almost twice the parameters, was the open model Mistral 7B was measured against.",
       "Mistral AI's 27 September 2023 announcement releases the 7.3-billion-parameter Mistral 7B under Apache 2.0 and says it outperforms Llama 2 13B on all benchmarks.",
@@ -113,7 +116,7 @@ export const FRONTIER_NODES: SeedNode[] = [
     startYear: 2024,
     kind: "turning_point",
     publicStory:
-      "OpenAI's o1 models are trained with large-scale reinforcement learning to reason using a chain of thought, so they can produce a long chain of thought before they answer. OpenAI's system card, dated 5 December 2024, says o1 was previously called o1-preview.",
+      "OpenAI's o1 models are trained with large-scale reinforcement learning to reason using a chain of thought, so they can produce a long chain of thought before they answer. OpenAI's system card, dated 5 December 2024, calls o1 the next model in the series after o1-preview.",
     citations: [cite("https://arxiv.org/abs/2412.16720", "arXiv"), cite(O1, "OpenAI")],
     editorialNote: `${SAME_ORG} The arXiv copy was revised later; the story uses the original date.`,
     fieldChange: changed(
