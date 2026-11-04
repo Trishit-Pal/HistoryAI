@@ -62,6 +62,10 @@ export default function AccuracyPage() {
           </li>
         ))}
       </ul>
+      <h2>Changelog</h2>
+      <p>
+        <a href="/changelog">Changelog — every change to the exhibits</a>
+      </p>
       <h2>Suggestions</h2>
       <p>
         Each exhibit page has a form for a correction or a new source. Nothing is published from that

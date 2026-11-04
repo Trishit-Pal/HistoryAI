@@ -5,8 +5,13 @@ import { ATLAS_PALETTE, laneColour } from "./theme";
 
 const css = readFileSync(path.resolve("app/atlas/atlas.css"), "utf8");
 
+const globals = readFileSync(path.resolve("app/globals.css"), "utf8");
+
+// A token is a hex, or an alias var(--x) that resolves to a hex in globals.css.
 function cssToken(name: string): string | undefined {
-  return new RegExp(`--atlas-${name}:\\s*(#[0-9a-fA-F]{6})`).exec(css)?.[1]?.toLowerCase();
+  const value = new RegExp(`--atlas-${name}:\\s*([^;]+);`).exec(css)?.[1]?.trim();
+  const alias = value ? /^var\((--[\w-]+)\)$/.exec(value)?.[1] : undefined;
+  return (alias ? new RegExp(`${alias}:\\s*(#[0-9a-fA-F]{6})`).exec(globals)?.[1] : value)?.toLowerCase();
 }
 
 describe("atlas theme tokens", () => {

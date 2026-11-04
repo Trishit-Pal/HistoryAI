@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { atlasLinkFor } from "../src/atlas/links";
 import type { ExhibitDetail } from "../src/museum/build";
+import { Breadcrumbs } from "./Breadcrumbs";
 import { FieldChangeSection } from "./FieldChangeSection";
 import { FigureCredit } from "./FigureCredit";
 import { RevisionList } from "./RevisionList";
@@ -25,7 +26,13 @@ export function ExhibitPage({
     <main className="exhibit-page">
       {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
       <header className="exhibit-rail">
-        <a href={`/rooms/${eraSlug}`}>Back to {eraLabel}</a>
+        <Breadcrumbs
+          items={[
+            { label: "Timeline", href: "/" },
+            { label: eraLabel, href: `/rooms/${eraSlug}#${node.id}` },
+            { label: node.title },
+          ]}
+        />
         {atlasHref ? <a href={atlasHref}>See it in the atlas</a> : null}
       </header>
       <article className="plate exhibit-sheet">

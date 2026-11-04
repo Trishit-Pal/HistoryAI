@@ -89,6 +89,30 @@ test("any featured model has an address, not only the landmarks, and says why it
   await expect(detail).toContainText("Largest training run of its day");
 });
 
+test("next model focuses a model, and the view buttons and reset work without errors", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/atlas");
+  const webgl = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  });
+  test.skip(!webgl, "No WebGL in this browser.");
+
+  const detail = page.locator(".atlas-detail");
+  await page.getByRole("button", { name: "Next model" }).click();
+  await expect(detail.locator("h2")).toBeVisible();
+  await expect(page).toHaveURL(/#model=/);
+
+  await page.getByRole("button", { name: "Front", exact: true }).click();
+  await expect(page).not.toHaveURL(/#model=/);
+  await page.getByRole("button", { name: "Next model" }).click();
+  await expect(detail.locator("h2")).toBeVisible();
+  await page.getByRole("button", { name: "Back to the whole plot" }).click();
+  await expect(page).not.toHaveURL(/#model=/);
+  expect(errors).toEqual([]);
+});
+
 test("without WebGL the same landmarks are still there as a table", async ({ page }) => {
   await page.addInitScript(() => {
     HTMLCanvasElement.prototype.getContext = () => null;

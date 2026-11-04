@@ -16,7 +16,7 @@ describe("theme tokens", () => {
 
   it.each(Object.entries(CONFIDENCE_GLYPH))("draws the %s badge glyph in globals.css", (word, glyph) => {
     const rule = new RegExp(
-      `:is\\(\\.shell, \\.exhibit-page\\) \\.badge-${word}::before\\s*\\{\\s*content:\\s*"${glyph}"`,
+      `\\.badge-${word}::before\\s*\\{\\s*content:\\s*"${glyph}"`,
     );
     expect(css).toMatch(rule);
   });

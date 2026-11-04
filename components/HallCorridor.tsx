@@ -8,7 +8,7 @@ import gsap from "gsap";
 import type { Hall } from "../src/domain/layout";
 import { hallThreads, otherThreadId } from "../src/domain/threads";
 import { eraSpot } from "../src/museum/eraRooms";
-import { focusedPedestal, hallLength, hallOrigin, pedestalPosition, planCamera } from "../src/museum/hallMath";
+import { focusedPedestal, hallLength, hallOrigin, pedestalPosition } from "../src/museum/hallMath";
 import { precursorsCameraY } from "../src/museum/precursorsRoom";
 import { isSealed } from "../src/museum/seal";
 import { CHALK, CHALK_DIM, PRUSSIAN, REDLINE } from "../src/museum/theme";
@@ -22,13 +22,11 @@ function CameraRig({
   hallIndex,
   focusedId,
   reducedMotion,
-  plan,
 }: {
   halls: Hall[];
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
-  plan: boolean;
 }) {
   const { camera } = useThree();
   const look = focusedPedestal(halls, hallIndex, focusedId);
@@ -40,24 +38,21 @@ function CameraRig({
           (hall.id === "era_0_precursors" || eraSpot(hall.id, hall.exhibitIds, focusedId)),
       ),
   );
-  const overview = planCamera(halls, hallIndex);
-  const camX = plan ? overview.position[0] : 0;
-  const camZ = plan ? overview.position[2] : look[2] + (inPlacedRoom ? 4.2 : 6);
-  const camY = plan ? overview.position[1] : precursorsCameraY(inPlacedRoom ? look[1] : null);
+  const camZ = look[2] + (inPlacedRoom ? 4.2 : 6);
+  const camY = precursorsCameraY(inPlacedRoom ? look[1] : null);
   useEffect(() => {
     if (cameraMove(reducedMotion) === "snap") {
       gsap.killTweensOf(camera.position);
-      camera.position.set(camX, camY, camZ);
+      camera.position.set(0, camY, camZ);
       return;
     }
-    const tween = gsap.to(camera.position, { x: camX, y: camY, z: camZ, duration: 1.1, ease: "power2.inOut" });
+    const tween = gsap.to(camera.position, { x: 0, y: camY, z: camZ, duration: 1.1, ease: "power2.inOut" });
     return () => {
       tween.kill();
     };
-  }, [camera, camX, camY, camZ, reducedMotion]);
+  }, [camera, camY, camZ, reducedMotion]);
   useFrame(() => {
-    if (plan) camera.lookAt(...overview.target);
-    else camera.lookAt(look[0], 1.2 + (camY - 1.6), look[2]);
+    camera.lookAt(look[0], 1.2 + (camY - 1.6), look[2]);
   });
   return null;
 }
@@ -223,7 +218,6 @@ export function HallCorridor({
   hallIndex,
   focusedId,
   reducedMotion,
-  plan = false,
   onFocus,
   onHall,
 }: {
@@ -233,7 +227,6 @@ export function HallCorridor({
   hallIndex: number;
   focusedId: string | null;
   reducedMotion: boolean;
-  plan?: boolean;
   onFocus: (id: string) => void;
   onHall: (index: number) => void;
 }) {
@@ -277,7 +270,6 @@ export function HallCorridor({
           hallIndex={hallIndex}
           focusedId={focusedId}
           reducedMotion={reducedMotion}
-          plan={plan}
         />
         <Corridor
           halls={halls}

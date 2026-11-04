@@ -33,6 +33,7 @@ export type Hall = {
   light: number;
   spacing: number;
   exhibitIds: string[];
+  summary?: string;
 };
 
 function decadeOf(year: number): number {
@@ -165,6 +166,7 @@ export function layoutHalls(exhibits: PublicExhibit[]): Hall[] {
       mood: era.mood,
       ...cues(era.mood),
       exhibitIds: members.map((exhibit) => exhibit.id),
+      summary: era.summary,
     };
   });
   halls.push({
@@ -175,6 +177,7 @@ export function layoutHalls(exhibits: PublicExhibit[]): Hall[] {
     mood: "empty",
     ...cues("empty"),
     exhibitIds: pedestalOrder(provisional).map((exhibit) => exhibit.id),
+    summary: "Recent work still being sourced and checked.",
   });
   return halls;
 }

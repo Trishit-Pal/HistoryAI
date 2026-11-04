@@ -1,37 +1,39 @@
 :root {
-  --floor: #1a1814;
-  --pedestal: #c8bba4;
-  --brass: #a6843d;
-  --ink: #1e2430;
-  --plate: #e4e7ea;
-  --established: #3d6b58;
-  --contested: #a56b2a;
-  --unknown: #5e6a78;
-  --retracted: #8c3e3e;
-  --flag: #8c4a2f;
-  --context: #6b7c8a;
+  /* The whole site is one night-and-gold look. These legacy names now hold night values:
+     floor = ground, plate = panel, ink = body text, brass = gold. */
+  --floor: #07070d;
+  --pedestal: #8b8aa3;
+  --brass: #d4af37;
+  --ink: #e8e6f0;
+  --plate: #0c0d17;
+  /* Confidence colours, lightened to read on the dark panel (AA, 7.4:1 or better). Word + shape still carry the meaning. */
+  --established: #5fbf9a;
+  --contested: #e0a458;
+  --unknown: #9ca8b8;
+  --retracted: #ef8a7a;
+  --flag: #e8946a;
+  --context: #8fa3b3;
 }
 
-/* Cyanotype sheet tokens for the corridor. Defined on .shell and on the page that holds one,
-   so the site nav above it can use them; other pages keep the stone theme.
-   Keep equal to src/museum/theme.ts (theme.test.ts checks). */
-.shell,
-.exhibit-page,
-html:has(:is(.shell, .exhibit-page)) {
-  --bp-prussian: #0e2a47;
-  --bp-lift: #16406a;
-  --bp-chalk: #eaf1f5;
-  --bp-chalk-dim: #8faec6;
-  --bp-redline: #ff7a59;
-  --bp-print: #f2f6f8;
-  --bp-ink: #1e2430;
+/* The shared night + gold tokens. Keep equal to src/museum/theme.ts (theme.test.ts checks).
+   "redline" is gold: the single "where you are" accent. */
+:root {
+  --bp-prussian: #07070d;
+  --bp-lift: #0c0d17;
+  --bp-chalk: #e8e6f0;
+  --bp-chalk-dim: #8b8aa3;
+  --bp-redline: #d4af37;
+  --bp-print: #0c0d17;
+  --bp-ink: #e8e6f0;
+  --bp-gold-soft: #f0d68a;
+  --bp-cyan: #5eead4;
+  /* Thin gold rules on dark panels (not in theme.ts: it is a blend, not a colour the 3D scene needs). */
+  --bp-rule: color-mix(in srgb, var(--bp-redline) 45%, transparent);
 }
 
 /* Resolved on body and below, where next/font defines --font-sheet. */
-.shell,
-.exhibit-page,
-body:has(:is(.shell, .exhibit-page)) {
-  --bp-sheet-font: var(--font-sheet), "Barlow Semi Condensed", "DIN Alternate", system-ui, sans-serif;
+body {
+  --bp-sheet-font: var(--font-sheet), "Space Grotesk", system-ui, sans-serif;
 }
 
 html:has(:is(.shell, .exhibit-page)),
@@ -65,7 +67,7 @@ body {
   margin: 0;
   min-height: 100%;
   background: var(--floor);
-  color: var(--plate);
+  color: var(--ink);
 }
 
 body {
@@ -75,17 +77,12 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   text-wrap: balance;
 }
 
 a {
   color: var(--brass);
-}
-
-.plate a,
-.page a {
-  color: var(--ink);
 }
 
 button,
@@ -112,24 +109,24 @@ textarea {
 }
 
 .badge-confirmed {
-  color: #3d6b58;
-  border-color: #3d6b58;
+  color: var(--established);
+  border-color: var(--established);
 }
 
 .badge-reported {
-  color: #7a4c17;
-  border-color: #7a4c17;
+  color: var(--contested);
+  border-color: var(--contested);
 }
 
 .badge-disputed {
-  color: #8c4a2f;
-  border-color: #8c4a2f;
+  color: var(--flag);
+  border-color: var(--flag);
 }
 
 .badge-rumored,
 .badge-unset {
-  color: #4f5a66;
-  border-color: #4f5a66;
+  color: var(--unknown);
+  border-color: var(--unknown);
 }
 
 .exhibit-figure {
@@ -180,16 +177,45 @@ textarea {
   font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
   font-size: 0.8rem;
   background: var(--floor);
-  border-bottom: 1px solid #3a342c;
+  border-bottom: 1px solid var(--bp-rule);
 }
 
 .site-nav a {
-  color: var(--plate);
+  color: var(--ink);
 }
 
 .site-nav a:hover,
 .site-nav a[aria-current="page"] {
   color: var(--brass);
+}
+
+.site-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-color: var(--bp-redline);
+  text-underline-offset: 0.3em;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li + li::before {
+  content: "›";
+  margin-right: 0.5rem;
+  color: var(--bp-redline);
+}
+
+.breadcrumbs a {
+  color: var(--bp-chalk);
+}
+
+.breadcrumbs [aria-current="page"] {
+  color: var(--bp-chalk-dim);
 }
 
 .shell {
@@ -205,7 +231,7 @@ textarea {
   outline-offset: 2px;
 }
 
-.shell .sr-only {
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -222,7 +248,7 @@ textarea {
   font-family: var(--bp-sheet-font);
 }
 
-/* The rail is the sheet's top border: name, scale bar, then the sheet tabs. */
+/* The rail is the sheet's top border: breadcrumbs and the previous / next era buttons. */
 .rail {
   position: sticky;
   top: 0;
@@ -236,9 +262,8 @@ textarea {
   border-bottom: 1px solid var(--bp-chalk);
 }
 
-.site-name {
+.rail .breadcrumbs {
   grid-column: 1;
-  grid-row: 1 / span 2;
   align-self: center;
   margin: 0;
   font-family: var(--bp-sheet-font);
@@ -248,86 +273,28 @@ textarea {
   color: var(--bp-chalk);
 }
 
-.rail label {
+/* Previous / next era, on the breadcrumb row. */
+.era-step {
   grid-column: 2;
-  font-family: var(--bp-sheet-font);
-  font-size: 0.95rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--bp-chalk);
+  justify-self: end;
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.year-scale {
-  --thumb: 6px;
-  grid-column: 2;
-  position: relative;
-  max-width: 44rem;
-  padding-top: 1.6rem;
-}
-
-.year-scale .ticks {
-  position: absolute;
-  inset: 0 calc(var(--thumb) / 2) auto;
-  height: 1.6rem;
-}
-
-.year-scale .tick {
-  position: absolute;
-  bottom: 0;
-  width: 1px;
-  height: 0.4rem;
-  background: var(--bp-chalk-dim);
-}
-
-.year-scale .tick.major {
-  height: 0.7rem;
-  background: var(--bp-chalk);
-}
-
-.year-scale .tick-label {
-  position: absolute;
-  bottom: 0.75rem;
-  left: 0;
-  transform: translateX(-50%);
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--bp-chalk-dim);
-}
-
-.year-scale input[type="range"] {
-  appearance: none;
-  display: block;
-  width: 100%;
-  height: 1.5rem;
-  margin: 0;
+.era-step button {
   background: transparent;
-  cursor: ew-resize;
+  color: var(--bp-chalk);
+  border: 1px solid var(--bp-chalk-dim);
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
 }
 
-.year-scale input[type="range"]::-webkit-slider-runnable-track {
-  height: 1.5rem;
-  background: linear-gradient(var(--bp-chalk), var(--bp-chalk)) center / 100% 1px no-repeat;
-}
-
-.year-scale input[type="range"]::-moz-range-track {
-  height: 1.5rem;
-  background: linear-gradient(var(--bp-chalk), var(--bp-chalk)) center / 100% 1px no-repeat;
-}
-
-.year-scale input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: var(--thumb);
-  height: 1.5rem;
-  border: 0;
-  border-radius: 0;
-  background: var(--bp-redline);
-}
-
-.year-scale input[type="range"]::-moz-range-thumb {
-  width: var(--thumb);
-  height: 1.5rem;
-  border: 0;
-  border-radius: 0;
-  background: var(--bp-redline);
+.era-step button:hover {
+  border-color: var(--bp-chalk);
 }
 
 .stage {
@@ -386,26 +353,13 @@ textarea {
     row-gap: 0.4rem;
   }
 
-  .index {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-  }
-
-  .index button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-
-  .site-name,
-  .rail label,
-  .year-scale,
-  .plan-toggle {
+  .rail .breadcrumbs,
+  .era-step {
     grid-column: 1;
     grid-row: auto;
   }
 
-  .plan-toggle {
+  .era-step {
     justify-self: start;
   }
 
@@ -506,16 +460,6 @@ textarea {
   white-space: nowrap;
 }
 
-.hall-name {
-  margin: 0;
-  font-family: var(--bp-sheet-font);
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--bp-chalk);
-  text-wrap: balance;
-  pointer-events: none;
-}
-
 .flatland {
   padding: 1rem 1.25rem 4rem;
 }
@@ -525,7 +469,7 @@ textarea {
 }
 
 .flatland h2 {
-  font-family: var(--bp-sheet-font);
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
   margin: 0 0 0.75rem;
   color: var(--bp-chalk);
@@ -584,60 +528,6 @@ textarea {
   color: var(--ink);
 }
 
-.plan-toggle {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  align-self: start;
-  padding: 0.2rem 0.7rem;
-  background: transparent;
-  color: var(--bp-chalk);
-  border: 1px solid var(--bp-chalk-dim);
-  font-family: var(--bp-sheet-font);
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.plan-toggle[aria-pressed="true"] {
-  background: var(--bp-lift);
-  border-color: var(--bp-chalk);
-  box-shadow: inset 0 -3px 0 var(--bp-redline);
-}
-
-/* Hall chips are sheet tabs. A sealed hall is not yet drawn: dashed outline. */
-.index {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.35rem;
-}
-
-.index button {
-  background: transparent;
-  color: var(--bp-chalk);
-  border: 1px solid var(--bp-chalk-dim);
-  border-bottom-width: 3px;
-  padding: 0.25rem 0.6rem 0.2rem;
-  cursor: pointer;
-  font-family: var(--bp-sheet-font);
-  font-size: 0.9rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.index button[aria-current="true"] {
-  background: var(--bp-lift);
-  border-color: var(--bp-chalk);
-  border-bottom-color: var(--bp-redline);
-  font-weight: 600;
-}
-
-.index button:disabled {
-  border-style: dashed;
-  color: var(--bp-chalk-dim);
-  cursor: not-allowed;
-}
-
 .hall-order {
   display: flex;
   flex-wrap: wrap;
@@ -676,10 +566,11 @@ textarea {
   border-color: var(--bp-chalk-dim);
 }
 
-/* The dossier is a print pinned to the plan: ink on a pale sheet, laid out as a title block. */
+/* The dossier is a panel pinned to the plan: warm off-white text on a dark sheet, laid out as a title block. */
 .dossier-panel {
   min-width: 0;
   background: var(--bp-print);
+  border-left: 1px solid var(--bp-rule);
 }
 
 .dossier {
@@ -702,8 +593,8 @@ textarea {
 }
 
 .dossier h1 {
-  font-family: var(--bp-sheet-font);
-  font-size: 1.9rem;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 2.4rem;
   font-weight: 600;
   line-height: 1.1;
   margin: 0 0 0.75rem;
@@ -711,9 +602,9 @@ textarea {
 }
 
 .dossier h2 {
-  font-family: var(--bp-sheet-font);
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   margin: 1.25rem 0 0.25rem;
 }
 
@@ -721,20 +612,20 @@ textarea {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
   margin: 0 0 1rem;
-  border-top: 1px solid var(--bp-ink);
-  border-left: 1px solid var(--bp-ink);
+  border-top: 1px solid var(--bp-rule);
+  border-left: 1px solid var(--bp-rule);
 }
 
 .titleblock > div {
   padding: 0.3rem 0.55rem 0.4rem;
-  border-right: 1px solid var(--bp-ink);
-  border-bottom: 1px solid var(--bp-ink);
+  border-right: 1px solid var(--bp-rule);
+  border-bottom: 1px solid var(--bp-rule);
 }
 
 .titleblock dt {
   font-family: var(--bp-sheet-font);
   font-size: 0.78rem;
-  color: #4f5a66;
+  color: var(--bp-chalk-dim);
 }
 
 .titleblock dd {
@@ -757,27 +648,27 @@ textarea {
 }
 
 /* A shape per confidence word, so colour is never the only cue. Mirrors theme.ts (theme.test.ts checks). */
-:is(.shell, .exhibit-page) .badge::before {
+.badge::before {
   margin-right: 0.35em;
 }
 
-:is(.shell, .exhibit-page) .badge-confirmed::before {
+.badge-confirmed::before {
   content: "●";
 }
 
-:is(.shell, .exhibit-page) .badge-reported::before {
+.badge-reported::before {
   content: "◐";
 }
 
-:is(.shell, .exhibit-page) .badge-rumored::before {
+.badge-rumored::before {
   content: "○";
 }
 
-:is(.shell, .exhibit-page) .badge-disputed::before {
+.badge-disputed::before {
   content: "◆";
 }
 
-:is(.shell, .exhibit-page) .badge-unset::before {
+.badge-unset::before {
   content: "–";
 }
 
@@ -812,7 +703,7 @@ textarea {
 
 .page h1,
 .page h2 {
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   text-wrap: balance;
 }
 
@@ -838,7 +729,7 @@ textarea {
   margin-bottom: 0.75rem;
 }
 
-/* The exhibit page is one more sheet: the plan's blue ground with the same pale print and title block. */
+/* The exhibit page is one more sheet: the night ground with the same dark panel and title block. */
 .exhibit-page {
   background: var(--bp-prussian);
   color: var(--bp-chalk);
@@ -850,10 +741,6 @@ textarea {
   outline-offset: 2px;
 }
 
-.exhibit-page .exhibit-sheet :focus-visible {
-  outline-color: var(--bp-ink);
-}
-
 .exhibit-page .archive-banner {
   max-width: 46rem;
   margin: 0 auto;
@@ -862,6 +749,9 @@ textarea {
 }
 
 .exhibit-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
   max-width: 46rem;
   margin: 0 auto;
   padding: 1.25rem 1rem 0;
@@ -881,11 +771,12 @@ textarea {
 .exhibit-page .exhibit-sheet.plate {
   background: var(--bp-print);
   color: var(--bp-ink);
+  border: 1px solid var(--bp-rule);
 }
 
 .exhibit-sheet h1 {
-  font-family: var(--bp-sheet-font);
-  font-size: 2.2rem;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 2.8rem;
   font-weight: 600;
   line-height: 1.08;
   margin: 0 0 1rem;
@@ -893,16 +784,20 @@ textarea {
 
 .exhibit-sheet h2,
 .exhibit-sheet h3 {
-  font-family: var(--bp-sheet-font);
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
+}
+
+.exhibit-sheet h3 {
+  font-size: 1.4rem;
 }
 
 /* Each section is ruled off like a block on a drawing. */
 .exhibit-sheet h2 {
   margin: 1.75rem 0 0.35rem;
   padding-top: 0.6rem;
-  border-top: 1px solid var(--bp-ink);
-  font-size: 1.3rem;
+  border-top: 1px solid var(--bp-redline);
+  font-size: 1.7rem;
 }
 
 .exhibit-sheet p,
@@ -923,7 +818,7 @@ textarea {
   margin: 0.5rem 0 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--bp-ink);
+  border-top: 1px solid var(--bp-rule);
 }
 
 .exhibit-sheet .revisions > li {
@@ -932,7 +827,7 @@ textarea {
   column-gap: 1rem;
   max-width: none;
   padding: 0.6rem 0;
-  border-bottom: 1px solid var(--bp-ink);
+  border-bottom: 1px solid var(--bp-rule);
 }
 
 .exhibit-sheet .revisions > li > .years {
@@ -980,7 +875,7 @@ textarea {
 
 .suggest summary {
   cursor: pointer;
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
 }
 
 .suggest-form,
@@ -999,8 +894,8 @@ textarea {
 .editor-form select {
   width: 100%;
   padding: 0.45rem 0.5rem;
-  border: 1px solid var(--ink);
-  background: #f4f5f6;
+  border: 1px solid var(--brass);
+  background: var(--floor);
   color: var(--ink);
 }
 
@@ -1011,7 +906,7 @@ textarea {
   padding: 0.45rem 0.8rem;
   border: 1px solid var(--ink);
   background: var(--ink);
-  color: var(--plate);
+  color: var(--floor);
   cursor: pointer;
 }
 
@@ -1025,187 +920,370 @@ textarea {
 
 .night {
   min-height: 100vh;
-  background: #07070d;
-  color: #e8e6f0;
-  font-family: var(--font-night-ui), "Space Grotesk", sans-serif;
+  background: var(--bp-prussian);
+  color: var(--bp-chalk);
+  font-family: var(--bp-sheet-font);
 }
 
 .night h1,
 .night h2,
 .night h3 {
-  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
-  color: #f0d68a;
+  color: var(--bp-gold-soft);
 }
 
 .night a {
-  color: #5eead4;
+  color: var(--bp-cyan);
 }
 
 .night button:focus-visible,
 .night a:focus-visible {
-  outline: 2px solid #d4af37;
+  outline: 2px solid var(--bp-redline);
   outline-offset: 3px;
 }
 
-.night-hero {
-  position: relative;
-  height: 70vh;
-  min-height: 24rem;
-}
-
-.night-hero-stage {
-  position: absolute;
-  inset: 0;
-}
-
-.night-hero-stage canvas {
-  width: 100%;
-  height: 100%;
-}
-
-.night-hero-copy {
-  position: relative;
-  z-index: 1;
-  max-width: 36rem;
-  padding: 2rem 1.25rem;
-  pointer-events: none;
-}
-
-.night-hero-copy p {
-  max-width: 40ch;
-  color: #8b8aa3;
-}
-
-.night-ring {
-  width: min(40vw, 18rem);
-  height: min(40vw, 18rem);
-  margin: 2rem 1.25rem 2rem auto;
-  border: 1px solid #d4af37;
-  border-radius: 50%;
-}
-
-.night-block {
+/* Home: one vertical timeline of eras with a sticky year rail. */
+.tl-hero {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 3rem 1.25rem;
+  padding: 3.5rem 1.5rem 2rem;
 }
 
-.night-year {
-  display: block;
-  font-family: var(--font-night-display), "Cormorant Garamond", serif;
-  font-size: 2.4rem;
-  line-height: 1;
-  color: #f0d68a;
-}
-
-.night-timeline {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-}
-
-.night-card {
-  flex: 0 0 min(78vw, 18rem);
-  scroll-snap-align: start;
-  text-align: left;
-  color: inherit;
-  background: #0c0d17;
-  border: 1px solid rgba(212, 175, 55, 0.28);
-  padding: 1rem;
-}
-
-.night-card button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  color: inherit;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-
-.night-card a {
-  display: inline-block;
-  margin-top: 0.75rem;
-}
-
-.night-card p {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  color: #8b8aa3;
-}
-
-.night-hall {
-  position: relative;
-}
-
-.night-hall-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-}
-
-.night-hud {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+.tl-hero h1 {
   margin: 0;
-  font-family: var(--font-night-display), "Cormorant Garamond", serif;
-  font-size: 2.5rem;
-  color: #f0d68a;
+  font-size: clamp(2.6rem, 5.5vw, 4rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
 }
 
-.night-vault {
+.tl-hero p {
+  max-width: 46ch;
+  margin: 0.85rem 0 0;
+  font-size: 1.05rem;
+  color: var(--bp-chalk-dim);
+}
+
+.tl-layout {
+  --tl-year-col: 7rem;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 11rem;
+  gap: 3.5rem;
+}
+
+.tl-search {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 28rem;
+  margin-bottom: 2.25rem;
+}
+
+.tl-search label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bp-chalk-dim);
+}
+
+.tl-search input {
+  font: inherit;
+  color: var(--bp-chalk);
+  background: var(--bp-lift);
+  border: 1px solid color-mix(in srgb, var(--bp-redline) 30%, transparent);
+  border-radius: 0.4rem;
+  padding: 0.6rem 0.85rem;
+}
+
+.tl-search input::placeholder {
+  color: color-mix(in srgb, var(--bp-chalk-dim) 70%, transparent);
+}
+
+.tl-search input:focus-visible {
+  outline: 2px solid var(--bp-redline);
+  outline-offset: 2px;
+}
+
+.tl-empty {
+  margin: 0 0 2rem;
+  color: var(--bp-gold-soft);
+}
+
+.tl-empty:empty {
+  margin: 0;
+}
+
+.tl-bands {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tl-band {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--tl-year-col) minmax(0, 1fr);
+  gap: 2rem;
+  padding-bottom: 2.25rem;
+  scroll-margin-top: 1.5rem;
+}
+
+/* The thin gold line runs down the right edge of the year column, with a dot at each era. */
+.tl-band::before {
+  content: "";
+  position: absolute;
+  top: 0.4rem;
+  bottom: 0;
+  left: var(--tl-year-col);
+  width: 1px;
+  background: color-mix(in srgb, var(--bp-redline) 35%, transparent);
+}
+
+.tl-band::after {
+  content: "";
+  position: absolute;
+  top: 0.8rem;
+  left: calc(var(--tl-year-col) - 4px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bp-redline);
+  box-shadow: 0 0 0 4px var(--bp-prussian);
+}
+
+.tl-bands > li:last-child .tl-band::before {
+  bottom: auto;
+  height: 1rem;
+}
+
+.tl-year {
+  padding-right: 1.25rem;
+  text-align: right;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 2.1rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--bp-redline);
+}
+
+.tl-body h2 {
+  margin: 0.1rem 0 0;
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
+
+.tl-summary {
+  max-width: 62ch;
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--bp-chalk);
+}
+
+.tl-span {
+  margin: 0.3rem 0 0.8rem;
+  font-size: 0.8rem;
+  color: var(--bp-chalk-dim);
+}
+
+.night .tl-enter {
+  margin-left: 1rem;
+  color: var(--bp-gold-soft);
+  text-decoration: none;
+}
+
+.night .tl-enter:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.tl-cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.6rem;
 }
 
-.night-vault button {
-  width: 100%;
+.night .tl-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.65rem 0.85rem 0.7rem;
+  color: var(--bp-chalk);
+  text-decoration: none;
+  background: var(--bp-lift);
+  border: 1px solid color-mix(in srgb, var(--bp-redline) 18%, transparent);
+  border-radius: 0.5rem;
+  transition: border-color 160ms ease;
+}
+
+.night .tl-card:hover {
+  border-color: color-mix(in srgb, var(--bp-redline) 60%, transparent);
+}
+
+.tl-card-year {
+  font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-chalk-dim);
+}
+
+.tl-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.tl-card-conf {
+  margin-top: auto;
+  font-size: 0.75rem;
+}
+
+.tl-conf-confirmed {
+  color: var(--established);
+}
+
+.tl-conf-reported {
+  color: var(--contested);
+}
+
+.tl-conf-disputed {
+  color: var(--flag);
+}
+
+.tl-conf-rumored,
+.tl-conf-unset {
+  color: var(--unknown);
+}
+
+.tl-band.is-muted .tl-year,
+.tl-band.is-muted h2 {
+  color: var(--bp-chalk-dim);
+}
+
+.tl-band.is-muted::after {
+  background: var(--bp-chalk-dim);
+}
+
+.tl-rail {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+  padding-left: 1rem;
+  border-left: 1px solid color-mix(in srgb, var(--bp-redline) 25%, transparent);
+}
+
+.tl-rail ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 0.25rem;
-  text-align: left;
-  color: inherit;
-  background: #0c0d17;
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  padding: 0.9rem;
-  cursor: pointer;
+  gap: 0.15rem;
 }
 
-.night-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(4, 4, 10, 0.86);
+.night .tl-rail a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+  color: var(--bp-chalk-dim);
+  text-decoration: none;
+  transition: color 160ms ease;
 }
 
-.night-sheet {
-  width: min(40rem, 100%);
-  max-height: 90vh;
-  overflow: auto;
-  padding: 1.5rem 1.4rem 2rem;
-  background: #0c0d17;
-  border: 1px solid rgba(212, 175, 55, 0.35);
+.tl-rail-year {
+  min-width: 2.6rem;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
-.night-sheet button {
-  margin-top: 1rem;
-  color: #f0d68a;
-  background: transparent;
-  border: 1px solid #d4af37;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
+.tl-rail-label {
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.night .tl-rail a:hover,
+.night .tl-rail a[aria-current] {
+  color: var(--bp-gold-soft);
+}
+
+.night .tl-rail a[aria-current] .tl-rail-year {
+  color: var(--bp-redline);
+}
+
+@media (max-width: 900px) {
+  .tl-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tl-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .tl-hero {
+    padding: 2.25rem 1.25rem 1.5rem;
+  }
+
+  .tl-layout {
+    padding: 0 1.25rem 4rem;
+  }
+
+  .tl-band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+    padding: 0 0 2rem 1.5rem;
+  }
+
+  .tl-band::before {
+    left: 0;
+    top: 0.3rem;
+  }
+
+  .tl-band::after {
+    left: -4px;
+    top: 0.65rem;
+  }
+
+  .tl-year {
+    padding: 0;
+    text-align: left;
+    font-size: 1.75rem;
+  }
+
+  .tl-body h2 {
+    font-size: 1.45rem;
+  }
+
+  .tl-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .night .tl-card {
+    padding: 0.55rem 0.65rem 0.6rem;
+  }
+
+  .tl-card-title {
+    font-size: 0.86rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night .tl-card,
+  .night .tl-rail a {
+    transition: none;
+  }
+}

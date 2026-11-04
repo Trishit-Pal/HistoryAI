@@ -32,26 +32,3 @@ export function enterHall(state: NavState, index: number, { halls, nodes, year }
   });
   return { focusedId: first ?? state.focusedId, hallIndex: next };
 }
-
-// After the year cursor moves: leave a future exhibit for the nearest one in view,
-// and leave a hall that has just sealed for the nearest open hall behind it.
-export function reconcileFocus(state: NavState, ctx: NavContext): NavState {
-  const { halls, nodes, year } = ctx;
-  const current = nodes.find((node) => node.id === state.focusedId);
-  if (current && current.startYear > year) {
-    const inView = nodes.filter((node) => node.startYear <= year);
-    if (inView.length === 0) return state;
-    const nearest = inView.reduce((best, node) =>
-      Math.abs(node.startYear - year) < Math.abs(best.startYear - year) ? node : best,
-    );
-    return focusExhibit(state, nearest.id, ctx);
-  }
-  const hall = halls[state.hallIndex];
-  if (hall && isSealed(hall, nodes, year)) {
-    for (let i = state.hallIndex - 1; i >= 0; i -= 1) {
-      const earlier = halls[i];
-      if (earlier && !isSealed(earlier, nodes, year)) return enterHall(state, i, ctx);
-    }
-  }
-  return state;
-}
