@@ -4,9 +4,10 @@ import { parse } from "csv-parse/sync";
 import { strFromU8, unzipSync } from "fflate";
 import { buildAtlas } from "../src/atlas/build";
 import { assertEpochLicence } from "../src/atlas/licenceGuard";
+import { buildGlobe } from "../src/globe/build";
 
 /**
- * Builds data/atlas-snapshot.json from Epoch AI's published models file.
+ * Builds data/atlas-snapshot.json and data/globe-snapshot.json from Epoch AI's published models file.
  *   npm run atlas:snapshot                 downloads the current zip
  *   npm run atlas:snapshot -- --zip <path> reads a zip you already have (offline, or a pinned copy)
  */
@@ -14,6 +15,7 @@ const EPOCH_ZIP_URL = "https://epoch.ai/data/ai_models.zip";
 const CSV_NAME = "all_ai_models.csv";
 const README_NAME = "README.md";
 const OUTPUT = "data/atlas-snapshot.json";
+const GLOBE_OUTPUT = "data/globe-snapshot.json";
 const MAX_DOWNLOAD_BYTES = 25 * 1024 * 1024;
 const MAX_ENTRY_BYTES = 50 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT_MS = 60_000;
@@ -72,10 +74,13 @@ async function main() {
   assertEpochLicence(readme ? strFromU8(readme) : undefined);
 
   const rows = parse(strFromU8(csv), { columns: true, skip_empty_lines: true, bom: true }) as Record<string, string>[];
-  const snapshot = buildAtlas(rows, { generatedAt: new Date().toISOString().slice(0, 10) });
+  const generatedAt = new Date().toISOString().slice(0, 10);
+  const snapshot = buildAtlas(rows, { generatedAt });
+  const globe = buildGlobe(rows, { generatedAt, atlasNames: new Set(snapshot.models.names) });
 
   mkdirSync("data", { recursive: true });
   writeFileSync(OUTPUT, `${JSON.stringify(snapshot)}\n`);
+  writeFileSync(GLOBE_OUTPUT, `${JSON.stringify(globe)}\n`);
   const { totals } = snapshot;
   process.stdout.write(
     `Wrote ${OUTPUT}: ${totals.plotted} of ${totals.rows} models plotted ` +
