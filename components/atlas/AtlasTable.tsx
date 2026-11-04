@@ -37,8 +37,7 @@ export function AtlasTable({ atlas, rows: featuredRows, canShow, focused, onShow
     <div className="atlas-table-wrap">
       <table className="atlas-table">
         <caption>
-          The {rows.length} most significant models, oldest first. In the plot, &lsquo;Show all models&rsquo; draws every
-          model Epoch AI lists.
+          The {rows.length} most significant models, oldest first.
         </caption>
         <thead>
           <tr>

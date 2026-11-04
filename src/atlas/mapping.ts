@@ -18,6 +18,7 @@ export const LANDMARKS: readonly Landmark[] = [
   { model: "AlphaGo Lee", exhibitId: "evt_2016_alphago" },
   { model: "Transformer", exhibitId: "evt_2017_transformer" },
   { model: "AlphaFold 2", exhibitId: "evt_2020_alphafold" },
+  { model: "Wu Dao 2.0", exhibitId: "evt_2021_wudao2" },
 
   { model: "Theseus" },
   { model: "Samuel Neural Checkers" },
@@ -29,14 +30,14 @@ export const LANDMARKS: readonly Landmark[] = [
   { model: "ResNet-152 (ImageNet)" },
   { model: "AlphaGo Zero" },
   { model: "GPT-1" },
-  { model: "BERT-Large" },
-  { model: "GPT-2 (1.5B)" },
-  { model: "GPT-3 175B (davinci)" },
+  { model: "BERT-Large", exhibitId: "evt_2018_bert" },
+  { model: "GPT-2 (1.5B)", exhibitId: "evt_2019_gpt2" },
+  { model: "GPT-3 175B (davinci)", exhibitId: "evt_2020_gpt3" },
   { model: "DALL-E" },
-  { model: "Chinchilla" },
-  { model: "GPT-4 (Mar 2023)" },
+  { model: "Chinchilla", exhibitId: "evt_2022_chinchilla" },
+  { model: "GPT-4 (Mar 2023)", exhibitId: "evt_2023_gpt4" },
   { model: "Llama 2-70B" },
-  { model: "DeepSeek-R1" },
+  { model: "DeepSeek-R1", exhibitId: "evt_2025_deepseek_r1" },
 ];
 
 /**

@@ -1,7 +1,9 @@
 // Objects on the plinths. "data" is built from published coordinates; "replica" is drawn in
 // code after the reference named in referenceUrl. Every hotspot quotes the exhibit's own
-// citations or the reference page (artefacts.test.ts holds that rule). No position is invented:
-// where a source gives no coordinate (e.g. Move 37's point), nothing is placed.
+// citations, the reference page, or the maker's page in partsUrl (artefacts.test.ts holds that
+// rule). No position is invented: where a source gives no coordinate (e.g. Move 37's point), nothing is placed.
+
+import { FRONTIER_ARTEFACTS } from "./artefacts-frontier";
 
 export type ArtefactKind = "data" | "replica";
 
@@ -12,7 +14,9 @@ export type ArtefactKey =
   | "deepBlue"
   | "goBoard"
   | "gtx580Pair"
-  | "protein6y4f";
+  | "protein6y4f"
+  | "tpuV3Board"
+  | "gb200Rack";
 
 export type Hotspot = { id: string; label: string; text: string; sourceUrl: string };
 
@@ -25,6 +29,8 @@ export type Artefact = {
   author: string;
   licence: string;
   referenceUrl: string;
+  // The maker's own page, for hotspots that say what the parts are.
+  partsUrl?: string;
   // Display scale, and the drawn footprint [width, depth] before scaling (sizes the slab).
   scale: number;
   footprint: [number, number];
@@ -164,6 +170,7 @@ export const ARTEFACTS: Record<string, Artefact> = {
       },
     ],
   },
+  ...FRONTIER_ARTEFACTS,
 };
 
 export function artefactFor(exhibitId: string): Artefact | undefined {

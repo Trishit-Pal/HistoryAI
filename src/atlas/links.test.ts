@@ -5,6 +5,7 @@ describe("atlasLinkFor", () => {
   it("sends a landmark exhibit to its model, hash included, so the atlas opens focused on it", () => {
     expect(atlasLinkFor("evt_2012_alexnet")).toBe(`${ATLAS_PATH}#model=AlexNet`);
     expect(atlasLinkFor("evt_2017_transformer")).toBe(`${ATLAS_PATH}#model=Transformer`);
+    expect(atlasLinkFor("evt_2022_chinchilla")).toBe(`${ATLAS_PATH}#model=Chinchilla`);
   });
 
   it("sends a governance exhibit to the atlas, where its marker stands", () => {

@@ -42,10 +42,10 @@ describe("exhibit page atlas link", () => {
     const { rerender } = render(
       <ExhibitPage detail={alexnet} eraSlug="deep-learning" eraLabel="Deep learning" />,
     );
-    expect(screen.getByRole("link", { name: "See it in the atlas" }).getAttribute("href")).toBe("/atlas#model=AlexNet");
+    expect(screen.getByRole("link", { name: "See it in the Atlas" }).getAttribute("href")).toBe("/atlas#model=AlexNet");
 
     rerender(<ExhibitPage detail={detail} eraSlug="precursors" eraLabel="Precursors" />);
-    expect(screen.queryByRole("link", { name: "See it in the atlas" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "See it in the Atlas" })).toBeNull();
   });
 });
 

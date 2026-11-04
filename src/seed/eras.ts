@@ -2,6 +2,8 @@ import type { Citation, Confidence, EraId, FieldChange, Figure, Kind, Layer, Pub
 import type { ClaimWrite, ExhibitWrite, SourceWrite, SupportLink, Write } from "../store/memory";
 import { MemoryStore } from "../store/memory";
 import { ERA0_NODES } from "./era0";
+import { FRONTIER_NODES } from "./frontier";
+import { RECENT_NODES } from "./recent";
 import { WITHDRAWN_NODES } from "./withdrawn";
 
 const RETRIEVED = "2026-10-04";
@@ -486,6 +488,8 @@ export const SEED_NODES: SeedNode[] = [
     officialPrimary: true,
     tags: ["scientific_spillover"],
   },
+  ...RECENT_NODES,
+  ...FRONTIER_NODES,
 ];
 
 export function toWrite(node: SeedNode): ExhibitWrite {

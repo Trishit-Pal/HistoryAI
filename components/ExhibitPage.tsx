@@ -26,7 +26,7 @@ export function ExhibitPage({
   const atlasHref = atlasLinkFor(node.id);
   return (
     <main className="exhibit-page">
-      {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
+      {archivedAt ? <p className="archive-banner">Archived copy from {archivedAt}.</p> : null}
       <header className="exhibit-rail">
         <Breadcrumbs
           items={[
@@ -35,7 +35,7 @@ export function ExhibitPage({
             { label: node.title },
           ]}
         />
-        {atlasHref ? <a href={atlasHref}>See it in the atlas</a> : null}
+        {atlasHref ? <a href={atlasHref}>See it in the Atlas</a> : null}
       </header>
       <article className="plate exhibit-sheet">
         <dl className="titleblock">
@@ -77,7 +77,7 @@ export function ExhibitPage({
         ) : null}
         <section>
           <h2>Sources</h2>
-          {node.citations.length === 0 ? <p>No source is stored yet.</p> : null}
+          {node.citations.length === 0 ? <p>No sources yet.</p> : null}
           <ul>
             {node.citations.map((citation) => (
               <li key={citation.url}>

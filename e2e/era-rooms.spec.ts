@@ -10,7 +10,8 @@ test("founding and frontier are different rooms and the home stays dark", async 
   await page.goto("/rooms/founding");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Turing's imitation game");
   await page.goto("/rooms/frontier");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Statement on AI Risk");
+  // The room opens on its first exhibit: 2023, systems before turning points, then by id.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Falcon-180B");
   await page.goto("/");
   await expect(page.locator(".night")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Hall of Eras" })).toBeVisible();

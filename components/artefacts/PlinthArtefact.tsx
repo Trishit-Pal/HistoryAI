@@ -6,6 +6,7 @@ import { Ink } from "../Ink";
 import { artefactFor, type ArtefactKey } from "../../src/museum/artefacts";
 import { AnalyticalEngine } from "./AnalyticalEngine";
 import { DeepBlue } from "./DeepBlue";
+import { Gb200Rack } from "./Gb200Rack";
 import { GoBoard } from "./GoBoard";
 import { Gtx580Pair } from "./Gtx580Pair";
 import { MarkIPerceptron } from "./MarkIPerceptron";
@@ -13,6 +14,7 @@ import { HighlightContext } from "./highlight";
 import type { ArtefactProps } from "./motion";
 import { Protein } from "./Protein";
 import { Relay } from "./Relay";
+import { TpuV3Board } from "./TpuV3Board";
 
 export const ARTEFACT_MODELS: Record<ArtefactKey, ComponentType<ArtefactProps>> = {
   analyticalEngine: AnalyticalEngine,
@@ -22,6 +24,8 @@ export const ARTEFACT_MODELS: Record<ArtefactKey, ComponentType<ArtefactProps>> 
   goBoard: GoBoard,
   gtx580Pair: Gtx580Pair,
   protein6y4f: Protein,
+  tpuV3Board: TpuV3Board,
+  gb200Rack: Gb200Rack,
 };
 
 // Monument's stack is 0.92 tall (disc + plinth + shaft + cap). A display slab sized to the

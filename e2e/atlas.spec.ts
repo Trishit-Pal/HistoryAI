@@ -39,7 +39,7 @@ test("the atlas has no serious or critical accessibility violations", async ({ p
 
 test("an exhibit page opens the atlas on its model, and the atlas links back", async ({ page }) => {
   await page.goto("/rooms/deep-learning/evt_2012_alexnet");
-  await page.getByRole("link", { name: "See it in the atlas" }).click();
+  await page.getByRole("link", { name: "See it in the Atlas" }).click();
   await expect(page).toHaveURL(/\/atlas#model=AlexNet$/);
 
   const detail = page.locator(".atlas-detail");
@@ -69,17 +69,17 @@ test("the plot shows the 80 most significant models by default, and one switch b
   const showAll = page.getByRole("button", { name: "Show all models" });
 
   await expect(showAll).toHaveAttribute("aria-pressed", "false");
-  await expect(coverage).toContainText("most significant of the 1,406");
+  await expect(coverage).toContainText("most significant of the 1,407");
 
   await showAll.click();
   await expect(showAll).toHaveAttribute("aria-pressed", "true");
-  await expect(coverage).toContainText("all 1,406");
+  await expect(coverage).toContainText("all 1,407");
 
   // The table is the featured models either way.
   await expect(page.getByRole("table").first().locator("tbody tr")).toHaveCount(FEATURED_COUNT);
 
   await showAll.click();
-  await expect(coverage).toContainText("most significant of the 1,406");
+  await expect(coverage).toContainText("most significant of the 1,407");
 });
 
 test("any featured model has an address, not only the landmarks, and says why it is there", async ({ page }) => {

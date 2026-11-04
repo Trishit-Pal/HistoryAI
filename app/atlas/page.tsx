@@ -9,7 +9,7 @@ import "./atlas.css";
 export const metadata: Metadata = {
   title: "The scale of AI · Hall of Eras",
   description:
-    "Every AI model in Epoch AI's data, placed by year and by the training compute or parameters it needed, with the landmark models linked to their exhibits.",
+    "Every AI model in Epoch AI's data by year and by training compute or parameters, with landmark models linked to their exhibits.",
 };
 
 export default async function AtlasPage() {

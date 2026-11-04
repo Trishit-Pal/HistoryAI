@@ -2,7 +2,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { seedMuseum } from "../seed/eras";
-import { applyAudit, CONFIRM_REASON } from "./audit";
+import type { MuseumSnapshot } from "../store/memory";
+import { applyAudit, CONFIRM_REASON, insertReason } from "./audit";
 import { commitWrite, importSnapshot, loadGraph } from "./graph";
 import { createPgliteDb, migratePglite } from "./pglite";
 import { hit } from "./rateLimit";
@@ -11,12 +12,25 @@ import { hit } from "./rateLimit";
 // A missing grant or RLS policy for any app write shows up here as "permission denied".
 const client = new PGlite();
 const database = createPgliteDb(client);
+// Left out of the import, so the database predates this exhibit and db:audit has to add it.
+const MISSING = "evt_2023_mistral_7b";
+
+function snapshotWithout(id: string): MuseumSnapshot {
+  const snapshot = seedMuseum().snapshot();
+  return {
+    ...snapshot,
+    exhibits: snapshot.exhibits.filter((exhibit) => exhibit.id !== id),
+    versions: snapshot.versions.filter((version) => version.nodeId !== id),
+    changelog: snapshot.changelog.filter((line) => line.nodeId !== id),
+    audits: snapshot.audits.filter((audit) => !audit.change.includes(id)),
+  };
+}
 
 beforeAll(async () => {
   for (const file of readdirSync("db/migrations").filter((name) => name.endsWith(".sql")).sort()) {
     await migratePglite(client, readFileSync(`db/migrations/${file}`, "utf8"));
   }
-  await importSnapshot(database, seedMuseum().snapshot()); // seeding runs as the owner
+  await importSnapshot(database, snapshotWithout(MISSING)); // seeding runs as the owner
   await client.exec("set role museum_app");
 }, 60_000);
 
@@ -93,6 +107,35 @@ describe("museum_app role", () => {
     expect(withdrawn).toEqual({ ok: true });
     const rows = await database.query<{ publication_state: string }>("select publication_state from exhibits where id = $1", ["role_probe"]);
     expect(rows[0]?.publication_state).toBe("withdrawn");
+  });
+
+  it("db:audit inserts a missing seed exhibit once", async () => {
+    const dry = await applyAudit(database, { dryRun: true });
+    expect(dry).toMatchObject({ failed: false, writes: 0 });
+    expect(dry.lines).toContain(`would insert: ${MISSING}`);
+    expect((await loadGraph(database, { publicOnly: false })).exhibits.some((e) => e.id === MISSING)).toBe(false);
+
+    const first = await applyAudit(database);
+    expect(first).toMatchObject({ failed: false, writes: 1 });
+    expect(first.lines).toContain(`insert: ${MISSING}`);
+    const graph = await loadGraph(database, { publicOnly: true });
+    expect(graph.exhibits.find((e) => e.id === MISSING)).toMatchObject({ confidence: "confirmed", publicationState: "canon" });
+    expect(graph.versions.filter((v) => v.nodeId === MISSING).at(-1)?.reason).toBe(insertReason("confirmed"));
+    expect(insertReason("reported")).not.toMatch(/confirmed/);
+
+    const second = await applyAudit(database);
+    expect(second).toMatchObject({ failed: false, writes: 0 });
+  });
+
+  it("db:audit leaves a seed exhibit withdrawn in the database alone", async () => {
+    const bert = (await loadGraph(database, { publicOnly: false })).exhibits.find((e) => e.id === "evt_2018_bert")!;
+    const withdrawn = { ...bert, publicationState: "withdrawn" as const, publicStory: "Edited before withdrawal." };
+    expect(await commitWrite(database, { exhibit: withdrawn, reason: "Withdrawn: probe" }, "editor")).toEqual({ ok: true });
+    const run = await applyAudit(database);
+    expect(run).toMatchObject({ failed: false, writes: 0 });
+    expect(run.lines).toContain("withdrawn, skipped: evt_2018_bert");
+    const after = (await loadGraph(database, { publicOnly: false })).exhibits.find((e) => e.id === "evt_2018_bert");
+    expect(after).toMatchObject({ publicationState: "withdrawn", publicStory: "Edited before withdrawal." });
   });
 
   it("applies the accuracy audit to an older database, once", async () => {

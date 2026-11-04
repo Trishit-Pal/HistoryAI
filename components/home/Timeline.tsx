@@ -54,11 +54,11 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
 
   return (
     <div className="night">
-      {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
+      {archivedAt ? <p className="archive-banner">Archived copy from {archivedAt}.</p> : null}
       <header className="tl-hero">
         <div className="tl-hero-text">
           <h1>Hall of Eras</h1>
-          <p>A sourced walk through the history of artificial intelligence, one era at a time.</p>
+          <p>A sourced history of artificial intelligence, one era at a time.</p>
         </div>
         {dial.length > 0 ? <ArtefactDial entries={dial} /> : null}
       </header>

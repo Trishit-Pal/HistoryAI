@@ -60,9 +60,17 @@ function deepLearning(ids: readonly string[]): Spot[] {
 }
 
 function transformers(ids: readonly string[]): Spot[] {
+  if (ids.length <= 2) {
+    return place(ids, [
+      [-0.85, 0, -1.7],
+      [0.85, 0, -1.7],
+    ]);
+  }
+  // Three in a V: the middle one forward, so its screen stays clear of the next-hall door.
   return place(ids, [
-    [-0.85, 0, -1.7],
-    [0.85, 0, -1.7],
+    [-1.3, 0, -1.7],
+    [0, 0, -1],
+    [1.3, 0, -1.7],
   ]);
 }
 
@@ -70,13 +78,19 @@ function generative(ids: readonly string[]): Spot[] {
   return place(ids, [
     [-2.15, 0.56, -1.9],
     [2.15, 0.56, -1.9],
+    [-1.3, 0.56, -3.5],
+    [1.3, 0.56, -3.5],
+    [0, 0.56, -0.3],
   ]);
 }
+
+// The zigzag widens down the hall but stops short of the walls at x = ±3.1.
+const FRONTIER_MAX_X = 1.9;
 
 function frontier(ids: readonly string[]): Spot[] {
   return ids.map((id, index) => ({
     id,
-    x: (index % 2 === 0 ? -1 : 1) * (0.65 + index * 0.22),
+    x: (index % 2 === 0 ? -1 : 1) * Math.min(0.65 + index * 0.22, FRONTIER_MAX_X),
     y: 0.02,
     z: -1.05 - index * 1.65,
   }));

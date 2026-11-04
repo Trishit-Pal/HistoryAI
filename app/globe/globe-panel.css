@@ -1,0 +1,180 @@
+/* The country panel and the country table. */
+.globe-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  background: var(--bp-lift);
+  border: 1px solid var(--globe-edge);
+}
+
+.globe-panel header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0;
+}
+
+.globe-panel h2 {
+  margin: 0;
+  font-size: 1.9rem;
+  line-height: 1.1;
+}
+
+.globe-panel h2:focus {
+  outline: none;
+}
+
+.globe-close {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  color: var(--bp-chalk);
+  background: transparent;
+  border: 1px solid var(--globe-edge);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.globe-close:hover {
+  border-color: var(--bp-redline);
+}
+
+.globe-panel-count {
+  margin: 0.4rem 1rem 0.75rem;
+  color: var(--bp-chalk-dim);
+  font-size: 0.9rem;
+}
+
+.globe-panel .globe-models {
+  overflow-y: auto;
+  padding: 0 1rem 1rem;
+  scrollbar-color: var(--bp-chalk-dim) transparent;
+  scrollbar-width: thin;
+}
+
+.globe-models h3 {
+  margin: 1rem 0 0.35rem;
+  font-size: 1.35rem;
+  font-variant-numeric: lining-nums;
+  border-bottom: 1px solid var(--bp-rule);
+}
+
+.globe-models ul {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.globe-models li {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.globe-model-name {
+  color: var(--bp-chalk);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.globe-model-labs,
+.globe-model-flop {
+  color: var(--bp-chalk-dim);
+}
+
+.globe-model-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.globe-model-links a {
+  text-underline-offset: 0.2em;
+}
+
+.globe-table {
+  width: 100%;
+  max-width: 40rem;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.globe-table th,
+.globe-table td {
+  padding: 0.15rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid color-mix(in srgb, var(--bp-chalk-dim) 25%, transparent);
+}
+
+.globe-table thead th {
+  padding-bottom: 0.4rem;
+  color: var(--bp-chalk-dim);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.globe-table .globe-num {
+  text-align: right;
+}
+
+.globe-table tbody tr:not([data-arrived]) {
+  color: var(--bp-chalk-dim);
+}
+
+.globe-table button {
+  min-height: 40px;
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--globe-edge);
+  text-underline-offset: 0.25em;
+}
+
+.globe-table button:hover,
+.globe-table button[aria-pressed="true"] {
+  color: var(--bp-gold-soft);
+  text-decoration-color: var(--bp-redline);
+}
+
+@media (max-width: 62rem) {
+  .globe-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .globe-canvas {
+    height: min(62vh, 34rem);
+    min-height: 20rem;
+  }
+
+  .globe-side {
+    max-height: none;
+  }
+
+  /* On a phone the panel is a bottom sheet over the globe, not a column beside it. */
+  .globe-panel {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 20;
+    max-height: 42vh;
+    border-width: 1px 0 0;
+    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* A phone is narrow, so the planet gets a square, not a tall strip with empty sky above and below. */
+@media (max-width: 40rem) {
+  .globe-canvas {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1;
+  }
+}

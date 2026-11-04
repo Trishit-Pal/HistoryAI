@@ -26,6 +26,43 @@ describe("era seed", () => {
     }
   });
 
+  it("every approved 2018–2026 exhibit is in the seed and confirmed", () => {
+    // The owner-approved rows of docs/research-2018-2026.md.
+    const approved = [
+      "evt_2018_bert",
+      "evt_2019_gpt2",
+      "evt_2020_gpt3",
+      "evt_2021_wudao2",
+      "evt_2022_chinchilla",
+      "evt_2023_llama",
+      "evt_2023_gpt4",
+      "evt_2023_qwen",
+      "evt_2023_falcon",
+      "evt_2023_mistral_7b",
+      "evt_2024_o1",
+      "evt_2024_deepseek_v3",
+      "evt_2025_deepseek_r1",
+      "evt_2026_gpt6_astra",
+    ];
+    const byId = new Map(SEED_NODES.map((node) => [node.id, node]));
+    const publicIds = new Set(seedMuseum().publicExhibits().map((exhibit) => exhibit.id));
+    for (const id of approved) {
+      const node = byId.get(id);
+      expect(node, id).toBeDefined();
+      expect(node?.confidence, id).toBe("confirmed");
+      expect(node?.officialPrimary, id).toBe(true);
+      expect(independentDomains(node?.citations ?? []), id).toBeGreaterThanOrEqual(2);
+      expect(node?.citations.every((citation) => citation.retrieved === "2026-11-04"), id).toBe(true);
+      expect(publicIds.has(id), id).toBe(true);
+    }
+    // Owner decisions: no GPU count on Astra, and France only with a source that says so.
+    expect(byId.get("evt_2026_gpt6_astra")?.publicStory).not.toMatch(/GPU|NVL|rack/i);
+    const mistral = byId.get("evt_2023_mistral_7b");
+    expect(mistral?.citations.map((c) => c.url)).toContain("https://recherche-entreprises.api.gouv.fr/search?q=952418325");
+    expect(mistral?.citations.map((c) => c.url)).not.toContain("https://en.wikipedia.org/wiki/Mistral_AI");
+    expect(byId.get("evt_2024_o1")?.publicStory).not.toMatch(/previously called/);
+  });
+
   it("keeps the eight withdrawn exhibits off the floor but in the changelog", () => {
     expect(WITHDRAWN_NODES.map((node) => node.id).sort()).toEqual([
       "evt_1974_first_winter",

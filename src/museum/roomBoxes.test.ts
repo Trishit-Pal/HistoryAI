@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { layoutHalls } from "../domain/layout";
+import { seedMuseum } from "../seed/eras";
 import { eraLayout } from "./eraRooms";
 import {
   firstWinterBoxes,
@@ -71,6 +73,44 @@ function hitNames(from: Vec3, to: Vec3, boxes: RoomBox[]): string[] {
 function placed(center: Vec3, size: Vec3): { min: Vec3; max: Vec3 } {
   return bounds({ name: "piece", position: center, size });
 }
+
+function seededHall(id: string): string[] {
+  const nodes = seedMuseum()
+    .publicExhibits()
+    .map((e) => ({ id: e.id, title: e.title, kind: e.kind, startYear: e.startYear, publicationState: e.publicationState as "canon", eraId: e.eraId }));
+  return layoutHalls(nodes).find((hall) => hall.id === id)?.exhibitIds ?? [];
+}
+
+describe("seeded 2017–2026 rooms", () => {
+  // A plinth disc is 0.64 in radius, so two exhibits closer than this would overlap.
+  const CLEARANCE = 1.3;
+
+  it.each([
+    ["era_8_transformers", 3, 2.1],
+    ["era_9_generative", 5, 3.7],
+    ["era_10_frontier", 12, 3.1],
+  ])("gives every exhibit in %s its own spot", (hallId, count, wall) => {
+    const ids = seededHall(hallId);
+    expect(ids).toHaveLength(count);
+    const spots = eraLayout(hallId, ids) ?? [];
+    expect(spots.map((spot) => spot.id)).toEqual(ids);
+    for (const [i, a] of spots.entries()) {
+      expect(Math.abs(a.x) + 0.64, a.id).toBeLessThan(wall);
+      for (const b of spots.slice(i + 1)) expect(Math.hypot(a.x - b.x, a.z - b.z), `${a.id}/${b.id}`).toBeGreaterThan(CLEARANCE);
+    }
+  });
+
+  it("keeps the three transformer screens on the floor and out of every sightline", () => {
+    const spots = eraLayout("era_8_transformers", seededHall("era_8_transformers")) ?? [];
+    const screens = spots.map((spot) => transformerScreenBox(spot));
+    const floorMinZ = TRANSFORMER_FLOOR_CENTER_Z - TRANSFORMER_FLOOR_DEPTH / 2;
+    for (const screen of screens) expect(bounds(screen).min[2]).toBeGreaterThan(floorMinZ);
+    for (const spot of spots) {
+      const { from, to } = sight(spot);
+      expect(hitNames(from, to, screens), spot.id).toEqual([]);
+    }
+  });
+});
 
 describe("room sightlines", () => {
   it("keeps the first-winter look point in the bay mouth", () => {

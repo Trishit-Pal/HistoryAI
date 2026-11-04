@@ -32,7 +32,7 @@ export function Dossier({
   if (!node) {
     return (
       <aside className="dossier plate">
-        <p>Nothing provisional is on the floor yet.</p>
+        <p>No provisional exhibits yet.</p>
       </aside>
     );
   }

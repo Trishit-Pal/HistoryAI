@@ -1,9 +1,11 @@
 // Applies the November 2026 accuracy audit (docs/accuracy-audit-2026-11.md) to a database that
 // was seeded before it. Every change goes through commitWrite, so it runs as museum_app and each
-// change appends an honest version row. Idempotent: an exhibit that already matches is skipped.
+// change appends an honest version row. Idempotent: an exhibit that already matches is skipped,
+// and a seed exhibit the database lacks is inserted once.
+import type { Confidence } from "../domain/types";
 import { SEED_NODES, toWrite } from "../seed/eras";
 import { WITHDRAWN_NODES } from "../seed/withdrawn";
-import type { ExhibitWrite, MuseumSnapshot } from "../store/memory";
+import type { ExhibitWrite, MuseumSnapshot, Write } from "../store/memory";
 import { commitWrite, loadGraph } from "./graph";
 import type { Db } from "./pg";
 
@@ -11,6 +13,12 @@ const AUDIT_FIELDS = ["title", "publicStory", "confidence", "officialPrimary", "
 export const CONFIRM_REASON =
   "Accuracy audit, November 2026: confirmed against a primary record and two independent sources.";
 export const WORDING_REASON = "Accuracy audit, November 2026: wording corrected to match the sources.";
+/** The changelog reason for a seed exhibit added to a database that lacked it; it says no more than the seed's confidence. */
+export function insertReason(confidence: Confidence): string {
+  return confidence === "confirmed"
+    ? "Added from the museum seed: confirmed against a primary record and sources on two domains."
+    : `Added from the museum seed, as ${confidence}.`;
+}
 const CONFIRM_FIELDS: readonly string[] = ["confidence", "officialPrimary", "citations"];
 
 /** Says what kind of change the audit made, so the changelog does not claim more than happened. */
@@ -55,12 +63,14 @@ export async function applyAudit(db: Db, opts: { dryRun?: boolean } = {}): Promi
   const graph = await loadGraph(db, { publicOnly: false });
   const byId = new Map(graph.exhibits.map((exhibit) => [exhibit.id, exhibit]));
 
-  const apply = async (id: string, exhibit: ExhibitWrite, reason: string, summary: string) => {
+  const apply = async (id: string, write: Write, summary: string) => {
+    // ponytail: a dry run lists the writes without running the validator, so a "would" line can
+    // still be rejected on the real run (it prints "rejected" and exits 1). Seed tests validate every node.
     if (opts.dryRun) {
       result.lines.push(`would ${summary}: ${id}`);
       return;
     }
-    const committed = await commitWrite(db, { exhibit, reason }, "editor");
+    const committed = await commitWrite(db, write, "editor");
     if (committed.ok) {
       result.writes += 1;
       result.lines.push(`${summary}: ${id}`);
@@ -78,14 +88,21 @@ export async function applyAudit(db: Db, opts: { dryRun?: boolean } = {}): Promi
       result.lines.push(`already withdrawn: ${node.id}`);
     } else {
       const exhibit = { ...editable(stored), publicationState: "withdrawn" as const };
-      await apply(node.id, exhibit, `Withdrawn: ${node.withdrawnReason}`, "withdrew");
+      await apply(node.id, { exhibit, reason: `Withdrawn: ${node.withdrawnReason}` }, "withdrew");
     }
   }
 
   for (const node of SEED_NODES) {
     const stored = byId.get(node.id);
     if (!stored) {
-      result.lines.push(`absent from the database, skipped: ${node.id}`);
+      const { claims, sources, supports } = node;
+      const reason = insertReason(node.confidence);
+      await apply(node.id, { mode: "create", exhibit: toWrite(node), claims, sources, supports, reason }, "insert");
+      continue;
+    }
+    if (stored.publicationState === "withdrawn") {
+      // An editor withdrew it in the live database; the audit does not bring it back.
+      result.lines.push(`withdrawn, skipped: ${node.id}`);
       continue;
     }
     const changes = auditChanges(stored, toWrite(node));
@@ -94,7 +111,8 @@ export async function applyAudit(db: Db, opts: { dryRun?: boolean } = {}): Promi
       continue;
     }
     const fields = Object.keys(changes);
-    await apply(node.id, { ...editable(stored), ...changes }, auditReason(fields), `updated ${fields.join(", ")}`);
+    const exhibit = { ...editable(stored), ...changes };
+    await apply(node.id, { exhibit, reason: auditReason(fields) }, `updated ${fields.join(", ")}`);
   }
   return result;
 }

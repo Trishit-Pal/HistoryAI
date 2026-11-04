@@ -9,6 +9,9 @@ export function SiteNav() {
       <NavLink href="/atlas" match={["/atlas"]}>
         Atlas
       </NavLink>
+      <NavLink href="/globe" match={["/globe"]}>
+        Globe
+      </NavLink>
       <NavLink href="/accuracy" match={["/accuracy", "/changelog"]}>
         About
       </NavLink>
