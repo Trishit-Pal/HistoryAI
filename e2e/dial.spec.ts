@@ -6,7 +6,7 @@ test.use({
   launchOptions: { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] },
 });
 
-// The dial is one step per artefact, oldest first: 1843, 1938, 1958, 1997, 2012, 2016, 2020.
+// The dial is one step per artefact, oldest first: 1843, 1938, 1958, 1997, 2012, 2016, 2020, 2022, 2026.
 const DEEP_BLUE = "3";
 
 // Counts every WebGL draw call, so a test can tell whether the canvas is still rendering.
@@ -63,10 +63,10 @@ test("the dial steps artefact by artefact, names it and links to its room", asyn
   await expect(dial).toHaveAttribute("aria-valuetext", /^1958, /);
   await expect(page.getByRole("link", { name: /^Visit / })).toHaveAttribute("href", "/rooms/symbolic#evt_1958_perceptron");
   await page.keyboard.press("End");
-  await expect(dial).toHaveAttribute("aria-valuetext", /^2020, /);
+  await expect(dial).toHaveAttribute("aria-valuetext", /^2026, /);
 
   await page.getByRole("link", { name: /^Visit / }).click();
-  await expect(page).toHaveURL(/\/rooms\/generative#evt_2020_alphafold$/);
+  await expect(page).toHaveURL(/\/rooms\/frontier#evt_2026_gpt6_astra$/);
   expect(errors).toEqual([]);
 });
 
