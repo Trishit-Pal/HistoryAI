@@ -46,15 +46,15 @@ export const ERAS: readonly EraDefinition[] = [
   },
   {
     id: "era_8_transformers", slug: "transformers", label: "Transformer era", startYear: 2017, endYear: 2019, mood: "dense",
-    summary: "The Transformer architecture was introduced in “Attention Is All You Need”.",
+    summary: "“Attention Is All You Need” introduced the Transformer, then BERT and GPT-2 pre-trained it on plain text.",
   },
   {
     id: "era_9_generative", slug: "generative", label: "Generative boom", startYear: 2020, endYear: 2022, mood: "dense",
-    summary: "AlphaFold2 predicted protein structures, and ChatGPT launched as a free research preview.",
+    summary: "GPT-3, Wu Dao 2.0 and Chinchilla, AlphaFold2's protein structures, and ChatGPT as a free research preview.",
   },
   {
     id: "era_10_frontier", slug: "frontier", label: "Frontier", startYear: 2023, endYear: null, mood: "dense",
-    summary: "A statement on AI risk, the EU AI Act, and the 2024 Nobel Prizes in physics and chemistry.",
+    summary: "LLaMA and GPT-4 to o1, DeepSeek-R1 and GPT-6 Astra, with a statement on AI risk, the EU AI Act and Nobels.",
   },
 ];
 
