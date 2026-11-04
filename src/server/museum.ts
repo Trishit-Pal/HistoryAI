@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import snapshotFile from "../../data/museum-snapshot.json";
-import { buildMuseumData, type MuseumData } from "../museum/build";
+import { buildMuseumData, preferLive, type MuseumData } from "../museum/build";
 import type { MuseumSnapshot } from "../store/memory";
 import { db } from "./db";
 import { loadGraph } from "./graph";
@@ -27,7 +27,13 @@ export async function getMuseum(): Promise<MuseumData> {
     return fromArchive();
   }
   try {
-    const data = buildMuseumData(await loadGraph(db(), { publicOnly: true }), { source: "live" });
+    const live = buildMuseumData(await loadGraph(db(), { publicOnly: true }), { source: "live" });
+    const data = preferLive(live, fromArchive);
+    if (data !== live) {
+      console.warn("The live museum has no public exhibits; serving the archive. Run db:seed or db:audit.");
+      cacheLife("minutes");
+      return data;
+    }
     cacheLife("max");
     return data;
   } catch (error) {

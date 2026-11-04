@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { layoutHalls } from "../domain/layout";
 import { seedMuseum } from "../seed/eras";
 import { MemoryStore } from "../store/memory";
-import { buildMuseumData } from "./build";
+import { buildMuseumData, preferLive } from "./build";
 import { asPublicExhibits, museumNodes } from "./payload";
 
 describe("buildMuseumData", () => {
@@ -65,5 +65,21 @@ describe("buildMuseumData", () => {
     expect(data.changelog.some((line) => line.nodeId === "draft_withdrawn")).toBe(false);
     expect(data.changelog.some((line) => line.nodeId === "evt_1987_lisp_collapse")).toBe(true);
     expect(data.source).toBe("archive");
+  });
+});
+
+describe("preferLive", () => {
+  const archive = () => buildMuseumData(seedMuseum().snapshot(), { source: "archive", archivedAt: "2026-11-04" });
+
+  it("serves the archive when the live database has no public exhibit", () => {
+    const empty = buildMuseumData(new MemoryStore().snapshot(), { source: "live" });
+    const served = preferLive(empty, archive);
+    expect(served.source).toBe("archive");
+    expect(served.nodes.length).toBeGreaterThan(0);
+  });
+
+  it("keeps the live read when it has public exhibits", () => {
+    const live = buildMuseumData(seedMuseum().snapshot(), { source: "live" });
+    expect(preferLive(live, archive)).toBe(live);
   });
 });
