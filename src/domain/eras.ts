@@ -14,7 +14,7 @@ export type EraDefinition = {
 export const ERAS: readonly EraDefinition[] = [
   {
     id: "era_0_precursors", slug: "precursors", label: "Precursors", startYear: Number.NEGATIVE_INFINITY, endYear: 1949, mood: "open",
-    summary: "Calculating engines, logic, computability and information theory that later AI work built on.",
+    summary: "Calculating engines, logic, computability and information theory that histories of AI treat as forerunners.",
   },
   {
     id: "era_1_founding", slug: "founding", label: "Formal founding", startYear: 1950, endYear: 1956, mood: "open",
@@ -22,7 +22,7 @@ export const ERAS: readonly EraDefinition[] = [
   },
   {
     id: "era_2_symbolic", slug: "symbolic", label: "Symbolic golden age", startYear: 1956, endYear: 1974, mood: "open",
-    summary: "Perceptrons, DENDRAL and ELIZA, alongside the ALPAC report and the limits of single-layer nets.",
+    summary: "Rosenblatt's Perceptron, DENDRAL and ELIZA, alongside the ALPAC report and the limits of single-layer nets.",
   },
   {
     id: "era_3_first_winter", slug: "first-winter", label: "First AI winter", startYear: 1974, endYear: 1980, mood: "winter",
@@ -30,7 +30,7 @@ export const ERAS: readonly EraDefinition[] = [
   },
   {
     id: "era_4_expert_systems", slug: "expert-systems", label: "Expert systems boom", startYear: 1980, endYear: 1987, mood: "open",
-    summary: "AI became a commercial market, with 1985 sales put at about $150 million a year.",
+    summary: "Commercial interest grew: a 1985 report put AI-related activity at about $400 million that year.",
   },
   {
     id: "era_5_second_winter", slug: "second-winter", label: "Second AI winter", startYear: 1987, endYear: 1993, mood: "winter",
@@ -42,7 +42,7 @@ export const ERAS: readonly EraDefinition[] = [
   },
   {
     id: "era_7_deep_learning", slug: "deep-learning", label: "Deep learning", startYear: 2012, endYear: 2016, mood: "dense",
-    summary: "Neural networks won at ImageNet and Go, and deployed systems failed in public.",
+    summary: "AlexNet won ImageNet and AlphaGo beat Lee Sedol, while deployed systems failed in public.",
   },
   {
     id: "era_8_transformers", slug: "transformers", label: "Transformer era", startYear: 2017, endYear: 2019, mood: "dense",
@@ -54,7 +54,7 @@ export const ERAS: readonly EraDefinition[] = [
   },
   {
     id: "era_10_frontier", slug: "frontier", label: "Frontier", startYear: 2023, endYear: null, mood: "dense",
-    summary: "Risk statements, the EU AI Act, Nobel recognition and an open debate about a new winter.",
+    summary: "A statement on AI risk, the EU AI Act, Nobel recognition and an open debate about a new winter.",
   },
 ];
 

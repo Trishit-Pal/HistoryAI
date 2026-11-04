@@ -113,12 +113,15 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
 
 function ExhibitCard({ node, href }: { node: MuseumNode; href: string }) {
   const confidence = node.confidence ?? "unset";
+  const word = node.confidence ?? "unrated";
   return (
     <Link className="tl-card" href={href}>
       <span className="tl-card-year">{node.startYear}</span>
-      <span className="tl-card-title">{node.title}</span>
+      <span className="tl-card-title" title={node.title}>
+        {node.title}
+      </span>
       <span className={`tl-card-conf tl-conf-${confidence}`}>
-        <span aria-hidden="true">{CONFIDENCE_GLYPH[confidence]}</span> {confidence}
+        <span aria-hidden="true">{CONFIDENCE_GLYPH[confidence]}</span> {word}
       </span>
     </Link>
   );

@@ -44,7 +44,7 @@ describe("timeline home", () => {
     expect(within(band).getByText("Turing and Dartmouth.")).toBeTruthy();
     const card = within(band).getByRole("link", { name: /Dartmouth Summer/ });
     expect(card.textContent).toContain("● confirmed");
-    expect(within(band).getByRole("link", { name: /Computing Machinery/ }).textContent).toContain("– unset");
+    expect(within(band).getByRole("link", { name: /Computing Machinery/ }).textContent).toContain("– unrated");
     expect(within(band).getByRole("link", { name: /Dartmouth Summer/ }).getAttribute("href")).toBe(
       "/rooms/founding#evt_1956_dartmouth",
     );
