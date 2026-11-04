@@ -16,6 +16,8 @@ test("the corridor and an exhibit page stay inside the content security policy",
   await page.waitForTimeout(500);
   await page.goto("/rooms/precursors/ctx_1843_analytical_engine");
   await page.waitForTimeout(300);
+  await page.goto("/globe");
+  await page.waitForTimeout(500);
   const fired = await page.evaluate(() => (window as Window & { __csp?: string[] }).__csp ?? []);
   expect([...fired, ...violations]).toEqual([]);
 });
