@@ -31,6 +31,14 @@ export type MuseumData = {
   archivedAt?: string;
 };
 
+/**
+ * A live read with no public exhibit (an unseeded or un-audited database) would blank the
+ * museum, so the bundled archive stands in for it.
+ */
+export function preferLive(live: MuseumData, archive: () => MuseumData): MuseumData {
+  return live.nodes.length > 0 ? live : archive();
+}
+
 /** Withdrawn now, and public at some earlier version; a draft withdrawn unseen stays out. */
 function isWithdrawn(store: MemoryStore, id: string): boolean {
   const versions = store.versions(id);
