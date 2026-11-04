@@ -28,8 +28,9 @@ export const FIELD_OF_VIEW = 50;
 
 // How much room to leave around what is fitted, so tick labels and domain names are not cut off.
 const FIT_MARGIN = 1.1;
-// Extra room, in world units, each side of the fitted bounds for tick labels, domain names and the axis title.
-const LABEL_PAD = { x: 3, y: 3 } as const;
+// Extra room, in world units, around the fitted bounds: tick labels on the left, the (long) domain
+// names on the right, the axis title above and below.
+const LABEL_PAD = { left: 2.5, right: 7, y: 3 } as const;
 /** The farthest the resting camera sits from what it looks at. A very narrow canvas crops rather than shrinks the plot. */
 export const REST_MAX = 38;
 // Where the resting camera sits relative to the middle of the plot: a little right, well above, in front.
@@ -179,14 +180,15 @@ export function clampTarget(target: Vec3, bounds: Bounds): Vec3 {
 function viewPose(direction: Vec3, aspect: number, bounds: Bounds): Pose {
   if (!Number.isFinite(aspect) || aspect <= 0) return DEFAULT_POSE;
   const halfHeight = Math.tan((FIELD_OF_VIEW * Math.PI) / 360);
-  const width = bounds.max[0] - bounds.min[0] + 2 * LABEL_PAD.x;
+  const width = bounds.max[0] - bounds.min[0] + LABEL_PAD.left + LABEL_PAD.right;
   const height = bounds.max[1] - bounds.min[1] + 2 * LABEL_PAD.y;
   const byWidth = (width * FIT_MARGIN) / 2 / (halfHeight * aspect);
   const byHeight = (height * FIT_MARGIN) / 2 / halfHeight;
   const distance = Math.min(Math.max(byWidth, byHeight), REST_MAX);
   const length = Math.hypot(...direction);
+  // Centred on the labels too, so the domain names on the right edge are in view.
   const centre: Vec3 = [
-    (bounds.min[0] + bounds.max[0]) / 2,
+    (bounds.min[0] - LABEL_PAD.left + bounds.max[0] + LABEL_PAD.right) / 2,
     (bounds.min[1] + bounds.max[1]) / 2,
     (bounds.min[2] + bounds.max[2]) / 2,
   ];

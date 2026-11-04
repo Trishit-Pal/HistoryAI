@@ -3,7 +3,7 @@
 import { OrbitControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import gsap from "gsap";
-import { type ElementRef, useEffect, useRef } from "react";
+import { type ElementRef, useCallback, useEffect, useRef } from "react";
 import {
   type Bounds,
   DEFAULT_POSE,
@@ -98,7 +98,7 @@ export function CameraRig({ pose, view, fit, limits, reduced }: CameraRigProps) 
 
   // Panning drags the target; carry the camera with it when the target is held at the edge of the
   // plot, so the view stops there instead of rotating.
-  const keepInside = () => {
+  const keepInside = useCallback(() => {
     if (!controls) return;
     const { target } = controls;
     const [x, y, z] = clampTarget([target.x, target.y, target.z], latest.current.limits);
@@ -106,7 +106,7 @@ export function CameraRig({ pose, view, fit, limits, reduced }: CameraRigProps) 
     if (dx === 0 && dy === 0 && dz === 0) return;
     target.set(x, y, z);
     camera.position.set(camera.position.x + dx, camera.position.y + dy, camera.position.z + dz);
-  };
+  }, [camera, controls]);
 
   return (
     <OrbitControls

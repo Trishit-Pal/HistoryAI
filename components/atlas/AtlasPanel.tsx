@@ -20,7 +20,7 @@ interface ControlsProps {
   showAll: boolean;
   /** Featured models drawn for the current measure. */
   drawn: number;
-  /** Whether the 3D view is there for the view buttons to move. */
+  /** False only once the browser is known to have no 3D view; the view buttons would have nothing to move. */
   canView: boolean;
   onMetric: (metric: AtlasMetric) => void;
   onShowAll: (showAll: boolean) => void;
@@ -101,12 +101,12 @@ export function AtlasControls({
               Next model
             </button>
           </fieldset>
+
+          <button type="button" className="atlas-reset" onClick={onReset}>
+            Back to the whole plot
+          </button>
         </>
       ) : null}
-
-      <button type="button" className="atlas-reset" onClick={onReset}>
-        Back to the whole plot
-      </button>
     </div>
   );
 }

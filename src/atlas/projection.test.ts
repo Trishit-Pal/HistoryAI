@@ -210,7 +210,10 @@ describe("restPose", () => {
 
   it("always looks at the middle of the plot from in front of and above it", () => {
     const pose = restPose(1.5);
-    expect(pose.lookAt).toEqual(DEFAULT_POSE.lookAt);
+    expect(pose.lookAt[1]).toBe(DEFAULT_POSE.lookAt[1]);
+    expect(pose.lookAt[2]).toBe(DEFAULT_POSE.lookAt[2]);
+    // A little right of the data, so the domain names on the right edge are in view.
+    expect(pose.lookAt[0]).toBeGreaterThan(0);
     expect(pose.position[2]).toBeGreaterThan(pose.lookAt[2]);
     expect(pose.position[1]).toBeGreaterThan(pose.lookAt[1]);
   });
@@ -229,7 +232,7 @@ describe("restPose", () => {
       [5, 6, 1],
     ]);
     const pose = restPose(1.6, small);
-    expect(pose.lookAt).toEqual([0, 4, 0.5]);
+    expect(pose.lookAt.slice(1)).toEqual([4, 0.5]);
     expect(distanceOf(pose)).toBeLessThan(distanceOf(restPose(1.6)));
   });
 

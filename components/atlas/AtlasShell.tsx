@@ -64,6 +64,8 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
     (index: number | null) => {
       setFocused(index);
       if (index !== null) setMarkerId(null);
+      // Whatever clears focus lands on the whole plot, not a preset left over from earlier.
+      else setView((current) => ({ name: "rest", seq: current.seq + 1 }));
       // Only featured models get an address; one picked from "Show all" has none to share.
       const isFeatured = index !== null && atlas.models.featured[index];
       const hash = hashForModel(isFeatured ? atlas.models.names[index] : null);
@@ -207,7 +209,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
             totals={atlas.totals}
             showAll={showAll}
             drawn={drawn}
-            canView={webgl === true}
+            canView={webgl !== false}
             onMetric={setMetric}
             onShowAll={changeShowAll}
             onCutoff={setCutoff}
