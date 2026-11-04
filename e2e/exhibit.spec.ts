@@ -25,14 +25,14 @@ test("a wrong era redirects and an unknown exhibit is missing", async ({ page })
   expect(missing?.status()).toBe(404);
 });
 
-test("the exhibit page is a sheet and the plain pages keep the stone floor", async ({ page }) => {
+test("the exhibit page is a sheet and the plain pages share the night floor", async ({ page }) => {
   const floor = (url: string) =>
     page.goto(url).then(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor));
 
-  expect(await floor("/rooms/precursors/evt_history_overview")).toBe("rgb(14, 42, 71)");
+  expect(await floor("/rooms/precursors/evt_history_overview")).toBe("rgb(7, 7, 13)");
   await expect(page.locator(".titleblock dt")).toHaveText(["Hall", "Years", "Kind", "Confidence"]);
   await expect(page.getByRole("link", { name: /^Back to / })).toBeVisible();
 
-  expect(await floor("/accuracy")).toBe("rgb(26, 24, 20)");
-  expect(await floor("/changelog")).toBe("rgb(26, 24, 20)");
+  expect(await floor("/accuracy")).toBe("rgb(7, 7, 13)");
+  expect(await floor("/changelog")).toBe("rgb(7, 7, 13)");
 });

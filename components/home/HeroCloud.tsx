@@ -3,9 +3,10 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { PALETTE } from "../../src/museum/theme";
 
-const GOLD = "#d4af37";
-const CYAN = "#5eead4";
+const GOLD = PALETTE.redline;
+const CYAN = PALETTE.cyan;
 
 export function stepCloud(rotation: number, reduced: boolean, yaw: number): number {
   if (reduced) return rotation;
@@ -110,7 +111,7 @@ export function HeroCloud({ count, reduced }: { count: number; reduced: boolean 
   return (
     <div className="night-hero-stage">
       <Canvas style={{ width: "100%", height: "100%" }} camera={{ position: [0, 0, 8], fov: 50 }} gl={{ antialias: true }}>
-        <color attach="background" args={["#07070d"]} />
+        <color attach="background" args={[PALETTE.prussian]} />
         <Cloud count={count} reduced={reduced} />
       </Canvas>
     </div>

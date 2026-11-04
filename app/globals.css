@@ -1,37 +1,39 @@
 :root {
-  --floor: #1a1814;
-  --pedestal: #c8bba4;
-  --brass: #a6843d;
-  --ink: #1e2430;
-  --plate: #e4e7ea;
-  --established: #3d6b58;
-  --contested: #a56b2a;
-  --unknown: #5e6a78;
-  --retracted: #8c3e3e;
-  --flag: #8c4a2f;
-  --context: #6b7c8a;
+  /* The whole site is one night-and-gold look. These legacy names now hold night values:
+     floor = ground, plate = panel, ink = body text, brass = gold. */
+  --floor: #07070d;
+  --pedestal: #8b8aa3;
+  --brass: #d4af37;
+  --ink: #e8e6f0;
+  --plate: #0c0d17;
+  /* Confidence colours, lightened to read on the dark panel (AA, 7.4:1 or better). Word + shape still carry the meaning. */
+  --established: #5fbf9a;
+  --contested: #e0a458;
+  --unknown: #9ca8b8;
+  --retracted: #ef8a7a;
+  --flag: #e8946a;
+  --context: #8fa3b3;
 }
 
-/* Cyanotype sheet tokens for the corridor. Defined on .shell and on the page that holds one,
-   so the site nav above it can use them; other pages keep the stone theme.
-   Keep equal to src/museum/theme.ts (theme.test.ts checks). */
-.shell,
-.exhibit-page,
-html:has(:is(.shell, .exhibit-page)) {
-  --bp-prussian: #0e2a47;
-  --bp-lift: #16406a;
-  --bp-chalk: #eaf1f5;
-  --bp-chalk-dim: #8faec6;
-  --bp-redline: #ff7a59;
-  --bp-print: #f2f6f8;
-  --bp-ink: #1e2430;
+/* The shared night + gold tokens. Keep equal to src/museum/theme.ts (theme.test.ts checks).
+   "redline" is gold: the single "where you are" accent. */
+:root {
+  --bp-prussian: #07070d;
+  --bp-lift: #0c0d17;
+  --bp-chalk: #e8e6f0;
+  --bp-chalk-dim: #8b8aa3;
+  --bp-redline: #d4af37;
+  --bp-print: #0c0d17;
+  --bp-ink: #e8e6f0;
+  --bp-gold-soft: #f0d68a;
+  --bp-cyan: #5eead4;
+  /* Thin gold rules on dark panels (not in theme.ts: it is a blend, not a colour the 3D scene needs). */
+  --bp-rule: color-mix(in srgb, var(--bp-redline) 45%, transparent);
 }
 
 /* Resolved on body and below, where next/font defines --font-sheet. */
-.shell,
-.exhibit-page,
-body:has(:is(.shell, .exhibit-page)) {
-  --bp-sheet-font: var(--font-sheet), "Barlow Semi Condensed", "DIN Alternate", system-ui, sans-serif;
+body {
+  --bp-sheet-font: var(--font-sheet), "Space Grotesk", system-ui, sans-serif;
 }
 
 html:has(:is(.shell, .exhibit-page)),
@@ -65,7 +67,7 @@ body {
   margin: 0;
   min-height: 100%;
   background: var(--floor);
-  color: var(--plate);
+  color: var(--ink);
 }
 
 body {
@@ -75,17 +77,12 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   text-wrap: balance;
 }
 
 a {
   color: var(--brass);
-}
-
-.plate a,
-.page a {
-  color: var(--ink);
 }
 
 button,
@@ -112,24 +109,24 @@ textarea {
 }
 
 .badge-confirmed {
-  color: #3d6b58;
-  border-color: #3d6b58;
+  color: var(--established);
+  border-color: var(--established);
 }
 
 .badge-reported {
-  color: #7a4c17;
-  border-color: #7a4c17;
+  color: var(--contested);
+  border-color: var(--contested);
 }
 
 .badge-disputed {
-  color: #8c4a2f;
-  border-color: #8c4a2f;
+  color: var(--flag);
+  border-color: var(--flag);
 }
 
 .badge-rumored,
 .badge-unset {
-  color: #4f5a66;
-  border-color: #4f5a66;
+  color: var(--unknown);
+  border-color: var(--unknown);
 }
 
 .exhibit-figure {
@@ -180,11 +177,11 @@ textarea {
   font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
   font-size: 0.8rem;
   background: var(--floor);
-  border-bottom: 1px solid #3a342c;
+  border-bottom: 1px solid var(--bp-rule);
 }
 
 .site-nav a {
-  color: var(--plate);
+  color: var(--ink);
 }
 
 .site-nav a:hover,
@@ -676,10 +673,11 @@ textarea {
   border-color: var(--bp-chalk-dim);
 }
 
-/* The dossier is a print pinned to the plan: ink on a pale sheet, laid out as a title block. */
+/* The dossier is a panel pinned to the plan: warm off-white text on a dark sheet, laid out as a title block. */
 .dossier-panel {
   min-width: 0;
   background: var(--bp-print);
+  border-left: 1px solid var(--bp-rule);
 }
 
 .dossier {
@@ -721,20 +719,20 @@ textarea {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
   margin: 0 0 1rem;
-  border-top: 1px solid var(--bp-ink);
-  border-left: 1px solid var(--bp-ink);
+  border-top: 1px solid var(--bp-rule);
+  border-left: 1px solid var(--bp-rule);
 }
 
 .titleblock > div {
   padding: 0.3rem 0.55rem 0.4rem;
-  border-right: 1px solid var(--bp-ink);
-  border-bottom: 1px solid var(--bp-ink);
+  border-right: 1px solid var(--bp-rule);
+  border-bottom: 1px solid var(--bp-rule);
 }
 
 .titleblock dt {
   font-family: var(--bp-sheet-font);
   font-size: 0.78rem;
-  color: #4f5a66;
+  color: var(--bp-chalk-dim);
 }
 
 .titleblock dd {
@@ -812,7 +810,7 @@ textarea {
 
 .page h1,
 .page h2 {
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   text-wrap: balance;
 }
 
@@ -838,7 +836,7 @@ textarea {
   margin-bottom: 0.75rem;
 }
 
-/* The exhibit page is one more sheet: the plan's blue ground with the same pale print and title block. */
+/* The exhibit page is one more sheet: the night ground with the same dark panel and title block. */
 .exhibit-page {
   background: var(--bp-prussian);
   color: var(--bp-chalk);
@@ -881,6 +879,7 @@ textarea {
 .exhibit-page .exhibit-sheet.plate {
   background: var(--bp-print);
   color: var(--bp-ink);
+  border: 1px solid var(--bp-rule);
 }
 
 .exhibit-sheet h1 {
@@ -901,7 +900,7 @@ textarea {
 .exhibit-sheet h2 {
   margin: 1.75rem 0 0.35rem;
   padding-top: 0.6rem;
-  border-top: 1px solid var(--bp-ink);
+  border-top: 1px solid var(--bp-redline);
   font-size: 1.3rem;
 }
 
@@ -923,7 +922,7 @@ textarea {
   margin: 0.5rem 0 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--bp-ink);
+  border-top: 1px solid var(--bp-rule);
 }
 
 .exhibit-sheet .revisions > li {
@@ -932,7 +931,7 @@ textarea {
   column-gap: 1rem;
   max-width: none;
   padding: 0.6rem 0;
-  border-bottom: 1px solid var(--bp-ink);
+  border-bottom: 1px solid var(--bp-rule);
 }
 
 .exhibit-sheet .revisions > li > .years {
@@ -980,7 +979,7 @@ textarea {
 
 .suggest summary {
   cursor: pointer;
-  font-family: var(--font-display), Syne, sans-serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
 }
 
 .suggest-form,
@@ -999,8 +998,8 @@ textarea {
 .editor-form select {
   width: 100%;
   padding: 0.45rem 0.5rem;
-  border: 1px solid var(--ink);
-  background: #f4f5f6;
+  border: 1px solid var(--bp-rule);
+  background: var(--floor);
   color: var(--ink);
 }
 
@@ -1011,7 +1010,7 @@ textarea {
   padding: 0.45rem 0.8rem;
   border: 1px solid var(--ink);
   background: var(--ink);
-  color: var(--plate);
+  color: var(--floor);
   cursor: pointer;
 }
 
@@ -1025,26 +1024,26 @@ textarea {
 
 .night {
   min-height: 100vh;
-  background: #07070d;
-  color: #e8e6f0;
-  font-family: var(--font-night-ui), "Space Grotesk", sans-serif;
+  background: var(--bp-prussian);
+  color: var(--bp-chalk);
+  font-family: var(--bp-sheet-font);
 }
 
 .night h1,
 .night h2,
 .night h3 {
-  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-weight: 600;
-  color: #f0d68a;
+  color: var(--bp-gold-soft);
 }
 
 .night a {
-  color: #5eead4;
+  color: var(--bp-cyan);
 }
 
 .night button:focus-visible,
 .night a:focus-visible {
-  outline: 2px solid #d4af37;
+  outline: 2px solid var(--bp-redline);
   outline-offset: 3px;
 }
 
@@ -1074,14 +1073,14 @@ textarea {
 
 .night-hero-copy p {
   max-width: 40ch;
-  color: #8b8aa3;
+  color: var(--bp-chalk-dim);
 }
 
 .night-ring {
   width: min(40vw, 18rem);
   height: min(40vw, 18rem);
   margin: 2rem 1.25rem 2rem auto;
-  border: 1px solid #d4af37;
+  border: 1px solid var(--bp-redline);
   border-radius: 50%;
 }
 
@@ -1093,10 +1092,10 @@ textarea {
 
 .night-year {
   display: block;
-  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-size: 2.4rem;
   line-height: 1;
-  color: #f0d68a;
+  color: var(--bp-gold-soft);
 }
 
 .night-timeline {
@@ -1111,8 +1110,8 @@ textarea {
   scroll-snap-align: start;
   text-align: left;
   color: inherit;
-  background: #0c0d17;
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: var(--bp-lift);
+  border: 1px solid color-mix(in srgb, var(--bp-redline) 28%, transparent);
   padding: 1rem;
 }
 
@@ -1137,7 +1136,7 @@ textarea {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  color: #8b8aa3;
+  color: var(--bp-chalk-dim);
 }
 
 .night-hall {
@@ -1155,9 +1154,9 @@ textarea {
   top: 1.5rem;
   right: 1.5rem;
   margin: 0;
-  font-family: var(--font-night-display), "Cormorant Garamond", serif;
+  font-family: var(--font-display), "Cormorant Garamond", serif;
   font-size: 2.5rem;
-  color: #f0d68a;
+  color: var(--bp-gold-soft);
 }
 
 .night-vault {
@@ -1175,8 +1174,8 @@ textarea {
   gap: 0.25rem;
   text-align: left;
   color: inherit;
-  background: #0c0d17;
-  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: var(--bp-lift);
+  border: 1px solid color-mix(in srgb, var(--bp-redline) 22%, transparent);
   padding: 0.9rem;
   cursor: pointer;
 }
@@ -1196,16 +1195,15 @@ textarea {
   max-height: 90vh;
   overflow: auto;
   padding: 1.5rem 1.4rem 2rem;
-  background: #0c0d17;
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: var(--bp-lift);
+  border: 1px solid color-mix(in srgb, var(--bp-redline) 35%, transparent);
 }
 
 .night-sheet button {
   margin-top: 1rem;
-  color: #f0d68a;
+  color: var(--bp-gold-soft);
   background: transparent;
-  border: 1px solid #d4af37;
+  border: 1px solid var(--bp-redline);
   padding: 0.4rem 0.8rem;
   cursor: pointer;
 }
-

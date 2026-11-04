@@ -1,15 +1,15 @@
-/* The Atlas wears the night-home palette. Keep the --atlas-* values in step with
-   src/atlas/theme.ts (theme.test.ts fails if they drift). Everything is scoped to .atlas. */
+/* The Atlas wears the shared night + gold palette: most --atlas-* tokens alias the --bp-* tokens in
+   app/globals.css. Keep them in step with src/atlas/theme.ts (theme.test.ts fails if they drift). */
 .atlas {
-  --atlas-ground: #07070d;
+  --atlas-ground: var(--bp-prussian);
   --atlas-grid: #26264a;
-  --atlas-gold: #d4af37;
-  --atlas-gold-soft: #f0d68a;
-  --atlas-cyan: #5eead4;
-  --atlas-text: #e8e6f0;
-  --atlas-muted: #8b8aa3;
+  --atlas-gold: var(--bp-redline);
+  --atlas-gold-soft: var(--bp-gold-soft);
+  --atlas-cyan: var(--bp-cyan);
+  --atlas-text: var(--bp-chalk);
+  --atlas-muted: var(--bp-chalk-dim);
   --atlas-winter: #7dd3fc;
-  --atlas-panel: #0c0d17;
+  --atlas-panel: var(--bp-lift);
   --atlas-edge: rgba(212, 175, 55, 0.28);
 }
 
