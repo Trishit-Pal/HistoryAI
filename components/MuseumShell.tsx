@@ -111,7 +111,7 @@ export function MuseumShell({
 
   return (
     <main className="shell">
-      {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
+      {archivedAt ? <p className="archive-banner">Archived copy from {archivedAt}.</p> : null}
       <header className="rail">
         <Breadcrumbs
           items={[{ label: "Timeline", href: "/" }, { label: focusedHall?.label ?? "Hall of Eras" }]}
@@ -132,7 +132,7 @@ export function MuseumShell({
         </div>
       </header>
       <p className="sr-only" role="status">
-        {focused && focusedHall ? `Showing ${focused.title}, ${focused.confidence ?? "unset"}, in ${focusedHall.label}.` : ""}
+        {focused && focusedHall ? `${focused.title},${focused.confidence ?? "unset"}, in ${focusedHall.label}.` : ""}
       </p>
       <div className="stage">
         {view === "halls" ? (

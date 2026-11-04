@@ -38,7 +38,7 @@ describe("timeline home", () => {
   it("renders one labelled band per era with chip links into the room", () => {
     render(<Timeline nodes={[turing, dartmouth]} halls={halls} archivedAt="2026-10-04" />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByText(/Showing the archived copy from 2026-10-04/)).toBeTruthy();
+    expect(screen.getByText(/Archived copy from 2026-10-04/)).toBeTruthy();
     const band = screen.getByRole("region", { name: "Formal founding" });
     expect(band.id).toBe("era-founding");
     expect(within(band).getByText("Turing and Dartmouth.")).toBeTruthy();

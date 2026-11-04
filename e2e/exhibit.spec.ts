@@ -9,7 +9,7 @@ test("an exhibit page keeps its sources and its two histories", async ({ page })
   await expect(page.getByRole("heading", { name: "Sources" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "How the field changed" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Revision history" })).toBeVisible();
-  await expect(page.getByText(/Showing the archived copy from/)).toBeVisible();
+  await expect(page.getByText(/Archived copy from/)).toBeVisible();
   const accessibility = await new AxeBuilder({ page }).analyze();
   const blocking = accessibility.violations.filter(
     (violation) => violation.impact === "serious" || violation.impact === "critical",

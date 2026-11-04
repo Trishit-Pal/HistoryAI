@@ -53,7 +53,7 @@ export function ArtefactDial({ entries }: { entries: DialEntry[] }) {
         className="dial-stage"
         hidden={webgl === false}
         role="img"
-        aria-label={`${kind} of the artefact for ${entry.title} (${entry.year}), standing at the front of a ring of era artefacts.`}
+        aria-label={`${kind}: ${entry.title} (${entry.year}), at the front of a ring of era artefacts.`}
         onPointerEnter={play}
       >
         {webgl ? (

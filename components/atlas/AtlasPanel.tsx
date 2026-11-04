@@ -168,7 +168,7 @@ export function AtlasDetail({ facts, exhibit, marker }: DetailProps) {
             </p>
           ) : null}
           <p className="atlas-confidence">
-            Epoch AI estimate. The figures are published by Epoch AI.
+            Epoch AI estimate.
           </p>
           <p className="atlas-links">
             <a href={facts.link} target="_blank" rel="noopener noreferrer">
@@ -178,7 +178,7 @@ export function AtlasDetail({ facts, exhibit, marker }: DetailProps) {
           </p>
         </>
       ) : (
-        <p>Hover over a dot to read about the model. Select one to fly to it.</p>
+        <p>Hover a dot for details. Select it to fly there.</p>
       )}
     </div>
   );

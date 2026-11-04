@@ -24,7 +24,7 @@ const ScaleScene = dynamic(() => import("./ScaleScene").then((mod) => mod.ScaleS
 });
 
 const SCENE_LABEL =
-  "Three-dimensional plot of AI models. Left to right is the year, height is training compute or parameters, and depth separates domains. A table of the most significant models follows the plot.";
+  "3D plot of AI models: year left to right, training compute or parameters as height, domain as depth. A table of the most significant models follows.";
 
 interface AtlasShellProps {
   atlas: AtlasSnapshot;
@@ -165,15 +165,14 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
       <header className="atlas-intro">
         <h1>The scale of AI</h1>
         <p>
-          Each dot is an AI model. Left to right is the year it was published. Height is the training compute, or the
-          parameter count, that Epoch AI estimates for it. Each row of dots is one domain, such as language or vision. The plot
-          shows the {atlas.totals.featured} most significant models, and one switch brings back the rest.
+          Each dot is an AI model. Left to right is its publication year, height is the training compute or parameter
+          count Epoch AI estimates, and each row is a domain, such as language or vision.
         </p>
       </header>
 
       <section ref={stage} className="atlas-stage" aria-label="Interactive plot">
         <p id="atlas-keys-hint" className="sr-only">
-          With the plot focused, use the left and right arrow keys, or the square bracket keys, to step between models.
+          Focus the plot, then use the arrow keys or [ and ] to step between models.
         </p>
         <div
           className="atlas-canvas"
@@ -203,7 +202,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
             />
           ) : webgl === false ? (
             <p className="atlas-nowebgl">
-              This browser cannot draw the 3D view, so the same landmark models are listed in the table below.
+              This browser cannot draw the 3D view. The landmark models are in the table below.
             </p>
           ) : null}
         </div>

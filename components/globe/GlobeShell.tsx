@@ -6,7 +6,7 @@ import { getSource } from "../../src/atlas/sources";
 import { statsAt } from "../../src/globe/stats";
 import type { GlobeRecord, GlobeSnapshot } from "../../src/globe/types";
 import { hasWebGL, usePrefersReducedMotion } from "../../src/museum/env";
-import { FIRST_YEAR, LAST_YEAR, countLine, firstYear, flopPower, times, yearLabel } from "./format";
+import { FIRST_YEAR, LAST_YEAR, byYear, countLine, firstYear, flopPower, times, yearLabel } from "./format";
 import { CountryPanel, ModelList } from "./GlobePanel";
 import { GlobeTable } from "./GlobeTable";
 
@@ -20,7 +20,7 @@ const GlobeScene = dynamic(() => import("./GlobeScene").then((mod) => mod.GlobeS
 });
 
 const SCENE_LABEL =
-  "Globe of the Earth with one gold column per country; the taller the column, the more models trained on at least 10^23 FLOP. The table below lists the same countries.";
+  "Globe with a gold column per country; taller means more models trained on at least 10^23 FLOP. The table below lists the same countries.";
 
 // One record, labelled as Epoch's estimate and linked to its source; marked when it is below the globe's threshold.
 function RecordFacts({ record, threshold }: { record: GlobeRecord; threshold: number }) {
@@ -102,7 +102,7 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
       <header className="globe-intro">
         <h1>Who builds the frontier</h1>
         <p>
-          Every model trained with at least 10<sup>23</sup> FLOP, by the country of the lab that built it. Move the year to
+          Every model trained with at least 10<sup>23</sup> FLOP, by the country of its lab. Move the year to
           watch large-scale AI spread from one country in {firstYear(snapshot)}.
         </p>
       </header>
@@ -154,7 +154,7 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
       <section className="globe-block" aria-labelledby="globe-multinational">
         <h2 id="globe-multinational">Multinational</h2>
         <p className="globe-note">Epoch lists these labs as multinational, so they have no pin.</p>
-        {multinational.length > 0 ? <ModelList models={multinational} idPrefix="globe-multi" /> : <p className="globe-note">None by {year}.</p>}
+        {multinational.length > 0 ? <ModelList models={multinational} idPrefix="globe-multi" /> : <p className="globe-note">None {byYear(year)}.</p>}
       </section>
 
       <footer className="globe-block globe-credit">
@@ -167,7 +167,7 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
           <a href={epoch.licenceUrl} target="_blank" rel="noopener noreferrer">
             CC BY 4.0
           </a>
-          . Copied on {snapshot.generatedAt}, up to 1 November 2026. Compute figures are Epoch AI estimates.
+          . Copied on {snapshot.generatedAt}, up to 1 Nov 2026. Compute figures are Epoch AI estimates.
         </p>
         <p>Pins mark countries, not lab locations.</p>
         <p>Imagery: NASA Blue Marble, public domain.</p>

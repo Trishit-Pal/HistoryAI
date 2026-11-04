@@ -13,7 +13,7 @@ import { HallOrderNav } from "./HallOrderNav";
 function hallHeading(hall: Hall, emptyProvisional: boolean): string {
   const span = hallSpan(hall);
   const winter = hall.mood === "winter" ? " · winter" : "";
-  const empty = emptyProvisional ? " · Nothing provisional is on the floor yet." : "";
+  const empty = emptyProvisional ? " · No provisional exhibits yet." : "";
   return `${hall.label}${span}${winter}${empty}`;
 }
 
