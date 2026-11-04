@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export type RailEntry = { id: string; year: string; label: string };
+export type RailEntry = { id: string; year: string; label: string; hidden?: boolean };
 
 export function YearRail({ entries }: { entries: RailEntry[] }) {
   const [active, setActive] = useState<string | null>(entries[0]?.id ?? null);
@@ -35,7 +35,7 @@ export function YearRail({ entries }: { entries: RailEntry[] }) {
     <nav className="tl-rail" aria-label="Eras">
       <ol>
         {entries.map((entry) => (
-          <li key={entry.id}>
+          <li key={entry.id} hidden={entry.hidden}>
             <a
               href={`#${entry.id}`}
               aria-current={entry.id === active ? "location" : undefined}

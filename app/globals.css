@@ -1148,6 +1148,10 @@ textarea {
   color: var(--bp-gold-soft);
 }
 
+.tl-empty:empty {
+  margin: 0;
+}
+
 .tl-bands {
   list-style: none;
   margin: 0;

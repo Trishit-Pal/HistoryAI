@@ -34,7 +34,14 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
   const bands = bandsFrom(halls, nodes);
   const matches = (node: MuseumNode) => !needle || node.title.toLowerCase().includes(needle);
   const total = bands.reduce((sum, band) => sum + band.exhibits.filter(matches).length, 0);
-  const rail: RailEntry[] = bands.map((band) => ({ id: `era-${band.key}`, year: band.year, label: band.hall.label }));
+  // While searching, an era with no matching exhibit leaves both the timeline and the rail.
+  const hiddenKeys = new Set(needle ? bands.filter((band) => !band.exhibits.some(matches)).map((band) => band.key) : []);
+  const rail: RailEntry[] = bands.map((band) => ({
+    id: `era-${band.key}`,
+    year: band.year,
+    label: band.hall.label,
+    hidden: hiddenKeys.has(band.key),
+  }));
 
   return (
     <div className="night">
@@ -55,18 +62,16 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          {needle && total === 0 ? (
-            <p className="tl-empty" role="status">
-              No exhibits match “{query.trim()}”.
-            </p>
-          ) : null}
+          <p className="tl-empty" role="status">
+            {needle && total === 0 ? `No exhibits match “${query.trim()}”.` : null}
+          </p>
           <ol className="tl-bands">
             {bands.map((band) => {
               const shown = band.exhibits.filter(matches);
-              const muted = band.exhibits.length === 0 || shown.length === 0;
+              const muted = band.exhibits.length === 0;
               const headingId = `era-${band.key}-title`;
               return (
-                <li key={band.key}>
+                <li key={band.key} hidden={hiddenKeys.has(band.key)}>
                   <section id={`era-${band.key}`} className={muted ? "tl-band is-muted" : "tl-band"} aria-labelledby={headingId}>
                     <div className="tl-year" aria-hidden="true">
                       {band.year}
