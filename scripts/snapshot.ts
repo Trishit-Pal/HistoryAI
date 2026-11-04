@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { buildMuseumData } from "../src/museum/build";
 import { seedMuseum } from "../src/seed/eras";
 import { loadGraph } from "../src/server/graph";
 import { connect } from "../src/server/pg";
@@ -22,7 +23,14 @@ async function main() {
   }
   const { db, end } = connect(url, { pooled: true });
   try {
-    write(await loadGraph(db, { publicOnly: true }));
+    const live = await loadGraph(db, { publicOnly: true });
+    // An unseeded or un-audited database must not overwrite the archive the site falls back to.
+    if (buildMuseumData(live, { source: "live" }).nodes.length === 0) {
+      console.error("Snapshot left unchanged: the live database has no public exhibit.");
+      if (!ifReachable) process.exitCode = 1;
+      return;
+    }
+    write(live);
   } catch (error) {
     if (!ifReachable) throw error;
     console.error("Snapshot left unchanged:", error instanceof Error ? error.message : error);
