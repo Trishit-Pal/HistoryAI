@@ -248,7 +248,7 @@ textarea {
   font-family: var(--bp-sheet-font);
 }
 
-/* The rail is the sheet's top border: name, scale bar, then the sheet tabs. */
+/* The rail is the sheet's top border: breadcrumbs and the previous / next era buttons. */
 .rail {
   position: sticky;
   top: 0;
@@ -265,7 +265,6 @@ textarea {
 .site-name,
 .rail .breadcrumbs {
   grid-column: 1;
-  grid-row: 1 / span 2;
   align-self: center;
   margin: 0;
   font-family: var(--bp-sheet-font);
@@ -275,86 +274,28 @@ textarea {
   color: var(--bp-chalk);
 }
 
-.rail label {
+/* Previous / next era, on the breadcrumb row. */
+.era-step {
   grid-column: 2;
-  font-family: var(--bp-sheet-font);
-  font-size: 0.95rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--bp-chalk);
+  justify-self: end;
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.year-scale {
-  --thumb: 6px;
-  grid-column: 2;
-  position: relative;
-  max-width: 44rem;
-  padding-top: 1.6rem;
-}
-
-.year-scale .ticks {
-  position: absolute;
-  inset: 0 calc(var(--thumb) / 2) auto;
-  height: 1.6rem;
-}
-
-.year-scale .tick {
-  position: absolute;
-  bottom: 0;
-  width: 1px;
-  height: 0.4rem;
-  background: var(--bp-chalk-dim);
-}
-
-.year-scale .tick.major {
-  height: 0.7rem;
-  background: var(--bp-chalk);
-}
-
-.year-scale .tick-label {
-  position: absolute;
-  bottom: 0.75rem;
-  left: 0;
-  transform: translateX(-50%);
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--bp-chalk-dim);
-}
-
-.year-scale input[type="range"] {
-  appearance: none;
-  display: block;
-  width: 100%;
-  height: 1.5rem;
-  margin: 0;
+.era-step button {
   background: transparent;
-  cursor: ew-resize;
+  color: var(--bp-chalk);
+  border: 1px solid var(--bp-chalk-dim);
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  font-family: var(--bp-sheet-font);
+  font-size: 0.9rem;
 }
 
-.year-scale input[type="range"]::-webkit-slider-runnable-track {
-  height: 1.5rem;
-  background: linear-gradient(var(--bp-chalk), var(--bp-chalk)) center / 100% 1px no-repeat;
-}
-
-.year-scale input[type="range"]::-moz-range-track {
-  height: 1.5rem;
-  background: linear-gradient(var(--bp-chalk), var(--bp-chalk)) center / 100% 1px no-repeat;
-}
-
-.year-scale input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: var(--thumb);
-  height: 1.5rem;
-  border: 0;
-  border-radius: 0;
-  background: var(--bp-redline);
-}
-
-.year-scale input[type="range"]::-moz-range-thumb {
-  width: var(--thumb);
-  height: 1.5rem;
-  border: 0;
-  border-radius: 0;
-  background: var(--bp-redline);
+.era-step button:hover {
+  border-color: var(--bp-chalk);
 }
 
 .stage {
@@ -413,27 +354,14 @@ textarea {
     row-gap: 0.4rem;
   }
 
-  .index {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-  }
-
-  .index button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-
-  .site-name,
   .rail .breadcrumbs,
-  .rail label,
-  .year-scale,
-  .plan-toggle {
+  .site-name,
+  .era-step {
     grid-column: 1;
     grid-row: auto;
   }
 
-  .plan-toggle {
+  .era-step {
     justify-self: start;
   }
 
@@ -610,60 +538,6 @@ textarea {
 .plate .years,
 .page .years {
   color: var(--ink);
-}
-
-.plan-toggle {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  align-self: start;
-  padding: 0.2rem 0.7rem;
-  background: transparent;
-  color: var(--bp-chalk);
-  border: 1px solid var(--bp-chalk-dim);
-  font-family: var(--bp-sheet-font);
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.plan-toggle[aria-pressed="true"] {
-  background: var(--bp-lift);
-  border-color: var(--bp-chalk);
-  box-shadow: inset 0 -3px 0 var(--bp-redline);
-}
-
-/* Hall chips are sheet tabs. A sealed hall is not yet drawn: dashed outline. */
-.index {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.35rem;
-}
-
-.index button {
-  background: transparent;
-  color: var(--bp-chalk);
-  border: 1px solid var(--bp-chalk-dim);
-  border-bottom-width: 3px;
-  padding: 0.25rem 0.6rem 0.2rem;
-  cursor: pointer;
-  font-family: var(--bp-sheet-font);
-  font-size: 0.9rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.index button[aria-current="true"] {
-  background: var(--bp-lift);
-  border-color: var(--bp-chalk);
-  border-bottom-color: var(--bp-redline);
-  font-weight: 600;
-}
-
-.index button:disabled {
-  border-style: dashed;
-  color: var(--bp-chalk-dim);
-  cursor: not-allowed;
 }
 
 .hall-order {

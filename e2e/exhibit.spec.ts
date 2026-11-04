@@ -4,7 +4,6 @@ import { expect, test } from "@playwright/test";
 test("an exhibit page keeps its sources and its two histories", async ({ page }) => {
   await page.goto("/rooms/precursors");
   await expect(page.getByText("Ask the museum")).toHaveCount(0);
-  await page.getByRole("button", { name: /Precursors/ }).click();
   await page.getByRole("link", { name: "Full exhibit, sources and changes" }).click();
   await expect(page).toHaveURL(/\/rooms\/precursors\/evt_history_overview/);
   await expect(page.getByRole("heading", { name: "Sources" })).toBeVisible();

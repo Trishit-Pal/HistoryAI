@@ -67,10 +67,9 @@ Nine lane colours (in `theme.ts`) tell the domains apart, and each lane is also 
 
 ## Components
 
-- **Rail**: the sheet's top border. Site name, then the year scale bar (ticks every decade, figures every half century, a Redline cursor), then the hall chips, then the Plan view toggle. Label is "Show work up to".
+- **Rail**: the sheet's top border, one slim row. Breadcrumbs (Timeline, then the hall), and on the right a "◀ previous era" / "next era ▶" pair that switches hall in place.
 - **Hall chip**: a sheet tab. Chalk outline; the current hall is lifted with a Redline underline; a sealed hall has a dashed outline and cannot be opened.
 - **Exhibit tabs**: the current hall's exhibits as a `tablist` under the plan. One tab stop, arrow keys, Home and End. This is the keyboard and screen-reader route to every monument. Future-year exhibits are dim chalk italic, never faded.
-- **Plan view**: a toggle that frames the current hall from above. All exhibits stay selectable. Reduced motion snaps the camera.
 - **Dossier (title block)**: a dark panel with ruled cells for hall, years, kind, confidence and "Sheet n of N", then the single `h1`, story, sources, and the link to the full exhibit. It is a `tabpanel` named by the selected exhibit tab, and a status line announces changes.
 - **Badge**: word plus shape on a small plate. Unset says "unset".
 - **Scene**: no lights. A solid is filled in the ground colour so it hides the lines behind it, outlined in Chalk (Chalk-dim for walls and the winter halls). The focused monument is outlined in Redline with a Redline cap. Figure plates keep their light image.
@@ -81,7 +80,7 @@ Nine lane colours (in `theme.ts`) tell the domains apart, and each lane is also 
 
 ## Layout
 
-Wide screens: the sheet is exactly one viewport. Plan and exhibit tabs on the left, the title block on the right (`minmax(19rem, 28rem)`), scrolling inside its own column. Narrow: the title block first, then the plan; the rail is not sticky and the hall chips scroll in one row.
+Wide screens: the sheet is exactly one viewport. Plan and exhibit tabs on the left, the title block on the right (`minmax(19rem, 28rem)`), scrolling inside its own column. Narrow: the title block first, then the plan; the rail is not sticky and the previous / next buttons sit under the breadcrumbs.
 
 ## Motion
 

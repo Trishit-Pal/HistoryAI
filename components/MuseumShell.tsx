@@ -6,17 +6,17 @@ import type { Hall } from "../src/domain/layout";
 import { hallNeighbors } from "../src/domain/threads";
 import { hallTally, parseVisited, tallyLabel } from "../src/domain/visited";
 import { hasWebGL, usePrefersReducedMotion } from "../src/museum/env";
-import { hallSpan } from "../src/museum/hallMath";
-import { enterHall, focusExhibit, isSealed, reconcileFocus, type NavState } from "../src/museum/seal";
+import { enterHall, focusExhibit, type NavState } from "../src/museum/seal";
 import { chooseView, type MuseumNode } from "../src/museum/view";
 import { HallCorridor } from "./HallCorridor";
 import { Flatland } from "./Flatland";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { Dossier } from "./Dossier";
 import { EXHIBIT_PANEL_ID, ExhibitTabs, exhibitTabId } from "./ExhibitTabs";
-import { YearScale } from "./YearScale";
 
 const VISITED_KEY = "historyai.visited";
+// Everything is always on show: the latest year seals no hall and ghosts no exhibit.
+const YEAR = 2026;
 
 export function MuseumShell({
   nodes,
@@ -34,8 +34,7 @@ export function MuseumShell({
   // null until the browser has been asked: the 3D canvas must not be attempted without WebGL.
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const reduced = usePrefersReducedMotion();
-  const [year, setYear] = useState(2026);
-  const [plan, setPlan] = useState(false);
+  const year = YEAR;
   const [nav, setNav] = useState<NavState>({
     focusedId: startHall?.exhibitIds[0] ?? nodes[0]?.id ?? null,
     hallIndex: startIndex,
@@ -80,6 +79,8 @@ export function MuseumShell({
     .map((id) => nodes.find((node) => node.id === id))
     .filter((node): node is MuseumNode => node !== undefined);
   const neighbors = hallNeighbors(focusedHall?.exhibitIds ?? [], nodes, year, focused?.id ?? null);
+  const previousHall = halls[hallIndex - 1];
+  const nextHall = halls[hallIndex + 1];
   const openedLabel = focusedHall
     ? tallyLabel(hallTally(focusedHall.exhibitIds, nodes, year, visited))
     : null;
@@ -94,11 +95,6 @@ export function MuseumShell({
     const era = ERAS.find((item) => item.id === hallId);
     if (era) window.history.replaceState(null, "", `/rooms/${era.slug}`);
   }, [hallId]);
-
-  function onYear(next: number) {
-    setYear(next);
-    setNav((prev) => reconcileFocus(prev, { halls, nodes, year: next }));
-  }
 
   function onFocusExhibit(id: string) {
     setNav((prev) => focusExhibit(prev, id, { halls, nodes, year }));
@@ -115,34 +111,20 @@ export function MuseumShell({
         <Breadcrumbs
           items={[{ label: "Timeline", href: "/" }, { label: focusedHall?.label ?? "Hall of Eras" }]}
         />
-        <label htmlFor="year">Show work up to {year}</label>
-        <YearScale year={year} onYear={onYear} />
-        <div className="index" role="navigation" aria-label="Halls">
-          {halls.map((hall, index) => (
-            <button
-              key={hall.id}
-              type="button"
-              aria-current={index === hallIndex ? "true" : undefined}
-              disabled={isSealed(hall, nodes, year)}
-              onClick={() => goHall(index)}
-            >
-              {hall.label}
-              {hallSpan(hall)}
+        <div className="era-step">
+          {previousHall ? (
+            <button type="button" aria-label={`Previous era: ${previousHall.label}`} onClick={() => goHall(hallIndex - 1)}>
+              {"◀ "}
+              {previousHall.label}
             </button>
-          ))}
+          ) : null}
+          {nextHall ? (
+            <button type="button" aria-label={`Next era: ${nextHall.label}`} onClick={() => goHall(hallIndex + 1)}>
+              {nextHall.label}
+              {" ▶"}
+            </button>
+          ) : null}
         </div>
-        {webgl !== false ? (
-          <button
-            type="button"
-            className="plan-toggle"
-            aria-pressed={plan}
-            // Holds its place in the rail while WebGL is checked, so nothing shifts when it appears.
-            style={webgl ? undefined : { visibility: "hidden" }}
-            onClick={() => setPlan((on) => !on)}
-          >
-            Plan view
-          </button>
-        ) : null}
       </header>
       <p className="sr-only" role="status">
         {focused && focusedHall ? `Showing ${focused.title}, ${focused.confidence ?? "unset"}, in ${focusedHall.label}.` : ""}
@@ -159,7 +141,6 @@ export function MuseumShell({
                   hallIndex={hallIndex}
                   focusedId={focused?.id ?? null}
                   reducedMotion={reduced}
-                  plan={plan}
                   onFocus={onFocusExhibit}
                   onHall={goHall}
                 />
