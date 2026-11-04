@@ -127,6 +127,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
         setMarkerId(null);
       } else if (clearWhenEmpty) {
         setFocused(null);
+        setView((current) => ({ name: "rest", seq: current.seq + 1 }));
       }
     };
     followHash(false);

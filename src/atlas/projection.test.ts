@@ -208,12 +208,11 @@ describe("restPose", () => {
     }
   });
 
-  it("always looks at the middle of the plot from in front of and above it", () => {
+  it("looks at the middle of the plot from in front of and above it", () => {
     const pose = restPose(1.5);
-    expect(pose.lookAt[1]).toBe(DEFAULT_POSE.lookAt[1]);
-    expect(pose.lookAt[2]).toBe(DEFAULT_POSE.lookAt[2]);
-    // A little right of the data, so the domain names on the right edge are in view.
-    expect(pose.lookAt[0]).toBeGreaterThan(0);
+    expect(pose.lookAt[1]).toBeGreaterThan(0);
+    expect(pose.lookAt[1]).toBeLessThan(WORLD.height);
+    expect(Math.abs(pose.lookAt[2])).toBeLessThan(WORLD.laneGap * 3);
     expect(pose.position[2]).toBeGreaterThan(pose.lookAt[2]);
     expect(pose.position[1]).toBeGreaterThan(pose.lookAt[1]);
   });
@@ -232,7 +231,6 @@ describe("restPose", () => {
       [5, 6, 1],
     ]);
     const pose = restPose(1.6, small);
-    expect(pose.lookAt.slice(1)).toEqual([4, 0.5]);
     expect(distanceOf(pose)).toBeLessThan(distanceOf(restPose(1.6)));
   });
 
@@ -275,12 +273,14 @@ describe("view presets", () => {
     expect(names.sort()).toEqual(["front", "side", "top"]);
   });
 
-  it("looks at the same middle of the plot from the side each preset names", () => {
-    const rest = restPose(1.6);
+  it("looks at the plot from the side each preset names", () => {
     const front = presetPose("front", 1.6);
     const top = presetPose("top", 1.6);
     const side = presetPose("side", 1.6);
-    for (const pose of [front, top, side]) expect(pose.lookAt).toEqual(rest.lookAt);
+    for (const pose of [front, top, side]) {
+      expect(pose.lookAt[1]).toBeGreaterThan(0);
+      expect(pose.lookAt[1]).toBeLessThan(WORLD.height);
+    }
     expect(front.position[2]).toBeGreaterThan(front.lookAt[2]);
     expect(top.position[1] - top.lookAt[1]).toBeGreaterThan(Math.abs(top.position[2] - top.lookAt[2]));
     expect(side.position[0]).toBeGreaterThan(side.lookAt[0]);

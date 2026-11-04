@@ -24,17 +24,19 @@ export const DEFAULT_POSE: Pose = { position: [3, 14, 35], lookAt: [0, 6, 0] };
 export const ENTRANCE_POSE: Pose = { position: [4, 17, 42], lookAt: [0, 6, 0] };
 
 /** The camera's vertical field of view, in degrees. */
-export const FIELD_OF_VIEW = 50;
+export const FIELD_OF_VIEW = 56;
 
 // How much room to leave around what is fitted, so tick labels and domain names are not cut off.
 const FIT_MARGIN = 1.1;
-// Extra room, in world units, around the fitted bounds: tick labels on the left, the (long) domain
-// names on the right, the axis title above and below.
-const LABEL_PAD = { left: 2.5, right: 7, y: 3 } as const;
+// Room, in world units, around the fitted bounds for what is drawn beyond the data: tick labels on
+// the left, the (long) domain names on the right, the year labels in front, the axis title above.
+const LABEL_PAD = { left: 4, right: 8, depth: 2.2, top: 1.5, yearHalf: 1.5 } as const;
 /** The farthest the resting camera sits from what it looks at. A very narrow canvas crops rather than shrinks the plot. */
-export const REST_MAX = 38;
+export const REST_MAX = 40;
 // Where the resting camera sits relative to the middle of the plot: a little right, well above, in front.
-const REST_OFFSET: Vec3 = [2, 10, 25];
+// Rounds of fitting distance and centring together; a handful settles to a fraction of a pixel.
+const FIT_ROUNDS = 8;
+const REST_OFFSET: Vec3 = [2, 17, 25];
 
 /** An axis-aligned box in world units. */
 export interface Bounds {
@@ -177,28 +179,96 @@ export function clampTarget(target: Vec3, bounds: Bounds): Vec3 {
   ];
 }
 
+type Mutable3 = [number, number, number];
+
+function dot(a: Vec3, b: Vec3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function cross(a: Vec3, b: Vec3): Mutable3 {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+function normalised(v: Vec3): Mutable3 {
+  const length = Math.hypot(...v);
+  return [v[0] / length, v[1] / length, v[2] / length];
+}
+
+/**
+ * The points that must stay in view: the data and the frame's full height, plus the labels drawn
+ * beyond them. Tick labels and the axis title are at the back left, year labels at the front, and
+ * the domain names run along the floor on the right. Only those points count, not the empty
+ * corners of a box around them (the newest models are the high ones, so the top is fitted at the right).
+ */
+function fitCorners(bounds: Bounds): Vec3[] {
+  const [x0, x1] = [bounds.min[0], bounds.max[0]];
+  const y0 = Math.min(bounds.min[1], 0);
+  const y1 = Math.max(bounds.max[1], WORLD.height) + LABEL_PAD.top;
+  const zBack = bounds.min[2] - LABEL_PAD.depth;
+  const zFront = bounds.max[2] + LABEL_PAD.depth;
+  return [
+    [x0 - LABEL_PAD.left, y0, zBack],
+    [x0 - LABEL_PAD.left, y1, zBack],
+    [x0 - LABEL_PAD.yearHalf, y0, zFront],
+    [x1 + LABEL_PAD.right, y0, bounds.min[2]],
+    [x1 + LABEL_PAD.right, y0, bounds.max[2]],
+    [x1, y1, zBack],
+    [x1, y1, zFront],
+  ];
+}
+
+/**
+ * Looks at the fitted corners from `direction`: centred on where they land on screen, and as close
+ * as lets every corner stay inside the view, with FIT_MARGIN to spare.
+ */
 function viewPose(direction: Vec3, aspect: number, bounds: Bounds): Pose {
   if (!Number.isFinite(aspect) || aspect <= 0) return DEFAULT_POSE;
   const halfHeight = Math.tan((FIELD_OF_VIEW * Math.PI) / 360);
-  const width = bounds.max[0] - bounds.min[0] + LABEL_PAD.left + LABEL_PAD.right;
-  const height = bounds.max[1] - bounds.min[1] + 2 * LABEL_PAD.y;
-  const byWidth = (width * FIT_MARGIN) / 2 / (halfHeight * aspect);
-  const byHeight = (height * FIT_MARGIN) / 2 / halfHeight;
-  const distance = Math.min(Math.max(byWidth, byHeight), REST_MAX);
-  const length = Math.hypot(...direction);
-  // Centred on the labels too, so the domain names on the right edge are in view.
-  const centre: Vec3 = [
-    (bounds.min[0] - LABEL_PAD.left + bounds.max[0] + LABEL_PAD.right) / 2,
-    (bounds.min[1] + bounds.max[1]) / 2,
-    (bounds.min[2] + bounds.max[2]) / 2,
+  const forward = normalised([-direction[0], -direction[1], -direction[2]]);
+  const right = normalised(cross(forward, [0, 1, 0]));
+  const up = cross(right, forward);
+
+  const corners = fitCorners(bounds);
+  const middle = corners.reduce<Mutable3>(
+    (sum, c) => [sum[0] + c[0] / corners.length, sum[1] + c[1] / corners.length, sum[2] + c[2] / corners.length],
+    [0, 0, 0],
+  );
+  const seen = corners.map((c) => {
+    const rel: Vec3 = [c[0] - middle[0], c[1] - middle[1], c[2] - middle[2]];
+    return { r: dot(rel, right), u: dot(rel, up), f: dot(rel, forward) };
+  });
+  // Distance and centring depend on each other (a nearer corner spreads more on screen), so settle
+  // them together: fit the distance to the current centre, then recentre on where the corners land.
+  const halfView = halfHeight / FIT_MARGIN;
+  let rMid = 0;
+  let uMid = 0;
+  let uncapped = 0;
+  for (let round = 0; round < FIT_ROUNDS; round += 1) {
+    uncapped = Math.max(
+      ...seen.map(({ r, u, f }) => Math.max(Math.abs(r - rMid) / (halfView * aspect), Math.abs(u - uMid) / halfView) - f),
+    );
+    const across = seen.map(({ r, f }) => (r - rMid) / (uncapped + f));
+    const down = seen.map(({ u, f }) => (u - uMid) / (uncapped + f));
+    rMid += ((Math.max(...across) + Math.min(...across)) / 2) * uncapped;
+    uMid += ((Math.max(...down) + Math.min(...down)) / 2) * uncapped;
+  }
+  const distance = Math.min(uncapped, REST_MAX);
+  // Centred on the corners, unless the cap leaves the canvas too narrow for them all: then keep the
+  // right-hand end in view, where the newest models are, and let the old years run off the left.
+  const halfWidthAt = (f: number) => (distance + f) * halfView * aspect;
+  const rCentre = Math.max(rMid, ...seen.map(({ r, f }) => r - halfWidthAt(f)));
+  const lookAt: Vec3 = [
+    middle[0] + right[0] * rCentre + up[0] * uMid,
+    middle[1] + right[1] * rCentre + up[1] * uMid,
+    middle[2] + right[2] * rCentre + up[2] * uMid,
   ];
   return {
     position: [
-      centre[0] + (direction[0] / length) * distance,
-      centre[1] + (direction[1] / length) * distance,
-      centre[2] + (direction[2] / length) * distance,
+      lookAt[0] - forward[0] * distance,
+      lookAt[1] - forward[1] * distance,
+      lookAt[2] - forward[2] * distance,
     ],
-    lookAt: centre,
+    lookAt,
   };
 }
 

@@ -127,6 +127,7 @@ function Plot({
         labels={labels}
         blend={blend}
         cutoff={cutoff}
+        hovered={hovered}
         focused={focused}
         onFocus={onFocus}
       />
