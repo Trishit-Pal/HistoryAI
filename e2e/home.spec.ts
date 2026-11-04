@@ -17,14 +17,14 @@ test("the search box filters exhibit chips by title", async ({ page }) => {
   await page.goto("/");
   const search = page.getByLabel("Search exhibits");
   await search.fill("dartmouth");
-  await expect(page.locator(".tl-chips a")).toHaveCount(1);
+  await expect(page.locator(".tl-cards a")).toHaveCount(1);
   await expect(page.getByRole("link", { name: /Dartmouth Summer Research Project/ })).toBeVisible();
   await expect(page.getByRole("region", { name: "Formal founding" })).toBeVisible();
   await expect(page.locator("#era-precursors")).toBeHidden();
   await expect(page.getByRole("status")).toHaveText("");
   await search.fill("no such exhibit anywhere");
   await expect(page.getByText(/No exhibits match/)).toBeVisible();
-  await expect(page.locator(".tl-chips a")).toHaveCount(0);
+  await expect(page.locator(".tl-cards a")).toHaveCount(0);
 });
 
 test("the year rail links to each era band on wide screens", async ({ page }) => {

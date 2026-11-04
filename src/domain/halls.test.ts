@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ERAS } from "./eras";
 import { layoutHalls, type PublicExhibit } from "./layout";
 
 function node(
@@ -25,6 +26,16 @@ describe("layoutHalls", () => {
       "provisional",
     ]);
     expect(halls.at(-1)?.exhibitIds).toEqual([]);
+  });
+
+  it("gives every hall a one-line summary of at most 110 characters", () => {
+    const halls = layoutHalls(ERAS.map((era, index) => node(`n${index}`, 2000, era.id)));
+    expect(halls).toHaveLength(ERAS.length + 1);
+    for (const hall of halls) {
+      expect(hall.summary?.length ?? 0).toBeGreaterThan(0);
+      expect(hall.summary!.length).toBeLessThanOrEqual(110);
+    }
+    expect(halls.at(-1)?.summary).toBe("Recent work still being sourced and checked.");
   });
 
   it("narrows and dims winter halls and tightens later halls", () => {

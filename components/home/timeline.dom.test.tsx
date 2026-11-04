@@ -27,10 +27,10 @@ function hall(id: string, label: string, startYear: number | null, exhibitIds: s
   return { id, label, startYear, endYear: null, mood: "open", width: 1, light: 1, spacing: 1, exhibitIds };
 }
 
-const dartmouth = node("evt_1956_dartmouth", "Dartmouth Summer Research Project", 1956);
+const dartmouth = { ...node("evt_1956_dartmouth", "Dartmouth Summer Research Project", 1956), confidence: "confirmed" as const };
 const turing = node("evt_1950_turing", "Computing Machinery and Intelligence", 1950);
 const halls = [
-  hall("era_1_founding", "Formal founding", 1950, [turing.id, dartmouth.id]),
+  { ...hall("era_1_founding", "Formal founding", 1950, [turing.id, dartmouth.id]), summary: "Turing and Dartmouth." },
   hall("provisional", "Provisional hall", null, []),
 ];
 
@@ -41,6 +41,10 @@ describe("timeline home", () => {
     expect(screen.getByText(/Showing the archived copy from 2026-10-04/)).toBeTruthy();
     const band = screen.getByRole("region", { name: "Formal founding" });
     expect(band.id).toBe("era-founding");
+    expect(within(band).getByText("Turing and Dartmouth.")).toBeTruthy();
+    const card = within(band).getByRole("link", { name: /Dartmouth Summer/ });
+    expect(card.textContent).toContain("● confirmed");
+    expect(within(band).getByRole("link", { name: /Computing Machinery/ }).textContent).toContain("– unset");
     expect(within(band).getByRole("link", { name: /Dartmouth Summer/ }).getAttribute("href")).toBe(
       "/rooms/founding#evt_1956_dartmouth",
     );

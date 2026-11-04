@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ERAS } from "../../src/domain/eras";
 import type { Hall } from "../../src/domain/layout";
+import { CONFIDENCE_GLYPH } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
 import { YearRail, type RailEntry } from "./YearRail";
 
@@ -78,26 +79,24 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
                     </div>
                     <div className="tl-body">
                       <h2 id={headingId}>{band.hall.label}</h2>
+                      {band.hall.summary ? <p className="tl-summary">{band.hall.summary}</p> : null}
                       <p className="tl-span">
                         {band.span}
                         {band.exhibits.length > 0 ? ` · ${band.exhibits.length} exhibit${band.exhibits.length === 1 ? "" : "s"}` : " · sealed"}
+                        {band.slug ? (
+                          <Link className="tl-enter" href={`/rooms/${band.slug}`}>
+                            Enter the hall <span aria-hidden="true">→</span>
+                          </Link>
+                        ) : null}
                       </p>
                       {shown.length > 0 ? (
-                        <ul className="tl-chips">
+                        <ul className="tl-cards">
                           {shown.map((node) => (
                             <li key={node.id}>
-                              <Link href={`/rooms/${band.slug ?? FALLBACK_SLUG}#${node.id}`}>
-                                <span>{node.title}</span>
-                                <small>{node.startYear}</small>
-                              </Link>
+                              <ExhibitCard node={node} href={`/rooms/${band.slug ?? FALLBACK_SLUG}#${node.id}`} />
                             </li>
                           ))}
                         </ul>
-                      ) : null}
-                      {band.slug ? (
-                        <Link className="tl-enter" href={`/rooms/${band.slug}`}>
-                          Enter the hall <span aria-hidden="true">→</span>
-                        </Link>
                       ) : null}
                     </div>
                   </section>
@@ -109,5 +108,18 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
         <YearRail entries={rail} />
       </div>
     </div>
+  );
+}
+
+function ExhibitCard({ node, href }: { node: MuseumNode; href: string }) {
+  const confidence = node.confidence ?? "unset";
+  return (
+    <Link className="tl-card" href={href}>
+      <span className="tl-card-year">{node.startYear}</span>
+      <span className="tl-card-title">{node.title}</span>
+      <span className={`tl-card-conf tl-conf-${confidence}`}>
+        <span aria-hidden="true">{CONFIDENCE_GLYPH[confidence]}</span> {confidence}
+      </span>
+    </Link>
   );
 }
