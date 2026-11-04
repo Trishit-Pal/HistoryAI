@@ -132,7 +132,7 @@ export function MuseumShell({
         </div>
       </header>
       <p className="sr-only" role="status">
-        {focused && focusedHall ? `${focused.title},${focused.confidence ?? "unset"}, in ${focusedHall.label}.` : ""}
+        {focused && focusedHall ? `${focused.title}, ${focused.confidence ?? "unset"}, in ${focusedHall.label}.` : ""}
       </p>
       <div className="stage">
         {view === "halls" ? (
