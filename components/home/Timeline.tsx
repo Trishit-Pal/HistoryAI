@@ -36,10 +36,10 @@ const hrefFor = (band: Band, id: string) => `/rooms/${band.slug ?? FALLBACK_SLUG
 export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; halls: Hall[]; archivedAt?: string }) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
-  const bands = bandsFrom(halls, nodes);
+  const bands = useMemo(() => bandsFrom(halls, nodes), [halls, nodes]);
   const dial = useMemo(
-    () => dialEntries(bandsFrom(halls, nodes).map((band) => ({ href: (id: string) => hrefFor(band, id), exhibits: band.exhibits }))),
-    [halls, nodes],
+    () => dialEntries(bands.map((band) => ({ href: (id: string) => hrefFor(band, id), exhibits: band.exhibits }))),
+    [bands],
   );
   const matches = (node: MuseumNode) => !needle || node.title.toLowerCase().includes(needle);
   const total = bands.reduce((sum, band) => sum + band.exhibits.filter(matches).length, 0);

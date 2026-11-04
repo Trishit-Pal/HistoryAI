@@ -119,7 +119,7 @@ export const ARTEFACTS: Record<string, Artefact> = {
     scale: 1.2,
     footprint: [0.62, 0.64],
     hotspots: [
-      { id: "grid", label: "19 × 19 board", text: "AlphaGo beat a professional “on a full, 19 x 19 board”.", sourceUrl: "https://www.nature.com/articles/nature16961" },
+      { id: "grid", label: "19 × 19 board", text: "In the 2016 Nature paper (on the Fan Hui match): AlphaGo beat a professional “on a full, 19 x 19 board”.", sourceUrl: "https://www.nature.com/articles/nature16961" },
     ],
   },
   evt_2012_alexnet: {

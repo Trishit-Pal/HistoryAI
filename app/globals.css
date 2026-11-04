@@ -949,10 +949,15 @@ textarea {
 }
 
 /* Home: one vertical timeline of eras with a sticky year rail. */
+/* The hero: words on the left, the artefact dial on the right (stacked on narrow screens). */
 .tl-hero {
   max-width: 72rem;
   margin: 0 auto;
   padding: 3.5rem 1.5rem 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 3rem;
+  align-items: center;
 }
 
 .tl-hero h1 {
@@ -969,22 +974,10 @@ textarea {
   color: var(--bp-chalk-dim);
 }
 
-/* The hero: words on the left, the artefact dial on the right (stacked on narrow screens). */
-.tl-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 3rem;
-  align-items: center;
-}
-
 /* The shelf fades out at the sides instead of being cut by the canvas edge. */
 .dial-stage {
   height: min(26rem, 50vh, 90vw);
   mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
-}
-
-.dial-stage[hidden] {
-  display: none;
 }
 
 .dial-controls {

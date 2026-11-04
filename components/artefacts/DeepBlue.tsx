@@ -16,7 +16,7 @@ const H = 0.66;
 const D = 0.28;
 const ROWS = 7;
 const TOWERS_X = [-0.15, 0.15];
-const SCAN_PERIOD = 0.12;
+const SCAN_PERIOD = 0.3;
 const LIT = new Color(REDLINE);
 const DIM = new Color(CHALK_DIM);
 
