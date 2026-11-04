@@ -231,7 +231,7 @@ textarea {
   outline-offset: 2px;
 }
 
-.shell .sr-only {
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
