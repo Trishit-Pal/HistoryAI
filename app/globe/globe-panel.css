@@ -1,4 +1,4 @@
-/* The country panel, the country table, the Multinational list and the credits. */
+/* The country panel and the country table. */
 .globe-panel {
   display: flex;
   flex-direction: column;
@@ -145,26 +145,6 @@
   text-decoration-color: var(--bp-redline);
 }
 
-.globe-note {
-  margin: 0 0 0.5rem;
-  color: var(--bp-chalk-dim);
-}
-
-.globe-block > .globe-models {
-  max-width: 40rem;
-}
-
-.globe-credit {
-  color: var(--bp-chalk-dim);
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-
-.globe-credit p {
-  max-width: 70ch;
-  margin: 0 0 0.35rem;
-}
-
 @media (max-width: 62rem) {
   .globe-stage {
     grid-template-columns: minmax(0, 1fr);
@@ -184,7 +164,7 @@
     position: fixed;
     inset: auto 0 0;
     z-index: 20;
-    max-height: 50vh;
+    max-height: 42vh;
     border-width: 1px 0 0;
     box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.55);
   }

@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSource } from "../../src/atlas/sources";
 import { statsAt } from "../../src/globe/stats";
-import type { GlobeSnapshot } from "../../src/globe/types";
+import type { GlobeRecord, GlobeSnapshot } from "../../src/globe/types";
 import { hasWebGL, usePrefersReducedMotion } from "../../src/museum/env";
-import { FIRST_YEAR, LAST_YEAR, countLine, flopPower, times, yearLabel } from "./format";
+import { FIRST_YEAR, LAST_YEAR, countLine, firstYear, flopPower, times, yearLabel } from "./format";
 import { CountryPanel, ModelList } from "./GlobePanel";
 import { GlobeTable } from "./GlobeTable";
 
@@ -22,6 +22,33 @@ const GlobeScene = dynamic(() => import("./GlobeScene").then((mod) => mod.GlobeS
 const SCENE_LABEL =
   "Globe of the Earth with one gold column per country; the taller the column, the more models trained on at least 10^23 FLOP. The table below lists the same countries.";
 
+// One record, labelled as Epoch's estimate and linked to its source; marked when it is below the globe's threshold.
+function RecordFacts({ record, threshold }: { record: GlobeRecord; threshold: number }) {
+  return (
+    <>
+      <span className="globe-record-name">{record.name}</span> ≈ 10<sup>{flopPower(record.logCompute)}</sup> FLOP
+      {record.logCompute < threshold ? (
+        <>
+          {" "}
+          (below 10<sup>{threshold}</sup>)
+        </>
+      ) : null}{" "}
+      · Epoch AI estimate
+      {record.multiplier === null ? null : (
+        <span className="globe-record-times"> {times(record.multiplier)} over the previous record</span>
+      )}
+      {record.link ? (
+        <>
+          {" "}
+          <a href={record.link} target="_blank" rel="noopener noreferrer">
+            Source<span className="sr-only"> for {record.name}</span>
+          </a>
+        </>
+      ) : null}
+    </>
+  );
+}
+
 function Records({ snapshot, year }: { snapshot: GlobeSnapshot; year: number }) {
   const set = snapshot.records.filter((record) => record.year === year);
   const standing = statsAt(snapshot, year).largest;
@@ -32,17 +59,14 @@ function Records({ snapshot, year }: { snapshot: GlobeSnapshot; year: number }) 
         <ol>
           {set.map((record) => (
             <li key={`${record.name}|${record.date}`}>
-              <span className="globe-record-name">{record.name}</span> ≈ 10<sup>{flopPower(record.logCompute)}</sup> FLOP
-              {record.multiplier === null ? null : (
-                <span className="globe-record-times"> {times(record.multiplier)} over the previous record</span>
-              )}
+              <RecordFacts record={record} threshold={snapshot.threshold} />
             </li>
           ))}
         </ol>
       ) : standing ? (
         <p>
-          No new record in {year}. The largest run is still <span className="globe-record-name">{standing.name}</span> (
-          {standing.year}).
+          No new record in {year}. The largest run is still {standing.year}&rsquo;s{" "}
+          <RecordFacts record={standing} threshold={snapshot.threshold} />
         </p>
       ) : null}
     </div>
@@ -79,7 +103,7 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
         <h1>Who builds the frontier</h1>
         <p>
           Every model trained with at least 10<sup>23</sup> FLOP, by the country of the lab that built it. Move the year to
-          watch large-scale AI spread from one country in 2019.
+          watch large-scale AI spread from one country in {firstYear(snapshot)}.
         </p>
       </header>
 
@@ -111,7 +135,8 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
               {line.growth === null ? null : (
                 <span className="globe-growth">
                   {" "}
-                  · largest run ×10<sup>{line.growth}</sup> since 2012
+                  · largest run {line.growth.more ? "more than " : ""}×10<sup>{line.growth.power}</sup> since{" "}
+                  {line.growth.since}
                 </span>
               )}
             </p>
@@ -134,7 +159,11 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
 
       <footer className="globe-block globe-credit">
         <p>
-          Data: {epoch.attribution} Licensed{" "}
+          Data:{" "}
+          <a href={epoch.homepage} target="_blank" rel="noopener noreferrer">
+            {epoch.name}
+          </a>
+          . {epoch.attribution} Licensed{" "}
           <a href={epoch.licenceUrl} target="_blank" rel="noopener noreferrer">
             CC BY 4.0
           </a>

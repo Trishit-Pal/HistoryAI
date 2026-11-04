@@ -1,4 +1,5 @@
 import type { GlobeCountry } from "../../src/globe/types";
+import { byYear } from "./format";
 
 interface GlobeTableProps {
   countries: GlobeCountry[];
@@ -14,12 +15,12 @@ export function GlobeTable({ countries, year, selected, onSelect }: GlobeTablePr
   );
   return (
     <table className="globe-table">
-      <caption className="sr-only">Countries with a model trained on at least 10^23 FLOP, by the end of {year}</caption>
+      <caption className="sr-only">Countries with a model trained on at least 10^23 FLOP, {byYear(year)}</caption>
       <thead>
         <tr>
           <th scope="col">Country</th>
           <th scope="col" className="globe-num">
-            Models by {year}
+            Models {byYear(year)}
           </th>
           <th scope="col" className="globe-num">
             First

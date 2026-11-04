@@ -157,3 +157,24 @@
 .globe-record-times {
   color: var(--bp-redline);
 }
+
+/* The Multinational list and the credits. */
+.globe-note {
+  margin: 0 0 0.5rem;
+  color: var(--bp-chalk-dim);
+}
+
+.globe-block > .globe-models {
+  max-width: 40rem;
+}
+
+.globe-credit {
+  color: var(--bp-chalk-dim);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.globe-credit p {
+  max-width: 70ch;
+  margin: 0 0 0.35rem;
+}

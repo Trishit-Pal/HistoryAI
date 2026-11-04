@@ -35,6 +35,8 @@ test.describe("with WebGL", () => {
     await year.fill("2023");
     await expect(page.locator(".globe-records")).toContainText("GPT-4");
     await expect(page.locator(".globe-records")).toContainText("over the previous record");
+    await expect(page.locator(".globe-records")).toContainText("Epoch AI estimate");
+    await expect(page.locator(".globe-records a", { hasText: "Source" }).first()).toHaveAttribute("href", /^https:\/\//);
 
     const credits = page.locator(".globe-credit");
     await expect(credits).toContainText("Epoch AI estimate");
@@ -46,13 +48,15 @@ test.describe("with WebGL", () => {
   test("on a phone the country panel is a bottom sheet", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/globe");
-    await page.getByRole("button", { name: "United Kingdom" }).click();
+    const opener = page.getByRole("button", { name: "United Kingdom" });
+    await opener.click();
     const panel = page.getByRole("region", { name: "United Kingdom" });
     await expect(panel).toBeVisible();
     const box = (await panel.boundingBox())!;
     expect(Math.round(box.y + box.height)).toBe(844);
     await page.keyboard.press("Escape");
     await expect(panel).toHaveCount(0);
+    await expect(opener).toBeFocused();
   });
 });
 
@@ -104,6 +108,12 @@ test.describe("without WebGL", () => {
     await expect(panel).toBeVisible();
     await expect(panel).toContainText("Epoch AI estimate");
     await expect(panel.locator('a[href^="/atlas#model="]').first()).toBeVisible();
+    // The slider starts at 2026, where the data stops on 1 November.
+    await expect(panel.locator(".globe-panel-count")).toContainText("with a lab in United States of America by 1 Nov 2026");
+    await expect(page.locator(".globe-table thead")).toContainText("Models by 1 Nov 2026");
     expect(await blockingViolations(page)).toEqual([]);
+    await panel.getByRole("button", { name: "Close" }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "United States of America" })).toBeFocused();
   });
 });

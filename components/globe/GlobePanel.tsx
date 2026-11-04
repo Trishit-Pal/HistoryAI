@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { hashForModel } from "../../src/atlas/hash";
 import type { GlobeCountry, GlobeModel } from "../../src/globe/types";
-import { flopPower } from "./format";
+import { byYear, flopPower } from "./format";
 
 /** Models by year, newest year first; each with its own labs, Epoch's estimate, its source and its Atlas dot. */
 export function ModelList({ models, idPrefix }: { models: GlobeModel[]; idPrefix: string }) {
@@ -57,6 +57,12 @@ export function CountryPanel({ country, year, onClose }: CountryPanelProps) {
   const first = country.models[0]?.year;
   const id = `globe-panel-${country.country.replace(/\W+/g, "-")}`;
 
+  // Closing gives focus back to whatever opened the panel (a table button, or the page after a click on the globe).
+  // Declared before the heading focus, so it saves the opener, not the heading.
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => opener?.focus();
+  }, []);
   // Opening moves focus to the panel, so a screen reader hears what was picked.
   useEffect(() => heading.current?.focus(), [country]);
   useEffect(() => {
@@ -80,7 +86,7 @@ export function CountryPanel({ country, year, onClose }: CountryPanelProps) {
       <p className="globe-panel-count">
         {shown.length === 0
           ? `Its first model at this scale arrives in ${first}.`
-          : `${shown.length} ${shown.length === 1 ? "model" : "models"} at this scale by the end of ${year}.`}
+          : `${shown.length} ${shown.length === 1 ? "model" : "models"} with a lab in ${country.country} ${byYear(year)}.`}
       </p>
       <ModelList models={shown} idPrefix={id} />
     </section>
