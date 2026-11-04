@@ -20,7 +20,7 @@ export const METRIC_AXIS: Record<AtlasMetric, { min: number; max: number; step: 
 export const WORLD = { width: 44, height: 12, laneGap: 1.5 } as const;
 
 export const DEFAULT_POSE: Pose = { position: [3, 14, 35], lookAt: [0, 6, 0] };
-// About 1.2 times the farthest resting distance (REST_MAX): arriving is a short glide, not a long fall.
+// About 1.09 times the farthest resting distance (REST_MAX = 40, this is 43.6 away): arriving is a short glide, not a long fall.
 export const ENTRANCE_POSE: Pose = { position: [4, 17, 42], lookAt: [0, 6, 0] };
 
 /** The camera's vertical field of view, in degrees. */

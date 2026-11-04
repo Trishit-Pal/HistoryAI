@@ -39,6 +39,17 @@ function overlaps(a: Box, b: Box): boolean {
   return a.left < b.right && b.left < a.right && a.bottom < b.top && b.bottom < a.top;
 }
 
+/** What one frame works out for one label before overlaps are settled. Reused every frame. */
+interface Candidate {
+  shown: boolean;
+  /** 0 is placed first and wins every overlap. */
+  rank: number;
+  distance: number;
+  scale: number;
+}
+
+const RANKS = [0, 1, 2] as const;
+
 interface LandmarkLabelsProps {
   atlas: AtlasSnapshot;
   /** The models to name: every featured model. */
@@ -61,18 +72,22 @@ export function LandmarkLabels({ atlas, labels, blend, cutoff, hovered, focused,
   const size = useThree((state) => state.size);
   const { models, domains } = atlas;
   const point = useMemo(() => new Vector3(), []);
-
-  // 0 is placed first and wins every overlap.
-  const rank = (landmark: LandmarkView) =>
-    landmark.index === focused || landmark.index === hovered ? 0 : landmark.exhibit ? 1 : 2;
+  // Per-frame scratch, grown to fit and reused so drawing a frame allocates nothing.
+  const candidates = useRef<Candidate[]>([]);
+  const boxes = useRef<Box[]>([]);
+  while (candidates.current.length < labels.length) {
+    candidates.current.push({ shown: false, rank: 2, distance: 0, scale: 1 });
+    boxes.current.push({ left: 0, right: 0, bottom: 0, top: 0 });
+  }
 
   useFrame(() => {
     const clock = blend.current;
     const mix = smooth(clock.mix);
-    const placed: Box[] = [];
-    const wanted = labels.map((landmark, slot) => {
+    labels.forEach((landmark, slot) => {
+      const candidate = candidates.current[slot];
       const group = groups.current[slot];
-      if (!group) return null;
+      candidate.shown = false;
+      if (!group) return;
       const state = instanceState({
         year: models.years[landmark.index],
         lane: models.domainIndex[landmark.index],
@@ -86,43 +101,48 @@ export function LandmarkLabels({ atlas, labels, blend, cutoff, hovered, focused,
       });
       const lift = LABEL_LIFT + (slot % STAGGER_LEVELS) * STAGGER_STEP;
       group.position.set(state.position[0], state.position[1] + lift, state.position[2]);
-      const distance = group.position.distanceTo(camera.position);
-      const scale = Math.min(Math.max(distance * SCALE_PER_DISTANCE, MIN_LABEL_SCALE), MAX_LABEL_SCALE);
-      group.scale.setScalar(scale);
-      const always = landmark.exhibit !== undefined || landmark.index === focused;
-      const shown =
-        state.scale > SHOWN_SCALE &&
-        (landmark.index === focused || !state.dimmed) &&
-        (always || distance < NEAR_LABEL_DISTANCE);
-      return shown ? { group, distance, scale, name: landmark.model.length } : null;
+      candidate.distance = group.position.distanceTo(camera.position);
+      candidate.scale = Math.min(Math.max(candidate.distance * SCALE_PER_DISTANCE, MIN_LABEL_SCALE), MAX_LABEL_SCALE);
+      group.scale.setScalar(candidate.scale);
+      const chosen = landmark.index === focused || landmark.index === hovered;
+      candidate.rank = chosen ? 0 : landmark.exhibit ? 1 : 2;
+      const always = chosen || landmark.exhibit !== undefined;
+      candidate.shown =
+        state.scale > SHOWN_SCALE && (chosen || !state.dimmed) && (always || candidate.distance < NEAR_LABEL_DISTANCE);
     });
 
-    for (const level of [0, 1, 2]) {
+    let placed = 0;
+    for (const level of RANKS) {
       labels.forEach((landmark, slot) => {
-        const entry = wanted[slot];
-        if (!entry || rank(landmark) !== level) return;
+        const candidate = candidates.current[slot];
+        const group = groups.current[slot];
+        if (!group || !candidate.shown || candidate.rank !== level) return;
+        point.copy(group.position).project(camera);
+        // Behind the camera, or past the far plane: nothing to see, and it must not hide a label that is.
+        if (point.z > 1) {
+          candidate.shown = false;
+          return;
+        }
         // The label's rectangle in screen pixels, from its bottom-centre anchor.
-        const pixelsPerUnit = size.height / (2 * HALF_VIEW * entry.distance);
-        point.copy(entry.group.position).project(camera);
-        const width = entry.name * CHAR_WIDTH * LABEL_SIZE * entry.scale * pixelsPerUnit;
+        const pixelsPerUnit = size.height / (2 * HALF_VIEW * candidate.distance);
+        const width = landmark.model.length * CHAR_WIDTH * LABEL_SIZE * candidate.scale * pixelsPerUnit;
         const centreX = (point.x * size.width) / 2;
         const baseY = (point.y * size.height) / 2;
-        const box: Box = {
-          left: centreX - width / 2,
-          right: centreX + width / 2,
-          bottom: baseY,
-          top: baseY + LABEL_HEIGHT * LABEL_SIZE * entry.scale * pixelsPerUnit,
-        };
-        const clear = level === 0 || !placed.some((other) => overlaps(box, other));
-        if (clear) placed.push(box);
-        entry.group.visible = clear;
+        const box = boxes.current[placed];
+        box.left = centreX - width / 2;
+        box.right = centreX + width / 2;
+        box.bottom = baseY;
+        box.top = baseY + LABEL_HEIGHT * LABEL_SIZE * candidate.scale * pixelsPerUnit;
+        // The focused and hovered names are always drawn, whatever they overlap.
+        let clear = true;
+        for (let other = 0; level > 0 && other < placed && clear; other += 1) clear = !overlaps(box, boxes.current[other]);
+        if (clear) placed += 1;
+        else candidate.shown = false;
       });
     }
-    wanted.forEach((entry, slot) => {
-      if (!entry) {
-        const group = groups.current[slot];
-        if (group) group.visible = false;
-      }
+    labels.forEach((_, slot) => {
+      const group = groups.current[slot];
+      if (group) group.visible = candidates.current[slot].shown;
     });
   });
 
