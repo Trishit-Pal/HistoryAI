@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ERAS } from "../../src/domain/eras";
 import type { Hall } from "../../src/domain/layout";
 import { dialEntries } from "../../src/museum/dial";
@@ -37,7 +37,10 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
   const [query, setQuery] = useState("");
   const needle = query.trim().toLowerCase();
   const bands = bandsFrom(halls, nodes);
-  const dial = dialEntries(bands.map((band) => ({ href: (id: string) => hrefFor(band, id), exhibits: band.exhibits })));
+  const dial = useMemo(
+    () => dialEntries(bandsFrom(halls, nodes).map((band) => ({ href: (id: string) => hrefFor(band, id), exhibits: band.exhibits }))),
+    [halls, nodes],
+  );
   const matches = (node: MuseumNode) => !needle || node.title.toLowerCase().includes(needle);
   const total = bands.reduce((sum, band) => sum + band.exhibits.filter(matches).length, 0);
   // While searching, an era with no matching exhibit leaves both the timeline and the rail.

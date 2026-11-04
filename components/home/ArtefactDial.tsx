@@ -3,42 +3,49 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type CSSProperties, type KeyboardEvent, useEffect, useState } from "react";
-import { type DialEntry, nearestIndex } from "../../src/museum/dial";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import type { DialEntry } from "../../src/museum/dial";
 import { hasWebGL, usePrefersReducedMotion } from "../../src/museum/env";
 import { CreditLine } from "../ArtefactCredit";
 
 // Client only; the stage keeps its fixed height while it loads, so nothing shifts.
 const DialScene = dynamic(() => import("./DialScene").then((mod) => mod.DialScene), { ssr: false });
 
-const STEP_KEYS: Record<string, number> = { ArrowRight: 1, ArrowUp: 1, PageUp: 1, ArrowLeft: -1, ArrowDown: -1, PageDown: -1 };
+// The front artefact's own motion plays this long after the visitor touches the dial, then rests.
+const PLAY_MS = 4000;
 
-// The year dial: a native range whose value snaps to the exhibit years that have an artefact.
-// It turns the shelf in the canvas above it; without WebGL the dial, label and Visit link stay.
-// `entries` must not be empty (Timeline leaves the dial out when no shown exhibit has an artefact).
+// The dial: a native range over the artefacts, oldest first (one step per artefact; the native
+// arrow, Page and Home/End keys walk it). It turns the shelf in the canvas above it; without WebGL
+// the dial, label and Visit link stay. `entries` must not be empty (Timeline leaves the dial out).
 export function ArtefactDial({ entries }: { entries: DialEntry[] }) {
   const router = useRouter();
   const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [webgl, setWebgl] = useState<boolean | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     setWebgl(hasWebGL());
+    return () => clearTimeout(timer.current);
   }, []);
 
-  const entry = entries[index];
-  const first = entries[0].year;
-  const last = entries[entries.length - 1].year;
-  const kind = entry.artefact.kind === "data" ? "Published structure" : "Replica";
+  // Motion only answers the visitor, and never under reduced motion.
+  const play = useCallback(() => {
+    if (reduced) return;
+    setPlaying(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setPlaying(false), PLAY_MS);
+  }, [reduced]);
 
-  // Arrow keys step artefact to artefact, not year to year.
-  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    const end = event.key === "Home" ? 0 : event.key === "End" ? entries.length - 1 : null;
-    const delta = STEP_KEYS[event.key];
-    if (end === null && delta === undefined) return;
-    event.preventDefault();
-    setIndex(end ?? Math.min(entries.length - 1, Math.max(0, index + delta)));
+  const choose = (next: number) => {
+    setIndex(next);
+    play();
   };
+
+  const entry = entries[index];
+  const last = entries.length - 1;
+  const kind = entry.artefact.kind === "data" ? "Published structure" : "Replica";
 
   return (
     <div className="dial">
@@ -47,13 +54,15 @@ export function ArtefactDial({ entries }: { entries: DialEntry[] }) {
         hidden={webgl === false}
         role="img"
         aria-label={`${kind} of the artefact for ${entry.title} (${entry.year}), standing at the front of a ring of era artefacts.`}
+        onPointerEnter={play}
       >
         {webgl ? (
           <DialScene
             entries={entries}
             index={index}
             reduced={reduced}
-            onSelect={setIndex}
+            playing={playing}
+            onSelect={choose}
             onVisit={(i) => router.push(entries[i].href)}
           />
         ) : null}
@@ -65,31 +74,23 @@ export function ArtefactDial({ entries }: { entries: DialEntry[] }) {
         <div className="dial-track">
           <div className="dial-ticks" aria-hidden="true">
             {entries.map((e, i) => (
-              <span
-                key={e.id}
-                className={i === index ? "is-current" : undefined}
-                style={{ "--at": (e.year - first) / Math.max(1, last - first) } as CSSProperties}
-              />
+              <span key={e.id} className={i === index ? "is-current" : undefined} style={{ "--at": i / Math.max(1, last) } as CSSProperties} />
             ))}
           </div>
           <input
             className="dial-range"
             type="range"
-            min={first}
+            min={0}
             max={last}
             step={1}
-            value={entry.year}
+            value={index}
             aria-label="Choose an era by year"
             aria-valuetext={`${entry.year}, ${entry.title}`}
-            onChange={(event) => setIndex(nearestIndex(entries, Number(event.target.value)))}
-            onKeyDown={onKeyDown}
+            onChange={(event) => choose(Number(event.target.value))}
+            onFocus={play}
           />
         </div>
-        <div className="dial-ends" aria-hidden="true">
-          <span>{first}</span>
-          <span>{last}</span>
-        </div>
-        <Link className="dial-visit" href={entry.href}>
+        <Link className="dial-visit" href={entry.href} onPointerEnter={play} onFocus={play}>
           Visit {entry.title} <span aria-hidden="true">→</span>
         </Link>
         <div className="dial-credit">

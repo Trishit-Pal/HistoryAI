@@ -1086,15 +1086,6 @@ textarea {
   outline: none;
 }
 
-.dial-ends {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 calc(var(--thumb) / 2 - 1rem);
-  font-family: var(--font-mono), "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.72rem;
-  color: var(--bp-chalk-dim);
-}
-
 .night .dial-visit {
   justify-self: center;
   margin-top: 0.4rem;

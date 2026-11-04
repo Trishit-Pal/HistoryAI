@@ -17,11 +17,3 @@ export function dialEntries(groups: { href: (id: string) => string; exhibits: Ex
     .sort((a, b) => a.year - b.year);
 }
 
-// The stop whose year is closest to `year` (the earlier one on a tie).
-export function nearestIndex(entries: DialEntry[], year: number): number {
-  let best = 0;
-  entries.forEach((entry, i) => {
-    if (Math.abs(entry.year - year) < Math.abs(entries[best].year - year)) best = i;
-  });
-  return best;
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dialEntries, nearestIndex } from "./dial";
+import { dialEntries } from "./dial";
 
 const groups = [
   {
@@ -19,14 +19,5 @@ describe("dial", () => {
     expect(entries.map((e) => e.year)).toEqual([1843, 2012, 2016]);
     expect(entries[1].href).toBe("/rooms/deep-learning#evt_2012_alexnet");
     expect(entries[0].artefact.component).toBe("analyticalEngine");
-  });
-
-  it("snaps a year to the nearest stop", () => {
-    const entries = dialEntries(groups);
-    expect(nearestIndex(entries, 1700)).toBe(0);
-    expect(nearestIndex(entries, 1990)).toBe(1);
-    expect(nearestIndex(entries, 2014)).toBe(1);
-    expect(nearestIndex(entries, 2015)).toBe(2);
-    expect(nearestIndex(entries, 3000)).toBe(2);
   });
 });

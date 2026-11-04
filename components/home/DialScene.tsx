@@ -1,7 +1,7 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Line, useCursor } from "@react-three/drei";
 import { Box3, type Group, MathUtils, type Material, Matrix4, type Mesh, Vector3 } from "three";
 import type { DialEntry } from "../../src/museum/dial";
@@ -18,6 +18,8 @@ const PLINTH_R = 0.56;
 const FIT = 0.95;
 // ~1 s to settle: e^(-DAMP · 1 s) ≈ 1.5% left.
 const DAMP = 4.2;
+// Within this (radians) of its target the ring snaps and stops asking for frames.
+const SETTLED = 1e-3;
 // The page-load entrance starts the ring this far round and eases it into place once.
 const ENTRANCE = 0.55;
 const LOOK: [number, number, number] = [0, 0.5, RADIUS];
@@ -28,6 +30,8 @@ type SceneProps = {
   entries: DialEntry[];
   index: number;
   reduced: boolean;
+  // The front artefact's own motion plays only while this is set (it answers the visitor).
+  playing: boolean;
   onSelect: (index: number) => void;
   onVisit: (index: number) => void;
 };
@@ -50,7 +54,9 @@ function localBox(group: Group): Box3 {
   return box;
 }
 
-function Stop({ entry, angle, front, onPick }: { entry: DialEntry; angle: number; front: boolean; onPick: () => void }) {
+type StopProps = { entry: DialEntry; angle: number; front: boolean; playing: boolean; onPick: () => void };
+
+function Stop({ entry, angle, front, playing, onPick }: StopProps) {
   const [hovered, setHovered] = useState(false);
   const inner = useRef<Group>(null);
   useCursor(hovered);
@@ -88,14 +94,15 @@ function Stop({ entry, angle, front, onPick }: { entry: DialEntry; angle: number
         <Ink tone="stone" accent={hovered && !front} />
       </mesh>
       <group ref={inner}>
-        <Model active={front} />
+        <Model active={front && playing} />
       </group>
     </group>
   );
 }
 
-function Shelf({ entries, index, reduced, onSelect, onVisit }: SceneProps) {
+function Shelf({ entries, index, reduced, playing, onSelect, onVisit }: SceneProps) {
   const ring = useRef<Group>(null);
+  const invalidate = useThree((state) => state.invalidate);
   const step = (Math.PI * 2) / entries.length;
   // Monotonic, never wrapped: moving the dial right always turns the shelf the same way.
   const target = -index * step;
@@ -106,6 +113,8 @@ function Shelf({ entries, index, reduced, onSelect, onVisit }: SceneProps) {
   );
 
   // drei's fat lines (the ring, the protein trace) are ShaderMaterials, which ignore fog unless asked.
+  // Patched once after mount: this assumes no material is created later (nothing on the shelf
+  // remounts; a new artefact mounting after this would need the same patch).
   useLayoutEffect(() => {
     ring.current?.traverse((object) => {
       const material = (object as Mesh).material as (Material & { fog?: boolean }) | undefined;
@@ -116,6 +125,10 @@ function Shelf({ entries, index, reduced, onSelect, onVisit }: SceneProps) {
     });
   }, []);
 
+  // The canvas renders on demand: a new target, or the end of play (so the artefact's rest pose
+  // is drawn), asks for one frame, and the turn keeps asking only until it settles.
+  useEffect(() => invalidate(), [invalidate, target, playing]);
+
   useFrame((_, delta) => {
     const group = ring.current;
     if (!group) return;
@@ -123,7 +136,12 @@ function Shelf({ entries, index, reduced, onSelect, onVisit }: SceneProps) {
       entered.current = true;
       group.rotation.y = reduced ? target : target + ENTRANCE;
     }
-    group.rotation.y = reduced ? target : MathUtils.damp(group.rotation.y, target, DAMP, Math.min(delta, 0.1));
+    if (reduced || Math.abs(group.rotation.y - target) <= SETTLED) {
+      group.rotation.y = target;
+      return;
+    }
+    group.rotation.y = MathUtils.damp(group.rotation.y, target, DAMP, Math.min(delta, 0.1));
+    invalidate();
   });
 
   return (
@@ -135,6 +153,7 @@ function Shelf({ entries, index, reduced, onSelect, onVisit }: SceneProps) {
           entry={entry}
           angle={i * step}
           front={i === index}
+          playing={playing}
           onPick={() => (i === index ? onVisit(i) : onSelect(i))}
         />
       ))}
@@ -146,6 +165,7 @@ export function DialScene(props: SceneProps) {
   return (
     <Canvas
       flat
+      frameloop={props.playing ? "always" : "demand"}
       dpr={[1, 1.5]}
       camera={{ fov: 30, position: [0, 1.25, RADIUS + 3.1], near: 0.05, far: 30 }}
       onCreated={({ camera }) => camera.lookAt(...LOOK)}
