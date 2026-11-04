@@ -105,6 +105,8 @@ export type VersionRecord = {
 export type ChangelogLine = {
   at: string;
   nodeId: string;
+  /** The exhibit's title at this version, so a withdrawn exhibit still has a name in the changelog. */
+  title?: string;
   version: number;
   reason: string;
   suggestionId?: string;
@@ -261,6 +263,7 @@ export class MemoryStore {
       this.changeLog.push({
         at: now,
         nodeId: next.id,
+        title: next.title,
         version,
         reason,
         suggestionId: write.suggestionId,

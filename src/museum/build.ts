@@ -31,6 +31,15 @@ export type MuseumData = {
   archivedAt?: string;
 };
 
+/** Withdrawn now, and public at some earlier version; a draft withdrawn unseen stays out. */
+function isWithdrawn(store: MemoryStore, id: string): boolean {
+  const versions = store.versions(id);
+  return (
+    versions.at(-1)?.blob.publicationState === "withdrawn" &&
+    versions.some((entry) => entry.blob.publicationState === "canon" || entry.blob.publicationState === "provisional")
+  );
+}
+
 export function buildMuseumData(
   snapshot: MuseumSnapshot,
   meta: { source: "live" | "archive"; archivedAt?: string },
@@ -66,7 +75,8 @@ export function buildMuseumData(
   return {
     nodes,
     halls: museumHalls(store),
-    changelog: store.changelog().filter((line) => publicIds.has(line.nodeId)),
+    // A withdrawn exhibit leaves the floor but keeps its lines here, ending in "Withdrawn: <reason>".
+    changelog: store.changelog().filter((line) => publicIds.has(line.nodeId) || isWithdrawn(store, line.nodeId)),
     exhibits,
     source: meta.source,
     archivedAt: meta.archivedAt,

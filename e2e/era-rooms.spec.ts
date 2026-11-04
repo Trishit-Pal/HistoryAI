@@ -42,3 +42,22 @@ test("the first era has no previous button and the provisional hall stays reacha
   await page.goto("/rooms/frontier");
   await expect(page.getByRole("button", { name: "Next era: Provisional hall" })).toBeEnabled();
 });
+
+test("an era with no confirmed exhibit has no room and no band", async ({ page }) => {
+  for (const slug of ["expert-systems", "second-winter"]) {
+    const response = await page.goto(`/rooms/${slug}`);
+    expect(response?.status()).toBe(404);
+  }
+  await page.goto("/");
+  await expect(page.locator("#era-expert-systems, #era-second-winter")).toHaveCount(0);
+  await page.goto("/rooms/first-winter");
+  await expect(page.getByRole("button", { name: "Next era: Statistical renaissance" })).toBeVisible();
+});
+
+test("the changelog names each withdrawn exhibit, with its date and reason", async ({ page }) => {
+  await page.goto("/changelog");
+  const line = page.locator(".changelog li", { hasText: "LISP-machine market collapse" }).first();
+  await expect(line).toContainText("Withdrawn: No primary record was found.");
+  await expect(line.locator("time")).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
+  await expect(line.getByRole("link")).toHaveCount(0);
+});

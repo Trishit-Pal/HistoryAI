@@ -242,8 +242,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
           <a href={epoch.licenceUrl} target="_blank" rel="noopener noreferrer">
             CC BY 4.0
           </a>
-          . Copied on {atlas.generatedAt}. Figures are Epoch AI&rsquo;s estimates and are shown as reported, not
-          confirmed.
+          . Copied on {atlas.generatedAt}. Figures are Epoch AI&rsquo;s own estimates.
         </p>
       </footer>
     </main>

@@ -2,8 +2,12 @@ import { layoutHalls, type Hall, type PublicExhibit } from "../domain/layout";
 import type { MemoryStore } from "../store/memory";
 import type { MuseumNode } from "./view";
 
+/** The public floor: canon or provisional, and confirmed. The editor reads the store directly. */
 export function museumNodes(store: MemoryStore): MuseumNode[] {
-  return store.publicExhibits().map((exhibit) => ({
+  return store
+    .publicExhibits()
+    .filter((exhibit) => exhibit.confidence === "confirmed")
+    .map((exhibit) => ({
     id: exhibit.id,
     title: exhibit.title,
     startYear: exhibit.startYear,
