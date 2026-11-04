@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ERAS } from "../src/domain/eras";
 import type { Hall } from "../src/domain/layout";
 import { hallNeighbors } from "../src/domain/threads";
 import { hallTally, parseVisited, tallyLabel } from "../src/domain/visited";
@@ -10,6 +11,7 @@ import { enterHall, focusExhibit, isSealed, reconcileFocus, type NavState } from
 import { chooseView, type MuseumNode } from "../src/museum/view";
 import { HallCorridor } from "./HallCorridor";
 import { Flatland } from "./Flatland";
+import { Breadcrumbs } from "./Breadcrumbs";
 import { Dossier } from "./Dossier";
 import { EXHIBIT_PANEL_ID, ExhibitTabs, exhibitTabId } from "./ExhibitTabs";
 import { YearScale } from "./YearScale";
@@ -82,6 +84,17 @@ export function MuseumShell({
     ? tallyLabel(hallTally(focusedHall.exhibitIds, nodes, year, visited))
     : null;
 
+  // Keep /rooms/<slug> in step with the hall. Native replaceState syncs Next's router without
+  // re-rendering the route (so the 3D shell stays mounted). The first hall keeps its #id hash.
+  const hallId = focusedHall?.id;
+  const shownHallId = useRef(hallId);
+  useEffect(() => {
+    if (!hallId || hallId === shownHallId.current) return;
+    shownHallId.current = hallId;
+    const era = ERAS.find((item) => item.id === hallId);
+    if (era) window.history.replaceState(null, "", `/rooms/${era.slug}`);
+  }, [hallId]);
+
   function onYear(next: number) {
     setYear(next);
     setNav((prev) => reconcileFocus(prev, { halls, nodes, year: next }));
@@ -99,7 +112,9 @@ export function MuseumShell({
     <main className="shell">
       {archivedAt ? <p className="archive-banner">Showing the archived copy from {archivedAt}.</p> : null}
       <header className="rail">
-        <p className="site-name">Hall of Eras</p>
+        <Breadcrumbs
+          items={[{ label: "Timeline", href: "/" }, { label: focusedHall?.label ?? "Hall of Eras" }]}
+        />
         <label htmlFor="year">Show work up to {year}</label>
         <YearScale year={year} onYear={onYear} />
         <div className="index" role="navigation" aria-label="Halls">

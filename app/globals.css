@@ -189,6 +189,35 @@ textarea {
   color: var(--brass);
 }
 
+.site-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-color: var(--bp-redline);
+  text-underline-offset: 0.3em;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li + li::before {
+  content: "›";
+  margin-right: 0.5rem;
+  color: var(--bp-redline);
+}
+
+.breadcrumbs a {
+  color: var(--bp-chalk);
+}
+
+.breadcrumbs [aria-current="page"] {
+  color: var(--bp-chalk-dim);
+}
+
 .shell {
   display: flex;
   flex-direction: column;
@@ -233,7 +262,8 @@ textarea {
   border-bottom: 1px solid var(--bp-chalk);
 }
 
-.site-name {
+.site-name,
+.rail .breadcrumbs {
   grid-column: 1;
   grid-row: 1 / span 2;
   align-self: center;
@@ -395,6 +425,7 @@ textarea {
   }
 
   .site-name,
+  .rail .breadcrumbs,
   .rail label,
   .year-scale,
   .plan-toggle {
