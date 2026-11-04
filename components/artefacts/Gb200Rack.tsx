@@ -8,7 +8,7 @@ import { useActiveFrame, type ArtefactProps } from "./motion";
 
 // After Pokiiri's photo of a GB200 NVL72 rack, top to bottom: an open cable space, two network
 // switches in one housing, four power shelves of six modules, then one housing holding ten
-// compute trays, nine NVLink switch trays and eight compute trays, and an empty base. Width to
+// trays, nine trays with a row of ports at the left, and eight trays, then an empty base. Width to
 // height and every height are read off the photo; the photo shows no depth, so D is a guess.
 const W = 0.24;
 const H = 0.88;
@@ -17,7 +17,8 @@ const FRONT = D / 2;
 const TRAY_W = 0.163;
 const TRAY_TOP = 0.29;
 const TRAY_PITCH = ((0.818 - TRAY_TOP) * H) / 27;
-const TRAYS = [...Array<"compute">(10).fill("compute"), ...Array<"nvlink">(9).fill("nvlink"), ...Array<"compute">(8).fill("compute")];
+type TrayKind = "bays" | "ported";
+const TRAYS: TrayKind[] = [...Array<TrayKind>(10).fill("bays"), ...Array<TrayKind>(9).fill("ported"), ...Array<TrayKind>(8).fill("bays")];
 const SWEEP_SECONDS = 1.6;
 const LIT = new Color(REDLINE);
 const DIM = new Color(CHALK_DIM);
@@ -39,16 +40,16 @@ function lines(build: (points: number[]) => void): BufferGeometry {
   return geometry;
 }
 
-// Each kind of tray as one merged line drawing: compute trays in three bays, switch trays with a
-// row of ports at the left (as in the photo).
-function trayLines(kind: "compute" | "nvlink"): BufferGeometry {
+// Each kind of tray as one merged line drawing, as in the photo: three bays, or a row of ports
+// at the left. The source names no tray, so the "trays" hotspot lights all of them.
+function trayLines(kind: TrayKind): BufferGeometry {
   return lines((points) => {
     TRAYS.forEach((k, i) => {
       if (k !== kind) return;
       const y = trayY(i);
       const h = TRAY_PITCH * 0.82;
       rect(points, 0, y, TRAY_W, h);
-      if (kind === "compute") {
+      if (kind === "bays") {
         for (const x of [-0.028, 0.03]) points.push(x, y - h / 2, 0, x, y + h / 2, 0);
       } else {
         for (let p = 0; p < 6; p++) rect(points, -0.06 + p * 0.011, y, 0.007, h * 0.45);
@@ -101,8 +102,8 @@ function StatusLights({ active }: { active: boolean }) {
 }
 
 export function Gb200Rack({ active, highlight }: ArtefactProps) {
-  const compute = useMemo(() => trayLines("compute"), []);
-  const nvlink = useMemo(() => trayLines("nvlink"), []);
+  const bays = useMemo(() => trayLines("bays"), []);
+  const ported = useMemo(() => trayLines("ported"), []);
   const upper = useMemo(upperLines, []);
   const housingTop = down(0.275);
   const housingBottom = down(0.826);
@@ -124,12 +125,13 @@ export function Gb200Rack({ active, highlight }: ArtefactProps) {
         <lineSegments geometry={upper} raycast={() => null}>
           <lineBasicMaterial color={CHALK_DIM} />
         </lineSegments>
-        <lineSegments name="compute" geometry={compute} raycast={() => null}>
-          <lineBasicMaterial color={highlight === "compute" ? REDLINE : CHALK} />
-        </lineSegments>
-        <lineSegments name="nvlink" geometry={nvlink} raycast={() => null}>
-          <lineBasicMaterial color={highlight === "nvlink" ? REDLINE : CHALK} />
-        </lineSegments>
+        <group name="trays">
+          {[bays, ported].map((geometry) => (
+            <lineSegments key={geometry.uuid} geometry={geometry} raycast={() => null}>
+              <lineBasicMaterial color={highlight === "trays" ? REDLINE : CHALK} />
+            </lineSegments>
+          ))}
+        </group>
       </group>
       <StatusLights active={active} />
     </group>

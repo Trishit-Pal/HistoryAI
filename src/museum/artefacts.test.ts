@@ -39,6 +39,14 @@ describe("artefact registry", () => {
     expect(ARTEFACTS.evt_2016_alphago.hotspots.map((h) => h.id)).toEqual(["grid"]);
   });
 
+  it("allows a maker's page only for the rack, and only NVIDIA's GB200 NVL72 page", () => {
+    const withParts = Object.entries(ARTEFACTS).filter(([, artefact]) => artefact.partsUrl !== undefined);
+    expect(withParts.map(([id]) => id)).toEqual(["evt_2026_gpt6_astra"]);
+    const url = new URL(withParts[0][1].partsUrl!);
+    expect(url.hostname).toBe("www.nvidia.com");
+    expect(url.href).toBe("https://www.nvidia.com/en-us/data-center/gb200-nvl72/");
+  });
+
   it("never ties the rack to Astra or counts Astra's hardware", () => {
     const rack = ARTEFACTS.evt_2026_gpt6_astra;
     const credit = creditParts(rack);
