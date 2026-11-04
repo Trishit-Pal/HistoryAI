@@ -5,6 +5,7 @@ import { Line } from "@react-three/drei";
 import { CatmullRomCurve3, type Group, Vector3 } from "three";
 import protein from "../../src/museum/protein-6y4f.json";
 import { CHALK, CHALK_DIM, REDLINE } from "../../src/museum/theme";
+import { Ink } from "../Ink";
 import { useActiveFrame, type ArtefactProps } from "./motion";
 
 // The C-alpha trace of RCSB PDB 6Y4F chain A (CASP14 target T1049), from the published
@@ -12,6 +13,8 @@ import { useActiveFrame, type ArtefactProps } from "./motion";
 const SCALE = 0.016;
 const SMOOTH = 4;
 const TURN_PER_SECOND = 0.35;
+// A display rod holds the trace's centre above the slab.
+const CENTRE_Y = 0.36;
 
 type Trace = { chain: Vector3[]; segments: { kind: string; points: Vector3[] }[] };
 
@@ -45,8 +48,12 @@ export function Protein({ active, highlight }: ArtefactProps) {
   );
   const chainHot = highlight === "chain";
   return (
-    <group position={[0, 0.36, 0]}>
-      <group ref={spin}>
+    <group>
+      <mesh position={[0, CENTRE_Y / 2, 0]}>
+        <cylinderGeometry args={[0.006, 0.006, CENTRE_Y, 6]} />
+        <Ink tone="metal" />
+      </mesh>
+      <group ref={spin} position={[0, CENTRE_Y, 0]}>
         <Line name="chain" points={trace.chain} color={chainHot ? REDLINE : CHALK_DIM} lineWidth={1.4} />
         <group name="strands">
           {trace.segments.map((segment, i) => (

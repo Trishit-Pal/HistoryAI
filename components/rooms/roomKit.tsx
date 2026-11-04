@@ -1,6 +1,7 @@
 "use client";
 
 import { Text } from "@react-three/drei";
+import { loadsNear } from "../../src/museum/hallMath";
 import type { Spot } from "../../src/museum/precursorsRoom";
 import { CHALK } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
@@ -26,14 +27,15 @@ export function RoomExhibits({
   onFocus: (id: string) => void;
 }) {
   const byId = new Map(members.map((node) => [node.id, node]));
-  const focusedIndex = Math.max(0, spots.findIndex((spot) => spot.id === focusedId));
+  // -1 when the focus is in another hall: then nothing here loads.
+  const focusedIndex = spots.findIndex((spot) => spot.id === focusedId);
   return (
     <>
       {spots.map((spot, index) => {
         const node = byId.get(spot.id);
         if (!node) return null;
         const ghost = node.startYear > year;
-        const load = Math.abs(index - focusedIndex) <= 1;
+        const load = loadsNear(index, focusedIndex);
         const position: [number, number, number] = [spot.x, spot.y, spot.z];
         return (
           <group key={node.id}>

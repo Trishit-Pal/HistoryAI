@@ -1,22 +1,28 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { BufferGeometry, Float32BufferAttribute, type Group } from "three";
-import { CHALK, PRUSSIAN, REDLINE } from "../../src/museum/theme";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { BufferGeometry, Color, Float32BufferAttribute, type LineBasicMaterial, MeshBasicMaterial } from "three";
+import { CHALK, REDLINE } from "../../src/museum/theme";
 import { Ink } from "../Ink";
 import { ease, useActiveFrame, type ArtefactProps } from "./motion";
 
-// After the empty 19 × 19 goban on Commons: 19 lines each way and nine star points.
-// The one stone's point is illustrative, not the Move 37 game record (the sources give no point).
+// After the empty 19 × 19 goban on Commons: 19 lines each way and nine star points. No stone is
+// placed: the sources name Move 37 but give no point for it. The board leans on a back block
+// so the grid faces the room.
 const LINES = 19;
 const PITCH = 0.03;
 const HALF = ((LINES - 1) * PITCH) / 2;
 const TOP = 0.1;
+const DEPTH = 0.64;
 const STAR = [3, 9, 15];
-const STONE_POINT = { col: 13, row: 7 };
-const DROP_HEIGHT = 0.3;
+const TILT = 0.35;
+const LIFT = (DEPTH / 2) * Math.sin(TILT);
+const BACK_Y = 2 * LIFT;
+const LIGHT_SECONDS = 0.8;
 
 const at = (i: number) => -HALF + i * PITCH;
+const chalk = new Color(CHALK);
+const gold = new Color(REDLINE);
 
 function gridLines(): BufferGeometry {
   const points: number[] = [];
@@ -31,44 +37,39 @@ function gridLines(): BufferGeometry {
 
 export function GoBoard({ active, highlight }: ArtefactProps) {
   const grid = useMemo(gridLines, []);
-  const stone = useRef<Group>(null);
-  useActiveFrame(
-    active,
-    (t) => {
-      if (stone.current) stone.current.position.y = TOP + DROP_HEIGHT * (1 - ease(t, 0.55));
-    },
-    () => {
-      if (stone.current) stone.current.position.y = TOP;
-    },
-  );
+  const lines = useRef<LineBasicMaterial>(null);
+  const stars = useMemo(() => new MeshBasicMaterial({ color: CHALK }), []);
+  useEffect(() => () => stars.dispose(), [stars]);
+  const hot = highlight === "grid";
+  const paint = (k: number) => {
+    lines.current?.color.copy(chalk).lerp(gold, hot ? 1 : k);
+    stars.color.copy(hot || k >= 1 ? gold : chalk);
+  };
+  useLayoutEffect(() => paint(0));
+  useActiveFrame(active, (t) => paint(ease(t, LIGHT_SECONDS)), () => paint(0));
   return (
-    <group rotation={[0.35, 0, 0]} position={[0, 0.08, 0]}>
-      <mesh position={[0, TOP / 2, 0]}>
-        <boxGeometry args={[0.6, TOP, 0.64]} />
+    <group>
+      <mesh position={[0, BACK_Y / 2, -(DEPTH / 2) * Math.cos(TILT) + 0.02]}>
+        <boxGeometry args={[0.5, BACK_Y, 0.04]} />
         <Ink tone="stone" />
       </mesh>
-      <group name="grid" position={[0, TOP + 0.001, 0]}>
-        <lineSegments geometry={grid} raycast={() => null}>
-          <lineBasicMaterial color={highlight === "grid" ? REDLINE : CHALK} />
-        </lineSegments>
-        {STAR.flatMap((col) =>
-          STAR.map((row) => (
-            <mesh key={`${col}${row}`} position={[at(col), 0.001, at(row)]} rotation={[-Math.PI / 2, 0, 0]}>
-              <circleGeometry args={[0.005, 10]} />
-              <meshBasicMaterial color={CHALK} />
-            </mesh>
-          )),
-        )}
-      </group>
-      <group name="stone" ref={stone} position={[at(STONE_POINT.col), TOP, at(STONE_POINT.row)]}>
-        <mesh position={[0, 0.009, 0]} scale={[1, 0.4, 1]}>
-          <sphereGeometry args={[0.0145, 16, 8]} />
-          <meshBasicMaterial color={highlight === "stone" || active ? REDLINE : PRUSSIAN} />
+      <group rotation={[TILT, 0, 0]} position={[0, LIFT, 0]}>
+        <mesh position={[0, TOP / 2, 0]}>
+          <boxGeometry args={[0.6, TOP, DEPTH]} />
+          <Ink tone="stone" />
         </mesh>
-        <mesh position={[0, 0.009, 0]} scale={[1, 0.4, 1]}>
-          <sphereGeometry args={[0.0155, 16, 8]} />
-          <meshBasicMaterial color={CHALK} wireframe />
-        </mesh>
+        <group name="grid" position={[0, TOP + 0.001, 0]}>
+          <lineSegments geometry={grid} raycast={() => null}>
+            <lineBasicMaterial ref={lines} color={CHALK} />
+          </lineSegments>
+          {STAR.flatMap((col) =>
+            STAR.map((row) => (
+              <mesh key={`${col}${row}`} position={[at(col), 0.001, at(row)]} rotation={[-Math.PI / 2, 0, 0]} material={stars}>
+                <circleGeometry args={[0.006, 10]} />
+              </mesh>
+            )),
+          )}
+        </group>
       </group>
     </group>
   );

@@ -8,7 +8,7 @@ import gsap from "gsap";
 import type { Hall } from "../src/domain/layout";
 import { hallThreads, otherThreadId } from "../src/domain/threads";
 import { eraSpot } from "../src/museum/eraRooms";
-import { focusedPedestal, hallLength, hallOrigin, pedestalPosition } from "../src/museum/hallMath";
+import { focusedPedestal, hallLength, hallOrigin, loadsNear, pedestalPosition } from "../src/museum/hallMath";
 import { precursorsCameraY } from "../src/museum/precursorsRoom";
 import { isSealed } from "../src/museum/seal";
 import { CHALK, CHALK_DIM, PRUSSIAN, REDLINE } from "../src/museum/theme";
@@ -122,7 +122,7 @@ function Corridor({
         const length = hallLength(hall);
         const width = 6 * hall.width;
         const members = hall.exhibitIds.map((id) => byId.get(id)).filter(Boolean) as MuseumNode[];
-        const focusedIndex = Math.max(0, members.findIndex((member) => member.id === focusedId));
+        const focusedIndex = members.findIndex((member) => member.id === focusedId);
         const Room = ERA_ROOMS[hall.id];
         const next = halls[index + 1];
         const nextSealed = next ? isSealed(next, nodes, year) : false;
@@ -190,7 +190,7 @@ function Corridor({
                     exhibitId={node.id}
                     position={position}
                     focused={node.id === focusedId}
-                    load={Math.abs(i - focusedIndex) <= 1}
+                    load={loadsNear(i, focusedIndex)}
                     ghost={node.startYear > year}
                     onFocus={onFocus}
                   />

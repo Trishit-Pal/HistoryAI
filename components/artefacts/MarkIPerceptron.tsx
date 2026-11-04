@@ -51,9 +51,11 @@ function Retina({ active, accent }: { active: boolean; accent: boolean }) {
   const order = useMemo(letterC, []);
   const off = useMemo(() => new Color(accent ? REDLINE : CHALK_DIM), [accent]);
   const on = useMemo(() => new Color(REDLINE), []);
+  const painted = useRef(-1);
   const paint = (lit: number) => {
     const mesh = cells.current;
-    if (!mesh) return;
+    if (!mesh || lit === painted.current) return;
+    painted.current = lit;
     for (let i = 0; i < GRID * GRID; i++) mesh.setColorAt(i, off);
     for (let i = 0; i < lit; i++) mesh.setColorAt(order[i], on);
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -68,6 +70,7 @@ function Retina({ active, accent }: { active: boolean; accent: boolean }) {
       mesh.setMatrixAt(i, dummy.matrix);
     }
     mesh.instanceMatrix.needsUpdate = true;
+    painted.current = -1;
     paint(0);
   }, [off]);
   useActiveFrame(active, (t) => paint(Math.round(order.length * Math.min(1, t / REVEAL_SECONDS))), () => paint(0));
@@ -95,7 +98,7 @@ export function MarkIPerceptron({ active, highlight }: ArtefactProps) {
   const [ax, aw] = SECTIONS.assoc;
   const [rx, rw] = SECTIONS.response;
   return (
-    <group position={[0.04, 0, -0.04]}>
+    <group position={[0.06, 0, -0.03]}>
       <mesh position={[0, H / 2, 0]}>
         <boxGeometry args={[0.86, H, D]} />
         <Ink tone="stone" />
@@ -127,7 +130,7 @@ export function MarkIPerceptron({ active, highlight }: ArtefactProps) {
         ))}
         <Panel x={0} w={rw} y={0.13} h={0.2} />
       </group>
-      <group position={[-0.5, 0, 0.16]}>
+      <group position={[-0.5, 0, 0.14]}>
         {[-0.5, 0.5, 2.6].map((angle) => (
           <mesh key={angle} position={[Math.sin(angle) * 0.04, 0.1, Math.cos(angle) * 0.04]} rotation={[Math.cos(angle) * 0.35, 0, -Math.sin(angle) * 0.35]}>
             <boxGeometry args={[0.008, 0.21, 0.008]} />

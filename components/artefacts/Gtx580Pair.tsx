@@ -72,12 +72,13 @@ function Board({ x, highlight, dieRef }: { x: number; highlight?: string; dieRef
 
 export function Gtx580Pair({ active, highlight }: ArtefactProps) {
   const dies = useRef<(Mesh | null)[]>([null, null]);
-  const show = (which: number) => {
-    dies.current.forEach((die, i) => {
-      if (die) die.visible = i === which;
+  // Both dies light together: the paper trains one network split across the two GPUs at once.
+  const show = (lit: boolean) => {
+    dies.current.forEach((die) => {
+      if (die) die.visible = lit;
     });
   };
-  useActiveFrame(active, (t) => show(Math.floor(t / PULSE_SECONDS) % 2), () => show(-1));
+  useActiveFrame(active, (t) => show(Math.floor(t / PULSE_SECONDS) % 2 === 0), () => show(false));
   return (
     <group name="boards">
       {[-0.23, 0.23].map((x, i) => (
@@ -91,8 +92,8 @@ export function Gtx580Pair({ active, highlight }: ArtefactProps) {
         />
       ))}
       {[-0.23, 0.23].map((x) => (
-        <mesh key={x} position={[x, 0.05, 0.07]}>
-          <boxGeometry args={[0.3, 0.1, 0.04]} />
+        <mesh key={x} position={[x, 0.04, 0.039]}>
+          <boxGeometry args={[0.3, 0.08, 0.05]} />
           <Ink tone="stone" />
         </mesh>
       ))}

@@ -2,6 +2,7 @@
 
 import { type ComponentType, useState } from "react";
 import { useCursor } from "@react-three/drei";
+import { Ink } from "../Ink";
 import { artefactFor, type ArtefactKey } from "../../src/museum/artefacts";
 import { AnalyticalEngine } from "./AnalyticalEngine";
 import { DeepBlue } from "./DeepBlue";
@@ -22,10 +23,11 @@ const COMPONENTS: Record<ArtefactKey, ComponentType<ArtefactProps>> = {
   protein6y4f: Protein,
 };
 
-// Monument's stack is 0.92 tall (disc + plinth + shaft + cap); the artefact stands on the cap.
-// Drawn at ~0.6 m and shown at 1.5× so the parts read from the room camera (about 4 m away).
+// Monument's stack is 0.92 tall (disc + plinth + shaft + cap). A display slab sized to the
+// artefact's scaled footprint sits on the cap, and the artefact stands on the slab.
 export const PLINTH_TOP = 0.92;
-const SHOW_SCALE = 1.5;
+const SLAB_H = 0.04;
+const SLAB_MARGIN = 0.06;
 export const LABEL_ABOVE_ARTEFACT = 2.1;
 
 export function hasArtefact(exhibitId: string): boolean {
@@ -55,10 +57,10 @@ export function PlinthArtefact({
   const artefact = artefactFor(exhibitId);
   if (!artefact || !load || ghost) return null;
   const Model = COMPONENTS[artefact.component];
+  const [w, d] = artefact.footprint;
   return (
     <group
       position={[position[0], position[1] + PLINTH_TOP, position[2]]}
-      scale={SHOW_SCALE}
       onClick={(event) => {
         event.stopPropagation();
         onFocus(exhibitId);
@@ -69,7 +71,13 @@ export function PlinthArtefact({
       }}
       onPointerOut={() => setHovered(false)}
     >
-      <Model active={focused || hovered} highlight={highlight} />
+      <mesh position={[0, SLAB_H / 2, 0]}>
+        <boxGeometry args={[w * artefact.scale + SLAB_MARGIN, SLAB_H, d * artefact.scale + SLAB_MARGIN]} />
+        <Ink tone="stone" />
+      </mesh>
+      <group position={[0, SLAB_H, 0]} scale={artefact.scale}>
+        <Model active={focused || hovered} highlight={highlight} />
+      </group>
     </group>
   );
 }

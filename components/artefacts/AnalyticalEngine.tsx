@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-import type { Group } from "three";
+import { useEffect, useMemo, useRef } from "react";
+import { BoxGeometry, type BufferGeometry, CylinderGeometry, type Group } from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { Ink } from "../Ink";
 import { ease, useActiveFrame, type ArtefactProps } from "./motion";
 
@@ -16,28 +17,54 @@ const TOP_Y = 0.56;
 const TURNING = { x: 0.04, z: 0.06 };
 const DIGIT = (Math.PI * 2) / 10;
 
-function Column({ x, z, accent }: { x: number; z: number; accent: boolean }) {
+type ColumnGeometry = { discs: BufferGeometry; metal: BufferGeometry };
+
+// All columns at the given points merged into two geometries (discs, and axes plus digit ticks),
+// so the mill costs two draw calls and one outline instead of one per disc.
+function columnGeometry(points: { x: number; z: number }[]): ColumnGeometry {
+  const discs: BufferGeometry[] = [];
+  const metal: BufferGeometry[] = [];
+  for (const { x, z } of points) {
+    metal.push(new CylinderGeometry(0.005, 0.005, TOP_Y - PLATE_Y, 6).translate(x, (PLATE_Y + TOP_Y) / 2, z));
+    for (let i = 0; i < DISCS; i++) {
+      const y = PLATE_Y + 0.05 + i * DISC_GAP;
+      const turn = (i * 7 * DIGIT) % (Math.PI * 2);
+      discs.push(new CylinderGeometry(0.032, 0.032, 0.01, 12).translate(x, y, z));
+      metal.push(new BoxGeometry(0.012, 0.012, 0.006).translate(0.03, 0, 0).rotateY(turn).translate(x, y, z));
+    }
+  }
+  const merged = { discs: mergeGeometries(discs), metal: mergeGeometries(metal) };
+  [...discs, ...metal].forEach((part) => part.dispose());
+  return merged;
+}
+
+function useColumns(points: { x: number; z: number }[]): ColumnGeometry {
+  // points are module constants, so the merge runs once per mount.
+  const geometry = useMemo(() => columnGeometry(points), [points]);
+  useEffect(() => () => {
+    geometry.discs.dispose();
+    geometry.metal.dispose();
+  }, [geometry]);
+  return geometry;
+}
+
+function Columns({ geometry, accent }: { geometry: ColumnGeometry; accent: boolean }) {
   return (
     <>
-      <mesh position={[x, (PLATE_Y + TOP_Y) / 2, z]}>
-        <cylinderGeometry args={[0.005, 0.005, TOP_Y - PLATE_Y, 6]} />
+      <mesh geometry={geometry.discs}>
+        <Ink tone="stone" accent={accent} />
+      </mesh>
+      <mesh geometry={geometry.metal}>
         <Ink tone="metal" />
       </mesh>
-      {Array.from({ length: DISCS }, (_, i) => (
-        <group key={i} position={[x, PLATE_Y + 0.05 + i * DISC_GAP, z]} rotation={[0, (i * 7 * DIGIT) % (Math.PI * 2), 0]}>
-          <mesh>
-            <cylinderGeometry args={[0.032, 0.032, 0.01, 12]} />
-            <Ink tone="stone" accent={accent} />
-          </mesh>
-          <mesh position={[0.03, 0, 0]}>
-            <boxGeometry args={[0.012, 0.012, 0.006]} />
-            <Ink tone="metal" />
-          </mesh>
-        </group>
-      ))}
     </>
   );
 }
+
+const STATIC_POINTS = COLUMNS_X.flatMap((x) => ROWS_Z.map((z) => ({ x, z }))).filter(
+  (point) => !(point.x === TURNING.x && point.z === TURNING.z),
+);
+const TURNING_POINT = [{ x: 0, z: 0 }];
 
 export function AnalyticalEngine({ active, highlight }: ArtefactProps) {
   const turning = useRef<Group>(null);
@@ -51,6 +78,8 @@ export function AnalyticalEngine({ active, highlight }: ArtefactProps) {
     },
   );
   const mill = highlight === "mill";
+  const fixed = useColumns(STATIC_POINTS);
+  const turningColumn = useColumns(TURNING_POINT);
   return (
     <group>
       <mesh position={[0, 0.09, 0]}>
@@ -94,16 +123,10 @@ export function AnalyticalEngine({ active, highlight }: ArtefactProps) {
         </mesh>
       ))}
       <group name="mill">
-        {COLUMNS_X.flatMap((x) =>
-          ROWS_Z.map((z) =>
-            x === TURNING.x && z === TURNING.z ? null : (
-              <Column key={`${x}${z}`} x={x} z={z} accent={mill} />
-            ),
-          ),
-        )}
+        <Columns geometry={fixed} accent={mill} />
       </group>
       <group name="column" ref={turning} position={[TURNING.x, 0, TURNING.z]}>
-        <Column x={0} z={0} accent={mill || highlight === "column"} />
+        <Columns geometry={turningColumn} accent={mill || highlight === "column"} />
       </group>
     </group>
   );

@@ -51,3 +51,9 @@ export function hallSpan(hall: Hall): string {
   if (!hall.startYear) return "";
   return ` ${hall.startYear}${hall.endYear ? `–${hall.endYear}` : "–"}`;
 }
+
+// Textures and artefacts mount only within one spot of the focus, and only in the focused hall
+// (focusedIndex -1 means the focus is elsewhere).
+export function loadsNear(index: number, focusedIndex: number): boolean {
+  return focusedIndex >= 0 && Math.abs(index - focusedIndex) <= 1;
+}

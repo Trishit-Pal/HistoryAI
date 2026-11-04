@@ -1,14 +1,25 @@
-import { artefactFor } from "../src/museum/artefacts";
+import { artefactFor, creditParts } from "../src/museum/artefacts";
 import { SafeLink } from "./SafeLink";
 
-// The credit line for the object on this exhibit's plinth: what it is and what it was built from.
+// The object on this exhibit's plinth: what it is, what it was built from, and its sourced parts.
 export function ArtefactCredit({ exhibitId }: { exhibitId: string }) {
   const artefact = artefactFor(exhibitId);
   if (!artefact) return null;
+  const credit = creditParts(artefact);
   return (
-    <p className="artefact-credit">
-      {artefact.kind === "replica" ? `Replica of ${artefact.credit} — modelled from ` : `${artefact.credit}. Entry: `}
-      <SafeLink href={artefact.referenceUrl}>{artefact.referenceLabel}</SafeLink>.
-    </p>
+    <section className="artefact" aria-label="Object on the plinth">
+      <p className="artefact-credit">
+        {credit.before}
+        <SafeLink href={artefact.referenceUrl}>{credit.title}</SafeLink>
+        {credit.after}
+      </p>
+      <ul className="artefact-hotspots">
+        {artefact.hotspots.map((hotspot) => (
+          <li key={hotspot.id}>
+            <strong>{hotspot.label}.</strong> {hotspot.text} <SafeLink href={hotspot.sourceUrl}>Source</SafeLink>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

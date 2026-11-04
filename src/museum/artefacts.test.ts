@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import snapshotFile from "../../data/museum-snapshot.json";
 import protein from "./protein-6y4f.json";
-import { ARTEFACTS, artefactFor } from "./artefacts";
+import { ARTEFACTS, artefactFor, creditParts } from "./artefacts";
 
 type SnapshotExhibit = { id: string; confidence?: string; citations: { url: string }[] };
 const exhibits = (snapshotFile.snapshot.exhibits as SnapshotExhibit[]).filter((e) => e.confidence === "confirmed");
@@ -19,6 +19,23 @@ describe("artefact registry", () => {
       for (const hotspot of artefact.hotspots) expect(allowed.has(hotspot.sourceUrl), `${id}/${hotspot.id}`).toBe(true);
       expect(new Set(artefact.hotspots.map((h) => h.id)).size, id).toBe(artefact.hotspots.length);
     }
+  });
+
+  it("credits every replica's reference with its author and licence", () => {
+    for (const [id, artefact] of Object.entries(ARTEFACTS)) {
+      const credit = creditParts(artefact);
+      const line = `${credit.before}${credit.title}${credit.after}`;
+      if (artefact.kind === "replica") {
+        expect(line, id).toContain(`by ${artefact.author}, ${artefact.licence}`);
+        expect(line.startsWith("Replica of "), id).toBe(true);
+      } else {
+        expect(line, id).toContain("CC0");
+      }
+    }
+  });
+
+  it("places no Go stone, since no source gives Move 37's point", () => {
+    expect(ARTEFACTS.evt_2016_alphago.hotspots.map((h) => h.id)).toEqual(["grid"]);
   });
 
   it("returns nothing for exhibits without an artefact, including prototype keys", () => {

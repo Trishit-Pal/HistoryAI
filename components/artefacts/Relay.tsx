@@ -7,7 +7,6 @@ import { useActiveFrame, type ArtefactProps } from "./motion";
 
 // After the "Relay principle" drawing: coil (1) on a base, an L-shaped armature (2) hinged above
 // it, and a push rod that bends the middle of three contact springs (3).
-const SCALE = 1.4;
 const COIL_X = -0.1;
 const COIL_H = 0.2;
 const PIVOT: [number, number, number] = [0.05, 0.27, 0];
@@ -24,7 +23,7 @@ export function Relay({ active, highlight }: ArtefactProps) {
   };
   useActiveFrame(active, (t) => set(Math.floor(t / TICK_PERIOD) % 2 === 0), () => set(false));
   return (
-    <group scale={SCALE}>
+    <group>
       <mesh position={[0, 0.012, 0]}>
         <boxGeometry args={[0.42, 0.024, 0.16]} />
         <Ink tone="stone" />
