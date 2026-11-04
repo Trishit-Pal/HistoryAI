@@ -3,6 +3,7 @@ import { atlasLinkFor } from "../src/atlas/links";
 import type { ExhibitDetail } from "../src/museum/build";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { FieldChangeSection } from "./FieldChangeSection";
+import { ArtefactCredit } from "./ArtefactCredit";
 import { FigureCredit } from "./FigureCredit";
 import { RevisionList } from "./RevisionList";
 import { SafeLink } from "./SafeLink";
@@ -63,6 +64,7 @@ export function ExhibitPage({
         </dl>
         <h1>{node.title}</h1>
         <FigureCredit figure={node.figure} />
+        <ArtefactCredit exhibitId={node.id} />
         <p>{node.publicStory}</p>
         {node.editorialNote ? <p className="note">{node.editorialNote}</p> : null}
         {node.technicalAccount ? (

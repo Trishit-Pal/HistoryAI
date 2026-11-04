@@ -13,6 +13,7 @@ import { CHALK } from "../../src/museum/theme";
 import type { MuseumNode } from "../../src/museum/view";
 import { FigurePlate } from "../FigurePlate";
 import { Monument } from "../Monument";
+import { hasArtefact, LABEL_ABOVE_ARTEFACT, PlinthArtefact } from "../artefacts/PlinthArtefact";
 import { Ink } from "./roomKit";
 
 export function PrecursorsRoom({
@@ -99,6 +100,15 @@ export function PrecursorsRoom({
               ghost={ghost}
               onFocus={onFocus}
               showLabel={node.id === focusedId}
+              labelY={hasArtefact(node.id) ? LABEL_ABOVE_ARTEFACT : undefined}
+            />
+            <PlinthArtefact
+              exhibitId={node.id}
+              position={position}
+              focused={node.id === focusedId}
+              load={load}
+              ghost={ghost}
+              onFocus={onFocus}
             />
             <group position={[position[0], position[1] + 0.55, position[2] + 0.5]}>
               <FigurePlate src={node.figure?.src} id={node.id} load={load} ghost={ghost} />

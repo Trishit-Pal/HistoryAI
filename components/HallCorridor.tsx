@@ -15,6 +15,7 @@ import { CHALK, CHALK_DIM, PRUSSIAN, REDLINE } from "../src/museum/theme";
 import { cameraMove, type MuseumNode } from "../src/museum/view";
 import { Ink } from "./Ink";
 import { Monument } from "./Monument";
+import { hasArtefact, LABEL_ABOVE_ARTEFACT, PlinthArtefact } from "./artefacts/PlinthArtefact";
 import { ERA_ROOMS } from "./rooms/eraRoomMap";
 
 function CameraRig({
@@ -121,6 +122,7 @@ function Corridor({
         const length = hallLength(hall);
         const width = 6 * hall.width;
         const members = hall.exhibitIds.map((id) => byId.get(id)).filter(Boolean) as MuseumNode[];
+        const focusedIndex = Math.max(0, members.findIndex((member) => member.id === focusedId));
         const Room = ERA_ROOMS[hall.id];
         const next = halls[index + 1];
         const nextSealed = next ? isSealed(next, nodes, year) : false;
@@ -172,16 +174,29 @@ function Corridor({
             >
               {hall.label}
             </Text>
-            {members.map((node, i) => (
-              <Monument
-                key={node.id}
-                node={node}
-                focused={node.id === focusedId}
-                ghost={node.startYear > year}
-                onFocus={onFocus}
-                position={pedestalPosition(index, i, halls)}
-              />
-            ))}
+            {members.map((node, i) => {
+              const position = pedestalPosition(index, i, halls);
+              return (
+                <group key={node.id}>
+                  <Monument
+                    node={node}
+                    focused={node.id === focusedId}
+                    ghost={node.startYear > year}
+                    onFocus={onFocus}
+                    position={position}
+                    labelY={hasArtefact(node.id) ? LABEL_ABOVE_ARTEFACT : undefined}
+                  />
+                  <PlinthArtefact
+                    exhibitId={node.id}
+                    position={position}
+                    focused={node.id === focusedId}
+                    load={Math.abs(i - focusedIndex) <= 1}
+                    ghost={node.startYear > year}
+                    onFocus={onFocus}
+                  />
+                </group>
+              );
+            })}
             {hallThreads(hall.exhibitIds, members, year).map((thread) => {
               const fromIndex = hall.exhibitIds.indexOf(thread.fromId);
               const toIndex = hall.exhibitIds.indexOf(thread.toId);

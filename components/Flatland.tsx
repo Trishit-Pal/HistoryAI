@@ -6,6 +6,7 @@ import { hallNeighbors } from "../src/domain/threads";
 import { hallTally, tallyLabel } from "../src/domain/visited";
 import { hallSpan } from "../src/museum/hallMath";
 import type { MuseumNode } from "../src/museum/view";
+import { ArtefactCredit } from "./ArtefactCredit";
 import { FigureCredit } from "./FigureCredit";
 import { HallOrderNav } from "./HallOrderNav";
 
@@ -65,6 +66,7 @@ export function Flatland({
                     <HallOrderNav earlier={neighbors.earlier} later={neighbors.later} onFocus={onFocus} />
                   )}
                   <FigureCredit figure={node.figure} />
+                  <ArtefactCredit exhibitId={node.id} />
                   <p>{node.publicStory}</p>
                   {node.eraId ? (
                     <p>
