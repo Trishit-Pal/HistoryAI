@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#eeeae2">
+<meta name="description" content="Explore the history of artificial intelligence, from its mathematical foundations to the era of generative AI, in an interactive digital museum.">
+<title>Synapse — The Museum of Artificial Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#eeeae2;--ink:#20221f;--muted:#73756e;--line:#d1d0c7;--lime:#d1f76a;--dark:#171b18;--font:'DM Sans',sans-serif;--display:'Space Grotesk',sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:95px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #83a839;outline-offset:5px}
+::selection{background:var(--lime);color:var(--ink)}
+.shell{max-width:1480px;margin:auto;padding:0 54px}
+header{height:100px;display:flex;align-items:center;justify-content:space-between;gap:25px;border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-symbol{width:38px;height:38px;position:relative;display:flex;align-items:center;justify-content:center}
+.logo-symbol i{position:absolute;width:34px;height:15px;border:1.5px solid var(--ink);border-radius:50%}
+.logo-symbol i:nth-child(2){transform:rotate(60deg)}.logo-symbol i:nth-child(3){transform:rotate(120deg)}
+.logo-name{font-family:var(--display);font-size:27px;font-weight:600;letter-spacing:-1.5px}
+.logo-sub{font-size:9px;letter-spacing:1.6px;text-transform:uppercase;line-height:1.5;max-width:115px;border-left:1px solid #aaa99f;padding-left:14px;margin-left:8px}
+nav{display:flex;gap:30px;font-size:13px}
+nav a{position:relative}
+nav a:after{content:'';position:absolute;bottom:-6px;height:1px;width:0;background:var(--ink);left:0;transition:width .25s}
+nav a:hover:after{width:100%}
+.header-actions{display:flex;align-items:center;gap:20px}
+.icon-button{border:0;background:none;padding:8px;display:grid;place-items:center}
+.icon-button svg{width:19px;height:19px}
+.pill{border:1px solid var(--ink);padding:12px 20px;border-radius:30px;display:inline-flex;gap:24px;align-items:center;font-size:12px;font-weight:600;transition:.25s}
+.pill:hover{background:var(--ink);color:var(--paper)}
+.intro-bar{display:flex;justify-content:space-between;align-items:center;padding:26px 0 19px;font-size:10px;letter-spacing:1.8px;text-transform:uppercase}
+.status{display:flex;align-items:center;gap:9px;letter-spacing:1px}
+.status:before{content:'';width:6px;height:6px;border-radius:50%;background:#779c42;box-shadow:0 0 0 4px #779c4212}
+.hero{position:relative;height:624px;overflow:hidden;border-radius:7px;background:#171c19;color:#f2f1e9;isolation:isolate}
+.hero:before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 73% 42%,#33423366,transparent 55%),linear-gradient(115deg,#161a17 10%,#1b221b);pointer-events:none}
+.hero-grid{position:absolute;inset:0;opacity:.07;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:70px 70px;mask-image:linear-gradient(to right,transparent,#000)}
+.hero-copy{position:relative;z-index:3;width:51%;padding:54px 0 0 45px;pointer-events:none}
+.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.eyebrow .line{height:1px;width:27px;background:currentColor}
+.hero .eyebrow{color:#b5beb1}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(44px,5.1vw,75px);letter-spacing:-4px;line-height:1.04;margin:24px 0 25px}
+h1 .accent{color:var(--lime)}
+.hero-copy p{color:#b0b6ad;font-size:13px;line-height:1.8;max-width:295px}
+.hero-link{pointer-events:auto;display:inline-flex;align-items:center;gap:24px;background:var(--lime);color:#1c241a;padding:15px 21px;border-radius:3px;margin-top:18px;border:0;font-size:12px;font-weight:600;transition:transform .2s,background .2s}
+.hero-link:hover{transform:translateY(-3px);background:#ddff89}
+.hero-link span{font-size:19px}
+#sculpture{position:absolute;right:-3%;top:0;width:72%;height:100%;z-index:1;touch-action:pan-y;cursor:grab}
+#sculpture:active{cursor:grabbing}
+#sculpture canvas{display:block;width:100%;height:100%}
+.scene-label{position:absolute;right:28px;top:28px;z-index:3;text-align:right;pointer-events:none}
+.scene-label .room{color:#b5beb1;font-size:9px;letter-spacing:1.7px;text-transform:uppercase}
+.scene-label .year{font-family:var(--display);font-size:40px;font-weight:400;letter-spacing:-2px;margin-top:5px;color:var(--lime)}
+.scene-label .name{font-size:10px;color:#c1c7bd;margin-top:3px;max-width:170px}
+.coordinates{position:absolute;top:45%;right:23px;writing-mode:vertical-rl;font-size:8px;letter-spacing:1.6px;color:#8e9888;z-index:2}
+.object-caption{position:absolute;left:50%;bottom:121px;z-index:2;pointer-events:none;display:flex;gap:13px;align-items:center}
+.object-caption:before{content:'+';font-size:23px;color:var(--lime)}
+.object-caption strong{display:block;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase}
+.object-caption small{display:block;font-size:9px;color:#8f9b88;margin-top:5px}
+.hero-bottom{position:absolute;bottom:0;left:0;right:0;margin:0 28px;z-index:3;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #74836d33;height:75px}
+.hero-note{font-size:10px;color:#a8b0a1;display:flex;gap:10px;align-items:center}
+.hero-note .small-square{width:6px;height:6px;background:var(--lime)}
+.scene-controls{display:flex;gap:8px}
+.scene-controls button{height:31px;min-width:31px;color:#ced5c7;border:1px solid #88987c44;border-radius:3px;background:#29302480;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:.2s}
+.scene-controls button:hover{background:#47543a}
+.scene-controls .rotate-btn{padding:0 11px;font-size:10px}
+.fallback-globe{position:absolute;width:350px;height:350px;left:40%;top:20%;border:1px solid #d1f76a77;border-radius:50%;box-shadow:inset 0 0 80px #d1f76a22,0 0 70px #d1f76a22;animation:fallbackSpin 15s linear infinite;background:repeating-radial-gradient(ellipse,#d1f76a22 0 1px,transparent 2px 25px)}
+@keyframes fallbackSpin{to{transform:rotate(360deg)}}
+.timeline-strip{padding:27px 0 28px;display:grid;grid-template-columns:150px 1fr;border-bottom:1px solid var(--line);gap:20px}
+.timeline-intro{font-size:10px;line-height:1.7;color:var(--muted)}
+.timeline-intro strong{display:block;text-transform:uppercase;letter-spacing:1.5px;font-size:9px;color:var(--ink);margin-bottom:6px}
+.timeline-buttons{display:flex;position:relative;justify-content:space-between;align-items:flex-start;gap:12px}
+.timeline-buttons:before{content:'';position:absolute;top:7px;left:12px;right:12px;height:1px;background:#c8c9bc}
+.era{position:relative;background:none;border:0;padding:0;text-align:left;color:var(--muted);min-width:65px}
+.era:before{content:'';display:block;background:var(--paper);border:1px solid #a6aa9a;width:9px;height:9px;border-radius:50%;margin:3px 0 13px;transition:.25s}
+.era.active:before{background:var(--ink);border-color:var(--ink);box-shadow:0 0 0 5px #d1f76a}
+.era:hover:before{background:#a8be79}
+.era strong{font-family:var(--display);font-weight:500;font-size:19px;display:block;color:var(--ink);letter-spacing:-.5px}
+.era.active strong{font-weight:700}
+.era small{display:block;font-size:9px;margin-top:4px;white-space:nowrap}
+.era-story{padding:27px 0;display:grid;grid-template-columns:150px 1fr auto;gap:20px;align-items:center;border-bottom:1px solid var(--line)}
+.era-story .story-index{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.era-story h3{margin:0 0 6px;font-family:var(--display);font-size:19px;font-weight:500;letter-spacing:-.6px}
+.era-story p{font-size:12px;line-height:1.7;color:var(--muted);margin:0;max-width:780px}
+.text-link{display:flex;align-items:center;gap:20px;font-size:11px;font-weight:600;border:0;background:none;padding:10px 0;white-space:nowrap}
+.text-link span{font-size:20px}
+.collection{padding:58px 0 52px}
+.section-top{display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:25px}
+.section-title .eyebrow{color:var(--muted);font-size:9px}
+h2{font-family:var(--display);font-size:38px;line-height:1.15;letter-spacing:-1.8px;font-weight:400;margin:12px 0 0}
+.collection-count{font-size:10px;color:var(--muted);align-self:flex-start;margin-top:8px}
+.filter-bar{display:flex;align-items:center;justify-content:space-between;margin:26px 0 23px;gap:15px}
+.filters{display:flex;flex-wrap:wrap;gap:7px}
+.filter{font-size:10px;padding:9px 15px;border:1px solid #c7c9be;border-radius:24px;background:transparent;color:#63685c;transition:.2s}
+.filter.active,.filter:hover{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.filter-caption{font-size:10px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.exhibit{cursor:pointer;min-width:0;outline-offset:5px}
+.exhibit[hidden]{display:none}
+.card-image{position:relative;height:240px;background:#d8d9d0;border-radius:4px;overflow:hidden}
+.card-image img{height:100%;width:100%;object-fit:cover;transition:transform .7s,filter .6s;filter:grayscale(100%)}
+.exhibit:hover .card-image img{transform:scale(1.05);filter:grayscale(30%)}
+.card-image:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#10180b55,transparent 60%);pointer-events:none}
+.image-badge{position:absolute;left:14px;top:14px;z-index:1;font-size:9px;padding:6px 9px;border-radius:2px;background:#eeeee5ec;color:#31352c;letter-spacing:.7px}
+.card-arrow{position:absolute;bottom:14px;right:14px;background:var(--paper);height:32px;width:32px;border-radius:50%;display:grid;place-items:center;z-index:1;transition:.2s}
+.exhibit:hover .card-arrow{background:var(--lime);transform:rotate(-35deg)}
+.play-button{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:56px;height:56px;border:1px solid #ffffff88;border-radius:50%;background:#e9f0df22;backdrop-filter:blur(8px);display:grid;place-items:center;color:white;z-index:1}
+.play-button svg{height:17px;width:17px;margin-left:3px}
+.card-meta{display:flex;justify-content:space-between;font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);margin:17px 0 8px}
+.exhibit h3{font-family:var(--display);font-size:21px;letter-spacing:-.7px;font-weight:500;margin:0 0 8px}
+.exhibit p{font-size:12px;line-height:1.65;margin:0;color:var(--muted)}
+.no-results{padding:40px;text-align:center;border:1px dashed var(--line);font-size:13px;grid-column:1/-1}
+.curator{margin:0 0 50px;padding:33px 37px;background:#e2e4d7;border:1px solid #d4d8c7;border-radius:4px;display:grid;grid-template-columns:70px 1fr auto;gap:23px;align-items:center}
+.orbit-icon{width:56px;height:56px;border:1px solid #7c8969;border-radius:50%;position:relative;transform:rotate(-30deg)}
+.orbit-icon:before,.orbit-icon:after{content:'';position:absolute;inset:8px -5px;border:1px solid #7c8969;border-radius:50%;transform:rotate(60deg)}
+.orbit-icon:after{transform:rotate(-60deg)}
+.curator h3{font-family:var(--display);font-size:24px;font-weight:400;letter-spacing:-.8px;margin:8px 0}
+.curator p{font-size:12px;line-height:1.8;color:#69705e;margin:0;max-width:580px}
+.curator .eyebrow{font-size:9px;color:#64704f}
+footer{padding:26px 0 35px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:25px;font-size:10px;color:var(--muted)}
+.footer-links{display:flex;gap:25px}
+footer .logo-name{font-size:21px;color:var(--ink)}
+footer .logo-symbol{transform:scale(.7);width:30px}
+.footer-brand{display:flex;align-items:center;gap:12px}
+.modal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:#10150ecc;backdrop-filter:blur(12px);padding:30px}
+.modal.open{display:flex}
+.dialog{background:var(--paper);max-width:880px;width:100%;max-height:90vh;overflow:auto;border-radius:7px;position:relative;box-shadow:0 30px 100px #0006}
+.modal-close{position:absolute;right:14px;top:14px;z-index:2;width:34px;height:34px;border:0;background:var(--paper);border-radius:50%;font-size:24px;display:grid;place-items:center;line-height:1}
+.modal-visual{height:270px;background:#192018;overflow:hidden}
+.modal-visual img{width:100%;height:100%;object-fit:cover;filter:grayscale(1)}
+.modal-visual.video{height:auto;aspect-ratio:16/9}
+.modal-visual iframe{border:0;width:100%;height:100%;display:block}
+.modal-body{padding:35px 40px 40px}
+.modal-body h2{margin:12px 0 22px;font-size:35px}
+.modal-body p{font-size:14px;line-height:1.9;color:#64695e}
+.source-link{font-size:11px;text-decoration:underline;text-underline-offset:4px}
+.modal-facts{display:flex;gap:30px;padding-top:22px;margin-top:25px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+.modal-facts strong{display:block;color:var(--ink);font-weight:500;margin-top:6px;font-size:12px}
+.search-input{width:100%;padding:16px 0;background:transparent;border:0;border-bottom:1px solid #9b9e90;border-radius:0;color:var(--ink);font-size:22px;margin-bottom:20px}
+.search-results{display:flex;flex-direction:column}
+.search-result{display:flex;justify-content:space-between;align-items:center;text-align:left;padding:15px 0;border:0;border-bottom:1px solid var(--line);background:none;font-size:14px}
+.search-result small{color:var(--muted);font-size:10px;margin-left:20px}
+.reveal{animation:fadeIn .65s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:1600px){h1{font-size:75px}}
+@media(max-width:1100px){.shell{padding:0 30px}.logo-sub{display:none}nav{gap:22px}h1{font-size:58px;letter-spacing:-3px}.hero-copy{padding-left:32px;width:55%}.hero{height:590px}.cards{gap:18px}.card-image{height:210px}.timeline-strip,.era-story{grid-template-columns:120px 1fr}.era-story .text-link{grid-column:2;padding-top:0}.era small{font-size:8px}.object-caption{left:55%}.curator{grid-template-columns:60px 1fr auto;padding:28px}}
+@media(max-width:760px){.shell{padding:0 20px}header{height:78px}.logo-name{font-size:24px}nav{display:none}.header-actions{gap:8px}.pill{padding:10px 13px;gap:14px;font-size:10px}.intro-bar{font-size:8px;letter-spacing:1px;padding:22px 0 16px}.intro-bar .status{font-size:8px}.hero{height:760px}.hero-copy{width:100%;padding:30px 25px 0}h1{font-size:51px;letter-spacing:-2.7px;margin:19px 0 16px;max-width:390px}.hero-copy p{font-size:12px;max-width:285px}.hero-link{margin-top:9px;padding:12px 16px}.hero .eyebrow{font-size:8px}.scene-label{top:383px;right:22px}.scene-label .year{font-size:32px}.scene-label .room{font-size:8px}.scene-label .name{font-size:9px;max-width:135px}#sculpture{width:120%;right:-8%;height:420px;top:310px}.coordinates{top:60%;right:13px;font-size:7px}.object-caption{left:25px;bottom:99px}.object-caption strong{font-size:9px}.hero-bottom{margin:0 20px;height:65px}.hero-note{font-size:8px;max-width:160px;line-height:1.6}.scene-controls .rotate-btn{font-size:9px;padding:0 7px}.scene-controls{gap:5px}.timeline-strip{display:block;padding:23px 0}.timeline-intro{margin-bottom:20px;display:flex;gap:20px;align-items:center;font-size:9px}.timeline-intro strong{margin:0;font-size:8px}.timeline-buttons{overflow:auto;gap:24px;padding:6px 5px 8px}.timeline-buttons:before{top:13px;width:640px}.era strong{font-size:17px}.era small{font-size:8px}.era{min-width:68px}.era-story{display:block;padding:23px 0}.story-index{margin-bottom:12px}.era-story h3{font-size:20px}.era-story p{font-size:11px}.era-story .text-link{margin-top:7px;font-size:10px}.collection{padding:38px 0}h2{font-size:31px}.section-top{align-items:center}.collection-count{font-size:9px}.filter-caption{display:none}.filter-bar{margin:21px 0}.filter{font-size:9px;padding:8px 12px}.cards{grid-template-columns:1fr;gap:28px}.card-image{height:265px}.exhibit h3{font-size:23px}.exhibit p{max-width:420px}.curator{grid-template-columns:1fr;padding:25px;gap:15px;margin-bottom:35px}.orbit-icon{display:none}.curator .pill{justify-self:start}.curator h3{font-size:24px}footer{align-items:flex-start;flex-wrap:wrap;gap:18px;padding-bottom:25px}.footer-brand{width:100%;justify-content:space-between}.footer-brand>span{font-size:9px}.modal{padding:15px}.modal-body{padding:28px 23px}.modal-body h2{font-size:29px}.modal-body p{font-size:12px}.modal-visual{height:210px}.modal-facts{gap:20px;flex-wrap:wrap}.search-input{font-size:18px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+<a href="#" class="logo" aria-label="Synapse home">
+<span class="logo-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+<span class="logo-name">synapse</span>
+<span class="logo-sub">Museum of<br>artificial intelligence</span>
+</a>
+<nav aria-label="Main navigation"><a href="#collection">The collection</a><a href="#timeline">Timeline</a><a href="#about">Our story</a></nav>
+<div class="header-actions">
+<button class="icon-button" id="search-button" aria-label="Search the museum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
+<a class="pill" href="#museum">Enter the museum <span aria-hidden="true">↗</span></a>
+</div>
+</header>
+<main>
+<div class="intro-bar"><span>A living archive of a thinking world</span><span class="status">Always open. Everywhere.</span></div>
+<section class="hero" id="museum" aria-label="Interactive three-dimensional AI museum">
+<div class="hero-grid"></div>
+<div class="hero-copy">
+<div class="eyebrow"><span class="line"></span>Past. Present. Possible.</div>
+<h1>A century of<br>thinking<br><span class="accent">machines.</span></h1>
+<p>From a mathematical idea to a world-changing intelligence. Step inside the story of AI.</p>
+<a class="hero-link" href="#timeline">Explore the timeline <span aria-hidden="true">↗</span></a>
+</div>
+<div id="sculpture" role="img" aria-label="Interactive rotating 3D neural network sculpture. Drag horizontally to rotate; use the zoom controls to look closer."></div>
+<div class="scene-label"><div class="room" id="room-number">Gallery 02 / The beginning</div><div class="year" id="scene-year">1956</div><div class="name" id="scene-name">An intelligence gets a name.</div></div>
+<div class="coordinates" aria-hidden="true">THE NEURAL ATLAS — DIGITAL OBJECT 001</div>
+<div class="object-caption"><div><strong>The neural atlas</strong><small>A generative sculpture, not a historical artifact</small></div></div>
+<div class="hero-bottom">
+<div class="hero-note"><span class="small-square"></span>Drag to rotate · Scroll through time below</div>
+<div class="scene-controls">
+<button id="rotate" class="rotate-btn" aria-label="Pause automatic rotation" aria-pressed="false"><span id="rotate-icon">Ⅱ</span><span id="rotate-text">Auto-rotate</span></button>
+<button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">+</button>
+<button id="reset-view" aria-label="Reset sculpture view">↺</button>
+</div>
+</div>
+</section>
+
+<section id="timeline" aria-label="Historical timeline">
+<div class="timeline-strip">
+<div class="timeline-intro"><strong>Travel through time</strong><span>126 years of possibility</span></div>
+<div class="timeline-buttons" role="tablist" aria-label="Select an era">
+<button class="era" role="tab" aria-selected="false" data-era="0"><strong>1900</strong><small>The foundations</small></button>
+<button class="era active" role="tab" aria-selected="true" data-era="1"><strong>1956</strong><small>A field is born</small></button>
+<button class="era" role="tab" aria-selected="false" data-era="2"><strong>1980</strong><small>Expert systems</small></button>
+<button class="era" role="tab" aria-selected="false" data-era="3"><strong>1997</strong><small>Machine vs. mind</small></button>
+<button class="era" role="tab" aria-selected="false" data-era="4"><strong>2012</strong><small>The deep learning era</small></button>
+<button class="era" role="tab" aria-selected="false" data-era="5"><strong>2022</strong><small>The generative turn</small></button>
+<button class="era" role="tab" aria-selected="false" data-era="6"><strong>2026</strong><small>An open chapter</small></button>
+</div>
+</div>
+<div class="era-story" role="tabpanel" aria-live="polite" id="era-panel">
+<div class="story-index" id="story-index">Chapter 02 / 07</div>
+<div><h3 id="era-title">The summer that gave AI its name.</h3><p id="era-description">At Dartmouth, a small group of researchers gathered around a radical proposition: aspects of intelligence could be described so precisely that a machine could simulate them.</p></div>
+<button class="text-link" id="era-detail">Inside this chapter <span aria-hidden="true">↗</span></button>
+</div>
+</section>
+
+<section class="collection" id="collection">
+<div class="section-top">
+<div class="section-title"><div class="eyebrow"><span class="line"></span>Ideas that changed everything</div><h2>Objects. People. Turning points.</h2></div>
+<span class="collection-count" id="collection-count">06 selected exhibits</span>
+</div>
+<div class="filter-bar">
+<div class="filters" aria-label="Filter collection">
+<button class="filter active" data-filter="all" aria-pressed="true">All exhibits</button>
+<button class="filter" data-filter="breakthrough" aria-pressed="false">Breakthroughs</button>
+<button class="filter" data-filter="people" aria-pressed="false">People & ideas</button>
+<button class="filter" data-filter="film" aria-pressed="false">Film room</button>
+</div>
+<span class="filter-caption">A closer look at the moments that mattered ↙</span>
+</div>
+<div class="cards" id="cards"></div>
+</section>
+
+<section class="curator" id="about">
+<div class="orbit-icon" aria-hidden="true"></div>
+<div><div class="eyebrow">A note from the museum</div><h3>The future has a history.</h3><p>AI didn’t arrive overnight. It grew through bold ideas, false starts, and extraordinary collaboration. We’re here to make that story human.</p></div>
+<button class="pill" id="about-button">About the museum <span aria-hidden="true">↗</span></button>
+</section>
+</main>
+<footer>
+<div class="footer-brand"><a class="logo" href="#"><span class="logo-symbol" aria-hidden="true"><i></i><i></i><i></i></span><span class="logo-name">synapse</span></a><span>An independent digital museum.</span></div>
+<div class="footer-links"><button class="text-link" id="sources-button" style="padding:0;font-weight:400;font-size:10px">Sources & credits ↗</button><a href="#museum">Back to the beginning ↑</a></div>
+<span>1900 — 2026 · An evolving collection</span>
+</footer>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<div class="dialog" id="dialog"><button class="modal-close" id="modal-close" aria-label="Close dialog">×</button><div id="modal-content"></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
+<script>
+const eras=[
+{year:'1900',room:'The foundations',label:'Before intelligence had a machine.',title:'First, the language of logic.',description:'At the turn of the century, formal logic and mathematical foundations set the stage. AI did not yet exist as a field; the tools for asking what machines could compute were taking shape.',body:'In 1900, David Hilbert presented a set of mathematical problems that helped shape twentieth-century mathematics. Later, the work of Kurt Gödel, Alonzo Church, and Alan Turing clarified both the power and the limits of formal computation. In 1943, Warren McCulloch and Walter Pitts proposed a mathematical model of artificial neurons. These are foundations of AI—not evidence that modern AI already existed in 1900.',source:'https://plato.stanford.edu/entries/artificial-intelligence/',sourceName:'Stanford Encyclopedia of Philosophy',color:0xd1f76a},
+{year:'1956',room:'The beginning',label:'An intelligence gets a name.',title:'The summer that gave AI its name.',description:'At Dartmouth, a small group of researchers gathered around a radical proposition: aspects of intelligence could be described so precisely that a machine could simulate them.',body:'The term “artificial intelligence” appeared in the 1955 proposal for the Dartmouth Summer Research Project, convened in 1956. John McCarthy, Marvin Minsky, Nathaniel Rochester, and Claude Shannon proposed a summer study of machine intelligence. The gathering helped establish AI as a distinct research field. It was a beginning, not a solved problem: the ambitions of those early years often outpaced available computing power.',source:'https://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html',sourceName:'The original Dartmouth proposal',color:0xd1f76a},
+{year:'1980',room:'Encoded knowledge',label:'Expertise becomes a set of rules.',title:'When machines learned the rules.',description:'Expert systems translated specialist knowledge into “if–then” rules. Their commercial success brought AI into industry—and exposed the difficulty of maintaining hand-built knowledge.',body:'Systems such as MYCIN, developed in the 1970s, showed how rules could represent specialist knowledge. Around 1980, Digital Equipment Corporation began using the R1/XCON system to configure computer orders. Expert systems became an important commercial application of AI. But knowledge acquisition, brittleness, maintenance costs, and unmet expectations helped contribute to the later decline of the expert-system boom.',source:'https://www.computerhistory.org/timeline/ai-robotics/',sourceName:'Computer History Museum — AI & Robotics',color:0x9fe3c5},
+{year:'1997',room:'Machine vs. mind',label:'A new move in an old game.',title:'Six games. One historic result.',description:'IBM’s Deep Blue defeated world chess champion Garry Kasparov in a six-game rematch. A symbolic milestone, powered by specialized hardware, search, and chess evaluation.',body:'In May 1997, Deep Blue won its match against Garry Kasparov by 3½–2½. The computer combined powerful search hardware with carefully engineered chess knowledge. This was a remarkable achievement in a tightly specified domain, not a demonstration of general human-like intelligence. Its success raised questions that still matter: what does a benchmark measure, and when does an impressive performance count as understanding?',source:'https://www.ibm.com/history/deep-blue',sourceName:'IBM — Deep Blue',color:0xa5caff},
+{year:'2012',room:'Learning from data',label:'Seeing becomes learning.',title:'The image that changed the field.',description:'AlexNet dramatically improved image recognition at the ImageNet competition. Large datasets, GPUs, and deep neural networks converged to accelerate a new era of AI.',body:'Alex Krizhevsky, Ilya Sutskever, and Geoffrey Hinton introduced a deep convolutional neural network that won the 2012 ImageNet Large Scale Visual Recognition Challenge. Its top-5 test error was 15.3%, compared with 26.2% for the next-best entry. The result helped make deep learning central to computer vision. The architecture depended on important earlier research as well as a practical combination of training data, GPUs, and techniques such as dropout.',source:'https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks',sourceName:'AlexNet — original research paper',color:0xe2b3ff},
+{year:'2022',room:'The generative turn',label:'A conversation changes the interface.',title:'AI enters the conversation.',description:'The public release of ChatGPT helped make generative AI a mainstream interface. Language and image models opened new creative possibilities alongside questions of accuracy, labor, and trust.',body:'Generative AI had developed over many years, including major advances in neural language modeling and the 2017 transformer architecture. The public release of ChatGPT in November 2022 made conversational interaction with large language models widely accessible. Such systems can generate fluent text, but they can also fabricate information, reproduce biases, and fail in unexpected ways. Their adoption changed the public conversation about AI as much as the technology itself.',source:'https://openai.com/index/chatgpt/',sourceName:'OpenAI — Introducing ChatGPT',color:0xffc58c},
+{year:'2026',room:'An open chapter',label:'The next page is still being written.',title:'A history with no final exhibit.',description:'Multimodal systems, AI agents, and responsible deployment are active areas of work. This chapter remains open: capabilities, limitations, and social choices are still evolving.',body:'Our 2026 gallery is an open-ended reflection, not a claim that the future is settled. Research and deployment increasingly connect language, vision, sound, and tools, while reliability, evaluation, energy use, copyright, and governance remain central questions. Predictions are not historical facts. This museum distinguishes documented milestones from emerging directions—and invites you to ask not only what AI can do, but what it should do.',source:'https://hai.stanford.edu/ai-index',sourceName:'Stanford HAI — AI Index',color:0xd1f76a}
+];
+const exhibits=[
+{id:'turing',year:'1950',category:'people',type:'People & ideas',title:'Can machines think?',description:'Alan Turing reframes a question—and lays the groundwork for a lasting debate.',image:'https://upload.wikimedia.org/wikipedia/commons/a/a1/Alan_Turing_Aged_16.jpg',position:'center 28%',badge:'THE FOUNDATIONS',body:'In “Computing Machinery and Intelligence,” published in 1950, Alan Turing replaced the broad question “Can machines think?” with an operational thought experiment: the imitation game. His paper discussed objections to machine intelligence and the possibility of learning machines. The test remains influential, but it is neither a universal measure of intelligence nor a complete account of human thought.',source:'https://academic.oup.com/mind/article/LIX/236/433/986238',sourceName:'Mind — Computing Machinery and Intelligence',credit:'Alan Turing aged 16 · Wikimedia Commons',kind:'Photograph & essay'},
+{id:'alexnet',year:'2012',category:'breakthrough',type:'Breakthrough',title:'Learning to see.',description:'How AlexNet made a million images the beginning of a deep-learning revolution.',image:'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1000&q=85',badge:'THE DEEP LEARNING ERA',body:eras[4].body,source:eras[4].source,sourceName:eras[4].sourceName,credit:'Illustrative contemporary code photograph · Unsplash',kind:'Research paper'},
+{id:'alphago',year:'2016',category:'film',type:'Film room',title:'The move nobody expected.',description:'Go, intuition, and a machine that challenged our idea of creativity. Watch AlphaGo.',image:'https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=1000&q=85',badge:'WATCH THE DOCUMENTARY',body:'In March 2016, Google DeepMind’s AlphaGo defeated Lee Sedol, one of the world’s strongest Go players, by four games to one. The system combined deep neural networks with tree search. Its unexpected move 37 in game two became an emblem of machine-generated novelty. Greg Kohs’s documentary AlphaGo follows the people and the tension behind this historic match. The card image is an illustrative strategy-game photograph, not a Go-match archive image.',source:'https://deepmind.google/research/breakthroughs/alphago/',sourceName:'Google DeepMind — AlphaGo',credit:'Illustrative strategy-game photograph · Unsplash',kind:'Documentary · 90 min',video:'WXuK6gekU1Y'},
+{id:'dartmouth',year:'1956',category:'people',type:'People & ideas',title:'An idea finds its name.',description:'Meet the ambitious proposal behind the Dartmouth summer research project.',image:'https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=1000&q=85',badge:'THE BIRTH OF A FIELD',body:eras[1].body,source:eras[1].source,sourceName:eras[1].sourceName,credit:'Illustrative research-library photograph · Unsplash',kind:'Historical proposal'},
+{id:'deepblue',year:'1997',category:'breakthrough',type:'Breakthrough',title:'Checkmate, reimagined.',description:'Deep Blue, Garry Kasparov, and the match that made headlines around the world.',image:'https://images.unsplash.com/photo-1528819622765-d6bcf132f793?auto=format&fit=crop&w=1000&q=85',badge:'MACHINE VS. MIND',body:eras[3].body,source:eras[3].source,sourceName:eras[3].sourceName,credit:'Illustrative chess photograph · Unsplash',kind:'Historic match'},
+{id:'generative',year:'2022',category:'breakthrough',type:'Breakthrough',title:'The conversational turn.',description:'An interface that brought generative AI out of the lab and into everyday life.',image:'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1000&q=85',badge:'THE GENERATIVE TURN',body:eras[5].body,source:eras[5].source,sourceName:eras[5].sourceName,credit:'Illustrative AI artwork · Unsplash',kind:'Public release'}
+];
+const cards=document.getElementById('cards');
+exhibits.forEach(e=>{
+const card=document.createElement('article');
+card.className='exhibit';card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',`Explore ${e.title}`);card.dataset.category=e.category;
+card.innerHTML=`<div class="card-image"><img src="${e.image}" alt="${e.id==='turing'?'Portrait of a young Alan Turing':e.credit.split(' · ')[0]}" loading="lazy" style="object-position:${e.position||'center'}"><span class="image-badge">${e.badge}</span>${e.video?'<span class="play-button" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 2 17 10 5 18Z"/></svg></span>':''}<span class="card-arrow" aria-hidden="true">↗</span></div><div class="card-meta"><span>${e.type}</span><span>${e.year}</span></div><h3>${e.title}</h3><p>${e.description}</p>`;
+card.addEventListener('click',()=>showExhibit(e));card.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showExhibit(e)}});
+card.querySelector('img').addEventListener('error',function(){this.style.display='none';this.parentElement.style.background='radial-gradient(circle at 65% 30%,#91a17a,#343d30)';});
+cards.appendChild(card);
+});
+document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{
+document.querySelectorAll('.filter').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',b===button)});
+let count=0;document.querySelectorAll('.exhibit').forEach(card=>{card.hidden=button.dataset.filter!=='all'&&card.dataset.category!==button.dataset.filter;if(!card.hidden){count++;card.classList.remove('reveal');void card.offsetWidth;card.classList.add('reveal')}});
+document.getElementById('collection-count').textContent=String(count).padStart(2,'0')+' selected exhibit'+(count===1?'':'s');
+}));
+let selectedEra=1, colorTarget=null;
+function selectEra(index){
+selectedEra=index;const e=eras[index];
+document.querySelectorAll('.era').forEach((b,i)=>{b.classList.toggle('active',i===index);b.setAttribute('aria-selected',i===index)});
+document.getElementById('scene-year').textContent=e.year;
+document.getElementById('scene-name').textContent=e.label;
+document.getElementById('room-number').textContent=`Gallery ${String(index+1).padStart(2,'0')} / ${e.room}`;
+document.getElementById('story-index').textContent=`Chapter ${String(index+1).padStart(2,'0')} / 07`;
+document.getElementById('era-title').textContent=e.title;
+document.getElementById('era-description').textContent=e.description;
+if(window.THREE)colorTarget=new THREE.Color(e.color);
+}
+document.querySelectorAll('.era').forEach((b,i)=>{
+b.addEventListener('click',()=>selectEra(i));
+b.addEventListener('keydown',ev=>{if(['ArrowRight','ArrowLeft','Home','End'].includes(ev.key)){ev.preventDefault();let next=ev.key==='Home'?0:ev.key==='End'?6:(i+(ev.key==='ArrowRight'?1:6))%7;selectEra(next);document.querySelectorAll('.era')[next].focus()}});
+});
+const modal=document.getElementById('modal'),content=document.getElementById('modal-content');let previousFocus;
+function openModal(html){previousFocus=document.activeElement;content.innerHTML=html;modal.classList.add('open');document.body.style.overflow='hidden';document.getElementById('modal-close').focus();}
+function closeModal(){modal.classList.remove('open');content.innerHTML='';document.body.style.overflow='';if(previousFocus)previousFocus.focus();}
+document.getElementById('modal-close').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+document.addEventListener('keydown',e=>{
+if(!modal.classList.contains('open'))return;
+if(e.key==='Escape')closeModal();
+if(e.key==='Tab'){
+const els=[...modal.querySelectorAll('button,a,input,iframe,[tabindex]')].filter(el=>!el.disabled&&el.offsetParent!==null);
+const first=els[0],last=els[els.length-1];
+if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+}
+});
+function showExhibit(e){
+const visual=e.video?`<div class="modal-visual video"><iframe src="https://www.youtube-nocookie.com/embed/${e.video}?autoplay=1&rel=0" title="AlphaGo — full documentary" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>`:`<div class="modal-visual"><img src="${e.image}" alt="${e.credit}" style="object-position:${e.position||'center'}"></div>`;
+openModal(`${visual}<div class="modal-body"><div class="eyebrow">${e.year} / ${e.type}</div><h2 id="modal-title">${e.title}</h2><p>${e.body}</p><a class="source-link" href="${e.source}" target="_blank" rel="noopener noreferrer">${e.sourceName} ↗</a>${e.video?`<p style="font-size:11px">Video unavailable here? <a class="source-link" href="https://www.youtube.com/watch?v=${e.video}" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></p>`:''}<div class="modal-facts"><div>Exhibit type<strong>${e.kind}</strong></div><div>Image credit<strong>${e.credit}</strong></div></div></div>`);
+}
+document.getElementById('era-detail').addEventListener('click',()=>{let e=eras[selectedEra];openModal(`<div class="modal-body"><div class="eyebrow">Gallery ${String(selectedEra+1).padStart(2,'0')} / ${e.year}</div><h2 id="modal-title">${e.title}</h2><p>${e.body}</p><a class="source-link" href="${e.source}" target="_blank" rel="noopener noreferrer">${e.sourceName} ↗</a><div class="modal-facts"><div>Collection period<strong>1900–2026</strong></div><div>Historical context<strong>${e.room}</strong></div></div></div>`)});
+document.getElementById('about-button').addEventListener('click',()=>openModal(`<div class="modal-body"><div class="eyebrow">Independent. Digital. Open to everyone.</div><h2 id="modal-title">An archive for the curious.</h2><p>Synapse is a digital museum concept exploring the historical development of artificial intelligence. No tickets, no opening hours—just an invitation to look closely at the ideas and people behind a changing world.</p><p>Our timeline begins with the mathematical foundations of the early 1900s, not with a claim that AI existed as a discipline then. The field took its name in the 1950s. Its story includes periods of optimism and disappointment, breakthroughs and unanswered questions.</p><p>The interactive Neural Atlas is a symbolic artwork. It is not an anatomically accurate brain or a technical diagram of a particular AI model. Photographs are labeled as archival or illustrative, and exhibits link to primary papers and established institutions.</p><p>The 2026 chapter is intentionally open. A responsible museum distinguishes history from prediction.</p><div class="modal-facts"><div>Admission<strong>Free, always</strong></div><div>Location<strong>Wherever you are</strong></div></div></div>`));
+document.getElementById('sources-button').addEventListener('click',()=>openModal(`<div class="modal-body"><div class="eyebrow">The reading room</div><h2 id="modal-title">Sources & credits.</h2><p>This collection draws on original research and historical accounts. Continue exploring with the sources below.</p>${eras.map(e=>`<p style="margin:12px 0"><a class="source-link" href="${e.source}" target="_blank" rel="noopener noreferrer">${e.year} · ${e.sourceName} ↗</a></p>`).join('')}<p>Alan Turing’s portrait is hosted by Wikimedia Commons. Other collection images are illustrative photographs or artwork hosted by Unsplash, not archival records of the events. The AlphaGo documentary is embedded from YouTube. The Neural Atlas was generated for this site using Three.js.</p><p>Visual and interaction inspiration: the exploratory spirit of the Computer History Museum, Smithsonian digital collections, and online exhibition spaces. This site is independent and not affiliated with these institutions.</p></div>`));
+document.getElementById('search-button').addEventListener('click',()=>{
+openModal('<div class="modal-body"><div class="eyebrow">Find a moment in history</div><h2 id="modal-title">Search the collection.</h2><input class="search-input" id="search-input" placeholder="Try “Turing”, “2012”, or “Go”" aria-label="Search exhibits"><div class="search-results" id="search-results"></div></div>');
+const input=document.getElementById('search-input'),results=document.getElementById('search-results');
+function update(){
+const term=input.value.trim().toLowerCase();results.innerHTML='';
+const matches=exhibits.filter(e=>`${e.title} ${e.description} ${e.year} ${e.body}`.toLowerCase().includes(term));
+matches.forEach(e=>{const b=document.createElement('button');b.className='search-result';b.innerHTML=`<span>${e.title}</span><small>${e.year} · ${e.type} ↗</small>`;b.addEventListener('click',()=>{closeModal();showExhibit(e)});results.appendChild(b)});
+if(!matches.length)results.innerHTML='<p>No exhibits found. Try a year, a person, or a different idea.</p>';
+}
+input.addEventListener('input',update);update();input.focus();
+});
+
+let autoRotate=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let zoom=7.8,targetRotation=0,viewRotation=0,dragging=false,previousX=0;
+function syncRotation(){document.getElementById('rotate-icon').textContent=autoRotate?'Ⅱ':'▷';document.getElementById('rotate-text').textContent=autoRotate?'Auto-rotate':'Paused';document.getElementById('rotate').setAttribute('aria-label',autoRotate?'Pause automatic rotation':'Start automatic rotation');document.getElementById('rotate').setAttribute('aria-pressed',String(!autoRotate))}
+syncRotation();
+document.getElementById('rotate').addEventListener('click',()=>{autoRotate=!autoRotate;syncRotation()});
+document.getElementById('zoom-in').addEventListener('click',()=>{zoom=Math.max(5.5,zoom-.7)});
+document.getElementById('zoom-out').addEventListener('click',()=>{zoom=Math.min(11,zoom+.7)});
+document.getElementById('reset-view').addEventListener('click',()=>{zoom=7.8;targetRotation=0;viewRotation=0});
+(function initSculpture(){
+const container=document.getElementById('sculpture');
+try{
+if(!window.THREE)throw new Error('3D library unavailable');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,.6,zoom);camera.lookAt(0,-.05,0);
+const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setClearColor(0x000000,0);container.appendChild(renderer.domElement);
+const atlas=new THREE.Group();scene.add(atlas);atlas.position.set(.4,.25,0);atlas.rotation.z=-.12;
+const points=[];const count=340;const goldenAngle=Math.PI*(3-Math.sqrt(5));
+for(let i=0;i<count;i++){
+const y=1-(i/(count-1))*2;const radius=Math.sqrt(1-y*y);const theta=goldenAngle*i;
+let x=Math.cos(theta)*radius,z=Math.sin(theta)*radius;
+const ripple=1+.07*Math.sin(theta*6+y*8);
+x*=1.68*ripple;z*=1.23*ripple;
+let py=y*1.48*ripple;
+x*=.94+.10*Math.abs(x);py+=.10*Math.cos(x*1.7);z*=1-.13*Math.exp(-x*x*12);
+points.push(new THREE.Vector3(x,py,z));
+}
+const nodeGeo=new THREE.SphereGeometry(.021,6,5);
+const nodeMat=new THREE.MeshBasicMaterial({color:0xd1f76a,transparent:true,opacity:.95});
+const nodes=new THREE.InstancedMesh(nodeGeo,nodeMat,count);const dummy=new THREE.Object3D();
+points.forEach((p,i)=>{dummy.position.copy(p);dummy.scale.setScalar(i%13===0?1.8:1);dummy.updateMatrix();nodes.setMatrixAt(i,dummy.matrix)});atlas.add(nodes);
+const edgePositions=[];
+for(let i=0;i<count;i++)for(let j=i+1;j<count;j++){const d=points[i].distanceTo(points[j]);if(d<.49){edgePositions.push(...points[i].toArray(),...points[j].toArray())}}
+const edgesGeo=new THREE.BufferGeometry();edgesGeo.setAttribute('position',new THREE.Float32BufferAttribute(edgePositions,3));
+const edgeMat=new THREE.LineBasicMaterial({color:0xc6ed86,transparent:true,opacity:.33});
+atlas.add(new THREE.LineSegments(edgesGeo,edgeMat));
+const innerGeo=new THREE.IcosahedronGeometry(1.06,2);
+const innerMat=new THREE.MeshBasicMaterial({color:0xa4c874,transparent:true,opacity:.075,wireframe:true});
+const inner=new THREE.Mesh(innerGeo,innerMat);inner.scale.set(1.25,1.12,.9);atlas.add(inner);
+const orbitMat=new THREE.LineBasicMaterial({color:0xc0dca1,transparent:true,opacity:.21});
+function orbit(radius,rx,rz){
+const pts=[];for(let i=0;i<=180;i++){const a=i/180*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(a)*radius,0,Math.sin(a)*radius))}
+const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),orbitMat);line.rotation.x=rx;line.rotation.z=rz;atlas.add(line);return line;
+}
+orbit(2.12,.3,.15);orbit(2.02,1.1,-.65);
+const floorGroup=new THREE.Group();floorGroup.position.set(.4,-1.86,0);scene.add(floorGroup);
+for(let i=0;i<4;i++){
+const pts=[];const radius=1.15+i*.31;for(let j=0;j<=120;j++){const angle=j/120*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(angle)*radius,0,Math.sin(angle)*radius))}
+const material=new THREE.LineBasicMaterial({color:0x7c9662,transparent:true,opacity:.12+i*.025});
+floorGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),material));
+}
+const starsPositions=[];for(let i=0;i<100;i++)starsPositions.push((Math.random()-.5)*12,(Math.random()-.5)*8,(Math.random()-.5)*5-2);
+const starGeo=new THREE.BufferGeometry();starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starsPositions,3));
+const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x9ca88a,size:.017,transparent:true,opacity:.35}));scene.add(stars);
+function resize(){const w=container.clientWidth,h=container.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(container);resize();
+container.addEventListener('pointerdown',e=>{dragging=true;previousX=e.clientX;container.setPointerCapture(e.pointerId)});
+container.addEventListener('pointermove',e=>{if(dragging){targetRotation+=(e.clientX-previousX)*.008;previousX=e.clientX}});
+container.addEventListener('pointerup',()=>dragging=false);container.addEventListener('pointercancel',()=>dragging=false);
+let frame=0,lastTime=0,visible=true;
+new IntersectionObserver(entries=>{visible=entries[0].isIntersecting}).observe(container);
+function animate(time){
+requestAnimationFrame(animate);
+if(document.hidden||!visible){lastTime=time;return}
+const delta=Math.min((time-lastTime)/1000,.05);lastTime=time;
+if(autoRotate&&!dragging)targetRotation+=delta*.13;
+viewRotation+=(targetRotation-viewRotation)*.08;
+atlas.rotation.y=viewRotation;
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+atlas.position.y=.25+(reduced?0:Math.sin(time*.00055)*.065);
+inner.rotation.y=-viewRotation*.3;
+camera.position.z+=(zoom-camera.position.z)*.08;
+if(colorTarget){nodeMat.color.lerp(colorTarget,.035);edgeMat.color.lerp(colorTarget,.035)}
+renderer.render(scene,camera);frame++;
+}
+requestAnimationFrame(animate);
+}catch(error){container.innerHTML='<div class="fallback-globe" aria-hidden="true"></div>';document.querySelector('.hero-note').innerHTML='<span class="small-square"></span>Explore the story through the timeline below';document.querySelector('.scene-controls').style.display='none'}
+})();
+</script>
+</body>
+</html>
