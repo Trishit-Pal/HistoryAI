@@ -82,7 +82,7 @@ export function Timeline({ nodes, halls, archivedAt }: { nodes: MuseumNode[]; ha
                       {band.hall.summary ? <p className="tl-summary">{band.hall.summary}</p> : null}
                       <p className="tl-span">
                         {band.span}
-                        {band.exhibits.length > 0 ? ` · ${band.exhibits.length} exhibit${band.exhibits.length === 1 ? "" : "s"}` : " · sealed"}
+                        {band.exhibits.length > 0 ? ` · ${band.exhibits.length} exhibit${band.exhibits.length === 1 ? "" : "s"}` : " · no exhibits yet"}
                         {band.slug ? (
                           <Link className="tl-enter" href={`/rooms/${band.slug}`}>
                             Enter the hall <span aria-hidden="true">→</span>

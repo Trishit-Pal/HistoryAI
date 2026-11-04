@@ -172,9 +172,13 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
       </header>
 
       <section ref={stage} className="atlas-stage" aria-label="Interactive plot">
+        <p id="atlas-keys-hint" className="sr-only">
+          With the plot focused, use the left and right arrow keys, or the square bracket keys, to step between models.
+        </p>
         <div
           className="atlas-canvas"
-          role="img"
+          role="application"
+          aria-describedby="atlas-keys-hint"
           aria-label={SCENE_LABEL}
           aria-keyshortcuts="ArrowLeft ArrowRight [ ]"
           tabIndex={webgl === true ? 0 : undefined}

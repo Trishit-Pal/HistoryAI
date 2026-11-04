@@ -73,8 +73,7 @@ export function MuseumShell({
 
   const view = chooseView({ webgl: webgl !== false, reducedMotion: reduced });
   const focused = nodes.find((node) => node.id === focusedId) ?? nodes[0];
-  const focusedHall =
-    halls.find((hall) => focused && hall.exhibitIds.includes(focused.id)) ?? halls[hallIndex] ?? halls[0];
+  const focusedHall = halls[hallIndex] ?? halls[0];
   const hallExhibits = (focusedHall?.exhibitIds ?? [])
     .map((id) => nodes.find((node) => node.id === id))
     .filter((node): node is MuseumNode => node !== undefined);

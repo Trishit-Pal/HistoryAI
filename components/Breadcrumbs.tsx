@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export type Crumb = { label: string; href?: string };
 
 // The last crumb is the page you are on, so it is text, not a link.
@@ -12,7 +14,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
               {last || !item.href ? (
                 <span aria-current={last ? "page" : undefined}>{item.label}</span>
               ) : (
-                <a href={item.href}>{item.label}</a>
+                <Link href={item.href}>{item.label}</Link>
               )}
             </li>
           );

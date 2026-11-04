@@ -262,7 +262,6 @@ textarea {
   border-bottom: 1px solid var(--bp-chalk);
 }
 
-.site-name,
 .rail .breadcrumbs {
   grid-column: 1;
   align-self: center;
@@ -355,7 +354,6 @@ textarea {
   }
 
   .rail .breadcrumbs,
-  .site-name,
   .era-step {
     grid-column: 1;
     grid-row: auto;
@@ -460,16 +458,6 @@ textarea {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.hall-name {
-  margin: 0;
-  font-family: var(--bp-sheet-font);
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--bp-chalk);
-  text-wrap: balance;
-  pointer-events: none;
 }
 
 .flatland {
@@ -660,27 +648,27 @@ textarea {
 }
 
 /* A shape per confidence word, so colour is never the only cue. Mirrors theme.ts (theme.test.ts checks). */
-:is(.shell, .exhibit-page) .badge::before {
+.badge::before {
   margin-right: 0.35em;
 }
 
-:is(.shell, .exhibit-page) .badge-confirmed::before {
+.badge-confirmed::before {
   content: "●";
 }
 
-:is(.shell, .exhibit-page) .badge-reported::before {
+.badge-reported::before {
   content: "◐";
 }
 
-:is(.shell, .exhibit-page) .badge-rumored::before {
+.badge-rumored::before {
   content: "○";
 }
 
-:is(.shell, .exhibit-page) .badge-disputed::before {
+.badge-disputed::before {
   content: "◆";
 }
 
-:is(.shell, .exhibit-page) .badge-unset::before {
+.badge-unset::before {
   content: "–";
 }
 

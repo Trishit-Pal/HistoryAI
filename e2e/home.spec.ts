@@ -13,6 +13,15 @@ test("the home is one timeline of era bands whose chips open the exhibit in its 
   await expect(page).toHaveURL(/\/rooms\/founding#evt_1956_dartmouth$/);
 });
 
+test("a card for a later exhibit opens its room on that exhibit", async ({ page }) => {
+  await page.goto("/");
+  const card = page.getByRole("region", { name: "Formal founding" }).locator(".tl-cards a").last();
+  const title = (await card.locator(".tl-card-title").textContent()) ?? "";
+  await card.click();
+  await expect(page).toHaveURL(/\/rooms\/founding#/);
+  await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+});
+
 test("the search box filters exhibit chips by title", async ({ page }) => {
   await page.goto("/");
   const search = page.getByLabel("Search exhibits");

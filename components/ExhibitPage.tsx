@@ -29,7 +29,7 @@ export function ExhibitPage({
         <Breadcrumbs
           items={[
             { label: "Timeline", href: "/" },
-            { label: eraLabel, href: `/rooms/${eraSlug}` },
+            { label: eraLabel, href: `/rooms/${eraSlug}#${node.id}` },
             { label: node.title },
           ]}
         />

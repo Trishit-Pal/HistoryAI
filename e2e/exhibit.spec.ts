@@ -42,7 +42,7 @@ test("breadcrumbs on an exhibit lead back to the room and the timeline", async (
   await expect(crumbs.locator("[aria-current='page']")).toHaveText(await page.getByRole("heading", { level: 1 }).innerText());
   await expect(crumbs.getByRole("link", { name: "Timeline" })).toHaveAttribute("href", "/");
   await crumbs.getByRole("link", { name: "Precursors" }).click();
-  await expect(page).toHaveURL(/\/rooms\/precursors$/);
+  await expect(page).toHaveURL(/\/rooms\/precursors#evt_history_overview$/);
 });
 
 test("the site nav marks the current page", async ({ page }) => {
