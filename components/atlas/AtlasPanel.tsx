@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ModelFacts, describeCoverage } from "../../src/atlas/describe";
 import type { GovernanceView } from "../../src/atlas/governance";
-import { YEAR_AXIS } from "../../src/atlas/projection";
+import { VIEW_PRESETS, type ViewPresetName, YEAR_AXIS } from "../../src/atlas/projection";
 import type { LandmarkExhibit } from "../../src/atlas/landmarks";
 import type { AtlasMetric, AtlasTotals } from "../../src/atlas/types";
 import { CONFIDENCE_GLYPH } from "../../src/museum/theme";
@@ -20,12 +20,18 @@ interface ControlsProps {
   showAll: boolean;
   /** Featured models drawn for the current measure. */
   drawn: number;
-  canReset: boolean;
+  /** Whether the 3D view is there for the view buttons to move. */
+  canView: boolean;
   onMetric: (metric: AtlasMetric) => void;
   onShowAll: (showAll: boolean) => void;
   onCutoff: (year: number) => void;
+  onView: (preset: ViewPresetName) => void;
+  /** Move to the previous (-1) or next (1) model, oldest first. */
+  onStep: (direction: -1 | 1) => void;
   onReset: () => void;
 }
+
+const VIEW_LABEL: Record<ViewPresetName, string> = { front: "Front", top: "Top", side: "Side" };
 
 export function AtlasControls({
   metric,
@@ -33,10 +39,12 @@ export function AtlasControls({
   totals,
   showAll,
   drawn,
-  canReset,
+  canView,
   onMetric,
   onShowAll,
   onCutoff,
+  onView,
+  onStep,
   onReset,
 }: ControlsProps) {
   return (
@@ -73,11 +81,32 @@ export function AtlasControls({
 
       <p className="atlas-coverage">{describeCoverage({ metric, totals, showAll, drawn })}</p>
 
-      {canReset ? (
-        <button type="button" className="atlas-reset" onClick={onReset}>
-          Back to the whole plot
-        </button>
+      {canView ? (
+        <>
+          <fieldset>
+            <legend>View from</legend>
+            {(Object.keys(VIEW_PRESETS) as ViewPresetName[]).map((preset) => (
+              <button key={preset} type="button" onClick={() => onView(preset)}>
+                {VIEW_LABEL[preset]}
+              </button>
+            ))}
+          </fieldset>
+
+          <fieldset>
+            <legend>Step through models</legend>
+            <button type="button" onClick={() => onStep(-1)}>
+              Previous model
+            </button>
+            <button type="button" onClick={() => onStep(1)}>
+              Next model
+            </button>
+          </fieldset>
+        </>
       ) : null}
+
+      <button type="button" className="atlas-reset" onClick={onReset}>
+        Back to the whole plot
+      </button>
     </div>
   );
 }

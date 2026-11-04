@@ -1,12 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { describeModel, featuredDrawn, isDrawn } from "../../src/atlas/describe";
+import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { describeModel, featuredDrawn, isDrawn, visibleModels } from "../../src/atlas/describe";
 import type { GovernanceView } from "../../src/atlas/governance";
 import { hashForModel, modelFromHash } from "../../src/atlas/hash";
 import type { LandmarkView } from "../../src/atlas/landmarks";
-import { YEAR_AXIS } from "../../src/atlas/projection";
+import { type ViewRequest, YEAR_AXIS } from "../../src/atlas/projection";
 import { getSource } from "../../src/atlas/sources";
 import type { AtlasMetric, AtlasSnapshot } from "../../src/atlas/types";
 import { hasWebGL, usePrefersReducedMotion } from "../../src/museum/env";
@@ -41,6 +41,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
   const [focused, setFocused] = useState<number | null>(null);
   const [markerId, setMarkerId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [view, setView] = useState<ViewRequest>({ name: "rest", seq: 0 });
   const epoch = getSource("epoch-ai-models");
   const stage = useRef<HTMLElement>(null);
 
@@ -70,6 +71,35 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
     },
     [atlas],
   );
+
+  // Clearing focus and asking for a view together: Reset still works when nothing is focused but the visitor has orbited away.
+  const showView = useCallback(
+    (name: ViewRequest["name"]) => {
+      focus(null);
+      setView((current) => ({ name, seq: current.seq + 1 }));
+    },
+    [focus],
+  );
+
+  // Previous and next walk the models that are drawn, oldest first, and wrap round at the ends.
+  const step = useCallback(
+    (direction: -1 | 1) => {
+      const order = visibleModels(atlas.models, metric, showAll);
+      if (order.length === 0) return;
+      const at = focused === null ? -1 : order.indexOf(focused);
+      const next = at < 0 ? (direction > 0 ? 0 : order.length - 1) : (at + direction + order.length) % order.length;
+      focus(order[next]);
+    },
+    [atlas, metric, showAll, focused, focus],
+  );
+
+  const stepFromKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const direction = event.key === "ArrowRight" || event.key === "]" ? 1 : event.key === "ArrowLeft" || event.key === "[" ? -1 : 0;
+    if (direction === 0) return;
+    event.preventDefault();
+    step(direction);
+  };
 
   // A table row can be far below the plot, so bring the plot into view as the camera flies to the model.
   const showFromTable = useCallback(
@@ -139,7 +169,14 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
       </header>
 
       <section ref={stage} className="atlas-stage" aria-label="Interactive plot">
-        <div className="atlas-canvas" role="img" aria-label={SCENE_LABEL}>
+        <div
+          className="atlas-canvas"
+          role="img"
+          aria-label={SCENE_LABEL}
+          aria-keyshortcuts="ArrowLeft ArrowRight [ ]"
+          tabIndex={webgl === true ? 0 : undefined}
+          onKeyDown={stepFromKey}
+        >
           {webgl === true ? (
             <ScaleScene
               atlas={atlas}
@@ -151,6 +188,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
               showAll={showAll}
               hovered={hovered}
               focused={focused}
+              view={view}
               reduced={reduced}
               onHover={setHovered}
               onFocus={focus}
@@ -169,11 +207,13 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
             totals={atlas.totals}
             showAll={showAll}
             drawn={drawn}
-            canReset={focused !== null}
+            canView={webgl === true}
             onMetric={setMetric}
             onShowAll={changeShowAll}
             onCutoff={setCutoff}
-            onReset={() => focus(null)}
+            onView={showView}
+            onStep={step}
+            onReset={() => showView("rest")}
           />
           <AtlasDetail facts={facts} exhibit={shownExhibit} marker={marker} />
         </aside>

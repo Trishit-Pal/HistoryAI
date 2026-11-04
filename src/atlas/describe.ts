@@ -57,6 +57,22 @@ export function featuredDrawn(models: Pick<AtlasModels, "featured" | "logCompute
   return models.featured.filter((isFeatured, index) => isFeatured && column[index] !== null).length;
 }
 
+/**
+ * The models that have a dot on the plot for this measure, oldest first and then by name: the
+ * order that previous and next step through.
+ */
+export function visibleModels(
+  models: Pick<AtlasModels, "names" | "years" | "featured" | "logCompute" | "logParameters">,
+  metric: AtlasMetric,
+  showAll: boolean,
+): number[] {
+  const column = metric === "compute" ? models.logCompute : models.logParameters;
+  return models.names
+    .map((_, index) => index)
+    .filter((index) => (showAll || models.featured[index]) && column[index] !== null)
+    .sort((a, b) => models.years[a] - models.years[b] || models.names[a].localeCompare(models.names[b]));
+}
+
 /** Whether a model is on the plot right now: featured, or any model while "Show all" is on. */
 export function isDrawn(featured: readonly boolean[], index: number | null, showAll: boolean): boolean {
   if (index === null || index < 0 || index >= featured.length) return false;

@@ -3,9 +3,25 @@
 import { Canvas } from "@react-three/fiber";
 import { useMemo } from "react";
 import type { GovernanceView } from "../../src/atlas/governance";
+import { visibleModels } from "../../src/atlas/describe";
 import { gridBounds } from "../../src/atlas/grid";
 import type { LandmarkView } from "../../src/atlas/landmarks";
-import { DEFAULT_POSE, ENTRANCE_POSE, FIELD_OF_VIEW, focusPose, instanceState, readingFor } from "../../src/atlas/projection";
+import {
+  type Bounds,
+  DEFAULT_POSE,
+  ENTRANCE_POSE,
+  FIELD_OF_VIEW,
+  type Vec3,
+  type ViewRequest,
+  WORLD,
+  boundsOf,
+  focusPose,
+  instanceState,
+  readingFor,
+  xOfYear,
+  yOfLog,
+  zOfLane,
+} from "../../src/atlas/projection";
 import { ATLAS_PALETTE } from "../../src/atlas/theme";
 import type { AtlasMetric, AtlasSnapshot } from "../../src/atlas/types";
 import { CameraRig } from "./CameraRig";
@@ -15,7 +31,7 @@ import { PlotFrame } from "./PlotFrame";
 import { PointCloud } from "./PointCloud";
 import { useBlend } from "./useBlend";
 
-const FOG_DENSITY = 0.012;
+const FOG_DENSITY = 0.004;
 
 export interface ScaleSceneProps {
   atlas: AtlasSnapshot;
@@ -29,6 +45,8 @@ export interface ScaleSceneProps {
   showAll: boolean;
   hovered: number | null;
   focused: number | null;
+  /** The view to rest in when nothing is focused. */
+  view: ViewRequest;
   reduced: boolean;
   onHover: (index: number | null) => void;
   onFocus: (index: number) => void;
@@ -45,12 +63,28 @@ function Plot({
   showAll,
   hovered,
   focused,
+  view,
   reduced,
   onHover,
   onFocus,
   onMarker,
 }: ScaleSceneProps) {
   const blend = useBlend(metric, reduced);
+  const laneCount = atlas.domains.length;
+
+  // The resting and preset views fit the models that are drawn; panning stays inside the plot.
+  const fit = useMemo(() => {
+    const { models } = atlas;
+    const points = visibleModels(models, metric, showAll).map((index): Vec3 => {
+      const { log } = readingFor(models, index, metric);
+      return [xOfYear(models.years[index]), yOfLog(metric, log ?? 0), zOfLane(models.domainIndex[index], laneCount)];
+    });
+    return boundsOf(points);
+  }, [atlas, metric, showAll, laneCount]);
+  const limits = useMemo<Bounds>(() => {
+    const { xMin, xMax, zBack, zFront } = gridBounds(laneCount);
+    return { min: [xMin, 0, zBack], max: [xMax, WORLD.height, zFront] };
+  }, [laneCount]);
 
   // Where the camera should look: at the focused model's place in the current metric.
   const pose = useMemo(() => {
@@ -97,7 +131,7 @@ function Plot({
         onFocus={onFocus}
       />
       <GovernanceRibbon markers={governance} laneCount={atlas.domains.length} selected={markerId} onSelect={onMarker} />
-      <CameraRig pose={pose} reduced={reduced} />
+      <CameraRig pose={pose} view={view} fit={fit} limits={limits} reduced={reduced} />
     </>
   );
 }

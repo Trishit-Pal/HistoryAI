@@ -4,10 +4,16 @@ import {
   ENTRANCE_POSE,
   FIELD_OF_VIEW,
   METRIC_AXIS,
+  REST_MAX,
+  VIEW_PRESETS,
   WORLD,
+  WORLD_BOUNDS,
   YEAR_AXIS,
+  boundsOf,
+  clampTarget,
   focusPose,
   instanceState,
+  presetPose,
   readingFor,
   restPose,
   xOfYear,
@@ -187,14 +193,19 @@ describe("readingFor", () => {
   });
 });
 
+const distanceOf = ({ position, lookAt }: { position: readonly number[]; lookAt: readonly number[] }) =>
+  Math.hypot(position[0] - lookAt[0], position[1] - lookAt[1], position[2] - lookAt[2]);
+
 describe("restPose", () => {
   it("backs the camera off further for a narrower canvas so the whole plot still fits", () => {
-    const distance = (aspect: number) => {
-      const { position, lookAt } = restPose(aspect);
-      return Math.hypot(position[0] - lookAt[0], position[1] - lookAt[1], position[2] - lookAt[2]);
-    };
-    expect(distance(0.8)).toBeGreaterThan(distance(1.6));
-    expect(distance(1.6)).toBeGreaterThanOrEqual(distance(3));
+    expect(distanceOf(restPose(1.8))).toBeGreaterThan(distanceOf(restPose(3)));
+    expect(distanceOf(restPose(3))).toBeGreaterThanOrEqual(distanceOf(restPose(4)));
+  });
+
+  it("never sits farther than REST_MAX, however narrow the canvas", () => {
+    for (const aspect of [0.5, 1, 2]) {
+      expect(distanceOf(restPose(aspect))).toBeLessThanOrEqual(REST_MAX + 1e-9);
+    }
   });
 
   it("always looks at the middle of the plot from in front of and above it", () => {
@@ -204,18 +215,80 @@ describe("restPose", () => {
     expect(pose.position[1]).toBeGreaterThan(pose.lookAt[1]);
   });
 
-  it("keeps the whole plot width inside the horizontal view", () => {
-    for (const aspect of [0.7, 1.2, 1.6, 2.4]) {
-      const { position, lookAt } = restPose(aspect);
-      const distance = Math.hypot(position[0] - lookAt[0], position[1] - lookAt[1], position[2] - lookAt[2]);
+  it("keeps the whole plot width inside the horizontal view wherever the cap allows", () => {
+    for (const aspect of [1.6, 2, 2.4]) {
+      const distance = distanceOf(restPose(aspect));
       const halfWidthSeen = distance * Math.tan((FIELD_OF_VIEW * Math.PI) / 360) * aspect;
       expect(halfWidthSeen).toBeGreaterThanOrEqual(WORLD.width / 2);
     }
   });
 
+  it("fits the bounds it is given, not the whole world", () => {
+    const small = boundsOf([
+      [-5, 2, 0],
+      [5, 6, 1],
+    ]);
+    const pose = restPose(1.6, small);
+    expect(pose.lookAt).toEqual([0, 4, 0.5]);
+    expect(distanceOf(pose)).toBeLessThan(distanceOf(restPose(1.6)));
+  });
+
   it("falls back to the default pose for a canvas with no usable size", () => {
     expect(restPose(0)).toEqual(DEFAULT_POSE);
     expect(restPose(Number.NaN)).toEqual(DEFAULT_POSE);
+  });
+});
+
+describe("boundsOf", () => {
+  it("is the box around the points", () => {
+    expect(
+      boundsOf([
+        [1, 5, -2],
+        [-3, 2, 4],
+      ]),
+    ).toEqual({ min: [-3, 2, -2], max: [1, 5, 4] });
+  });
+
+  it("falls back to the whole plot when no model is visible", () => {
+    expect(boundsOf([])).toBe(WORLD_BOUNDS);
+  });
+});
+
+describe("clampTarget", () => {
+  it("leaves a point inside the box alone and pulls one outside back to the edge", () => {
+    expect(clampTarget([0, 6, 0], WORLD_BOUNDS)).toEqual([0, 6, 0]);
+    expect(clampTarget([100, -5, -100], WORLD_BOUNDS)).toEqual([
+      WORLD_BOUNDS.max[0],
+      WORLD_BOUNDS.min[1],
+      WORLD_BOUNDS.min[2],
+    ]);
+  });
+});
+
+describe("view presets", () => {
+  const names = Object.keys(VIEW_PRESETS) as Array<keyof typeof VIEW_PRESETS>;
+
+  it("offers front, top and side", () => {
+    expect(names.sort()).toEqual(["front", "side", "top"]);
+  });
+
+  it("looks at the same middle of the plot from the side each preset names", () => {
+    const rest = restPose(1.6);
+    const front = presetPose("front", 1.6);
+    const top = presetPose("top", 1.6);
+    const side = presetPose("side", 1.6);
+    for (const pose of [front, top, side]) expect(pose.lookAt).toEqual(rest.lookAt);
+    expect(front.position[2]).toBeGreaterThan(front.lookAt[2]);
+    expect(top.position[1] - top.lookAt[1]).toBeGreaterThan(Math.abs(top.position[2] - top.lookAt[2]));
+    expect(side.position[0]).toBeGreaterThan(side.lookAt[0]);
+  });
+
+  it("never sits farther than REST_MAX", () => {
+    for (const name of names) {
+      for (const aspect of [0.5, 1, 2]) {
+        expect(distanceOf(presetPose(name, aspect))).toBeLessThanOrEqual(REST_MAX + 1e-9);
+      }
+    }
   });
 });
 
@@ -233,7 +306,8 @@ describe("camera poses", () => {
     expect(pose.position[2]).toBeGreaterThan(frontLaneEdge);
   });
 
-  it("starts the entrance move farther back than the resting view", () => {
+  it("starts the entrance move farther back than the resting view, but only a little", () => {
     expect(ENTRANCE_POSE.position[2]).toBeGreaterThan(DEFAULT_POSE.position[2]);
+    expect(distanceOf(ENTRANCE_POSE)).toBeLessThanOrEqual(REST_MAX * 1.2);
   });
 });

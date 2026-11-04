@@ -9,7 +9,7 @@ import { laneColour } from "../../src/atlas/theme";
 import type { AtlasSnapshot } from "../../src/atlas/types";
 import { type Blend, smooth } from "../../src/atlas/blend";
 
-const POINT_RADIUS = 0.16;
+const POINT_RADIUS = 0.26;
 const DIMMED_SIZE = 0.5;
 const DIMMED_LIGHT = 0.28;
 // Models shown only by "Show all": small and faint, so the featured ones stay the picture.

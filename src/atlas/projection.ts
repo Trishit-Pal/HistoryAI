@@ -19,18 +19,51 @@ export const METRIC_AXIS: Record<AtlasMetric, { min: number; max: number; step: 
 /** World units: the plot is `width` along years, `height` along the metric, `laneGap` between domains. */
 export const WORLD = { width: 44, height: 12, laneGap: 1.5 } as const;
 
-export const DEFAULT_POSE: Pose = { position: [5, 15, 30], lookAt: [3, 5, 0] };
-export const ENTRANCE_POSE: Pose = { position: [3, 24, 64], lookAt: [3, 5, 0] };
+export const DEFAULT_POSE: Pose = { position: [3, 14, 35], lookAt: [0, 6, 0] };
+// About 1.2 times the farthest resting distance (REST_MAX): arriving is a short glide, not a long fall.
+export const ENTRANCE_POSE: Pose = { position: [4, 17, 42], lookAt: [0, 6, 0] };
 
 /** The camera's vertical field of view, in degrees. */
 export const FIELD_OF_VIEW = 50;
 
-// How much room to leave around the plot for tick labels and the domain names on its right edge.
-const FIT_MARGIN = 1.4;
-// The plot is WORLD.height tall; the axis title and winter names stand above it.
-const VIEW_HEIGHT = WORLD.height + 6;
+// How much room to leave around what is fitted, so tick labels and domain names are not cut off.
+const FIT_MARGIN = 1.1;
+// Extra room, in world units, each side of the fitted bounds for tick labels, domain names and the axis title.
+const LABEL_PAD = { x: 3, y: 3 } as const;
+/** The farthest the resting camera sits from what it looks at. A very narrow canvas crops rather than shrinks the plot. */
+export const REST_MAX = 38;
 // Where the resting camera sits relative to the middle of the plot: a little right, well above, in front.
 const REST_OFFSET: Vec3 = [2, 10, 25];
+
+/** An axis-aligned box in world units. */
+export interface Bounds {
+  readonly min: Vec3;
+  readonly max: Vec3;
+}
+
+/** The whole plot, for when no model is visible to fit to. */
+export const WORLD_BOUNDS: Bounds = {
+  min: [-WORLD.width / 2, 0, -WORLD.laneGap * 3],
+  max: [WORLD.width / 2, WORLD.height, WORLD.laneGap * 3],
+};
+
+/**
+ * Directions to look from, as the camera's offset from the middle of the plot. Top keeps a small
+ * z so "up" on screen is still the back of the plot.
+ */
+export const VIEW_PRESETS = {
+  front: [0, 0.3, 1],
+  top: [0, 1, 0.12],
+  side: [1, 0.2, 0],
+} as const satisfies Record<string, Vec3>;
+
+export type ViewPresetName = keyof typeof VIEW_PRESETS;
+
+/** A request to move the camera to a named view. `seq` makes asking for the same view twice a new request. */
+export interface ViewRequest {
+  readonly name: ViewPresetName | "rest";
+  readonly seq: number;
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -120,26 +153,64 @@ export function instanceState(input: InstanceInput): InstanceState {
   return { position: [x, 0, z], scale: 0, dimmed, muted };
 }
 
-/**
- * The resting camera for a canvas of this width-to-height ratio: as close as it can be while the
- * whole plot, labels included, stays in view. A narrow canvas needs the camera further back.
- */
-export function restPose(aspect: number): Pose {
+/** The box around some points, or the whole plot when there are none. */
+export function boundsOf(points: readonly Vec3[]): Bounds {
+  if (points.length === 0) return WORLD_BOUNDS;
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (const point of points) {
+    for (let axis = 0; axis < 3; axis += 1) {
+      min[axis] = Math.min(min[axis], point[axis]);
+      max[axis] = Math.max(max[axis], point[axis]);
+    }
+  }
+  return { min, max };
+}
+
+/** Keeps a point inside the box: the panning limit, so the visitor cannot lose the plot. */
+export function clampTarget(target: Vec3, bounds: Bounds): Vec3 {
+  return [
+    clamp(target[0], bounds.min[0], bounds.max[0]),
+    clamp(target[1], bounds.min[1], bounds.max[1]),
+    clamp(target[2], bounds.min[2], bounds.max[2]),
+  ];
+}
+
+function viewPose(direction: Vec3, aspect: number, bounds: Bounds): Pose {
   if (!Number.isFinite(aspect) || aspect <= 0) return DEFAULT_POSE;
   const halfHeight = Math.tan((FIELD_OF_VIEW * Math.PI) / 360);
-  const byWidth = (WORLD.width * FIT_MARGIN) / 2 / (halfHeight * aspect);
-  const byHeight = (VIEW_HEIGHT * FIT_MARGIN) / 2 / halfHeight;
-  const distance = Math.max(byWidth, byHeight);
-  const length = Math.hypot(...REST_OFFSET);
-  const [lx, ly, lz] = DEFAULT_POSE.lookAt;
+  const width = bounds.max[0] - bounds.min[0] + 2 * LABEL_PAD.x;
+  const height = bounds.max[1] - bounds.min[1] + 2 * LABEL_PAD.y;
+  const byWidth = (width * FIT_MARGIN) / 2 / (halfHeight * aspect);
+  const byHeight = (height * FIT_MARGIN) / 2 / halfHeight;
+  const distance = Math.min(Math.max(byWidth, byHeight), REST_MAX);
+  const length = Math.hypot(...direction);
+  const centre: Vec3 = [
+    (bounds.min[0] + bounds.max[0]) / 2,
+    (bounds.min[1] + bounds.max[1]) / 2,
+    (bounds.min[2] + bounds.max[2]) / 2,
+  ];
   return {
     position: [
-      lx + (REST_OFFSET[0] / length) * distance,
-      ly + (REST_OFFSET[1] / length) * distance,
-      lz + (REST_OFFSET[2] / length) * distance,
+      centre[0] + (direction[0] / length) * distance,
+      centre[1] + (direction[1] / length) * distance,
+      centre[2] + (direction[2] / length) * distance,
     ],
-    lookAt: DEFAULT_POSE.lookAt,
+    lookAt: centre,
   };
+}
+
+/**
+ * The resting camera for a canvas of this width-to-height ratio: as close as it can be while the
+ * given bounds (the visible models), labels included, stay in view, and never farther than REST_MAX.
+ */
+export function restPose(aspect: number, bounds: Bounds = WORLD_BOUNDS): Pose {
+  return viewPose(REST_OFFSET, aspect, bounds);
+}
+
+/** The camera for one of the named views, fitted the same way as the resting view. */
+export function presetPose(name: ViewPresetName, aspect: number, bounds: Bounds = WORLD_BOUNDS): Pose {
+  return viewPose(VIEW_PRESETS[name], aspect, bounds);
 }
 
 // How far in front of the target the focus camera sits, and how far clear of the front lane it stays.

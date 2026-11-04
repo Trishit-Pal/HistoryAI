@@ -62,6 +62,11 @@
   border: 1px solid var(--atlas-edge);
 }
 
+.atlas-canvas:focus-visible {
+  outline: 2px solid var(--atlas-gold);
+  outline-offset: -2px;
+}
+
 .atlas-canvas canvas {
   display: block;
   width: 100%;
