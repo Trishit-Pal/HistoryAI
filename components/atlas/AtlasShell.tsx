@@ -10,7 +10,8 @@ import { type ViewRequest, YEAR_AXIS } from "../../src/atlas/projection";
 import { getSource } from "../../src/atlas/sources";
 import type { AtlasMetric, AtlasSnapshot } from "../../src/atlas/types";
 import { hasWebGL, usePrefersReducedMotion } from "../../src/museum/env";
-import { AtlasControls, AtlasDetail } from "./AtlasPanel";
+import { AtlasHowTo, AtlasLegend } from "./AtlasLegend";
+import { AtlasControls, AtlasDetail, AtlasViews } from "./AtlasPanel";
 import { AtlasTable } from "./AtlasTable";
 import { GovernanceTable } from "./GovernanceTable";
 
@@ -171,40 +172,45 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
       </header>
 
       <section ref={stage} className="atlas-stage" aria-label="Interactive plot">
-        <p id="atlas-keys-hint" className="sr-only">
-          Focus the plot, then use the arrow keys or [ and ] to step between models.
-        </p>
-        <div
-          className="atlas-canvas"
-          role="application"
-          aria-describedby="atlas-keys-hint"
-          aria-label={SCENE_LABEL}
-          aria-keyshortcuts="ArrowLeft ArrowRight [ ]"
-          tabIndex={webgl === true ? 0 : undefined}
-          onKeyDown={stepFromKey}
-        >
-          {webgl === true ? (
-            <ScaleScene
-              atlas={atlas}
-              labels={featuredViews}
-              governance={governance}
-              markerId={markerId}
-              metric={metric}
-              cutoff={cutoff}
-              showAll={showAll}
-              hovered={hovered}
-              focused={focused}
-              view={view}
-              reduced={reduced}
-              onHover={setHovered}
-              onFocus={focus}
-              onMarker={selectMarker}
-            />
-          ) : webgl === false ? (
-            <p className="atlas-nowebgl">
-              This browser cannot draw the 3D view. The landmark models are in the table below.
-            </p>
-          ) : null}
+        <div className="atlas-plot">
+          <div
+            className="atlas-canvas"
+            role="application"
+            aria-describedby="atlas-keys-hint"
+            aria-label={SCENE_LABEL}
+            aria-keyshortcuts="ArrowLeft ArrowRight [ ]"
+            tabIndex={webgl === true ? 0 : undefined}
+            onKeyDown={stepFromKey}
+          >
+            {webgl === true ? (
+              <ScaleScene
+                atlas={atlas}
+                labels={featuredViews}
+                governance={governance}
+                markerId={markerId}
+                metric={metric}
+                cutoff={cutoff}
+                showAll={showAll}
+                hovered={hovered}
+                focused={focused}
+                view={view}
+                reduced={reduced}
+                onHover={setHovered}
+                onFocus={focus}
+                onMarker={selectMarker}
+              />
+            ) : null}
+            {webgl === true ? (
+              <AtlasHowTo />
+            ) : webgl === false ? (
+              <p className="atlas-nowebgl">
+                This browser cannot draw the 3D view. The landmark models are in the table below.
+              </p>
+            ) : null}
+          </div>
+          {/* A sibling of the plot, not inside it: arrow keys on these buttons must not step between models. */}
+          {webgl === true ? <AtlasViews onView={showView} onReset={() => showView("rest")} /> : null}
+          {webgl === false ? null : <AtlasLegend metric={metric} domains={atlas.domains} />}
         </div>
         <aside className="atlas-side">
           <AtlasControls
@@ -217,9 +223,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
             onMetric={setMetric}
             onShowAll={changeShowAll}
             onCutoff={setCutoff}
-            onView={showView}
             onStep={step}
-            onReset={() => showView("rest")}
           />
           <AtlasDetail facts={facts} exhibit={shownExhibit} marker={marker} />
         </aside>

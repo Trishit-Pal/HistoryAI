@@ -3,7 +3,7 @@
 import { Text } from "@react-three/drei";
 import { useMemo } from "react";
 import { ERAS } from "../../src/domain/eras";
-import { formatParameters } from "../../src/atlas/format";
+import { AXIS_TITLE, formatParameters } from "../../src/atlas/format";
 import { YEAR_TICKS, gridBounds, gridSegments, valueTicks } from "../../src/atlas/grid";
 import { WORLD, xOfYear, yOfLog, zOfLane } from "../../src/atlas/projection";
 import { ATLAS_PALETTE, laneColour } from "../../src/atlas/theme";
@@ -13,10 +13,8 @@ import { LABEL_FONT } from "../labelFont";
 const FLAT: [number, number, number] = [-Math.PI / 2, 0, 0];
 const TICK_SIZE = 0.7;
 const LANE_SIZE = 0.65;
-const AXIS_TITLE: Record<AtlasMetric, string> = {
-  compute: "Training compute, FLOP, log scale",
-  parameters: "Parameters, log scale",
-};
+// Axis titles sit a step above the ticks, so they read first.
+const TITLE_SIZE = 0.9;
 const WINTERS = ERAS.filter((era) => era.mood === "winter" && era.endYear !== null);
 
 function tickLabel(metric: AtlasMetric, value: number): string {
@@ -75,13 +73,37 @@ export function PlotFrame({ metric, domains }: PlotFrameProps) {
 
       <Text
         font={LABEL_FONT}
-        fontSize={TICK_SIZE}
+        fontSize={TITLE_SIZE}
         color={ATLAS_PALETTE["gold-soft"]}
-        position={[xMin, WORLD.height + 0.9, zBack]}
+        position={[xMin, WORLD.height + 1.5, zBack]}
         anchorX="left"
         anchorY="bottom"
       >
         {AXIS_TITLE[metric]}
+      </Text>
+
+      <Text
+        font={LABEL_FONT}
+        fontSize={TITLE_SIZE}
+        color={ATLAS_PALETTE["gold-soft"]}
+        position={[(xMin + xMax) / 2, 0.02, zFront + 1.6]}
+        rotation={FLAT}
+        anchorX="center"
+        anchorY="top"
+      >
+        Publication year
+      </Text>
+
+      <Text
+        font={LABEL_FONT}
+        fontSize={TITLE_SIZE}
+        color={ATLAS_PALETTE["gold-soft"]}
+        position={[xMax + 0.6, 0.02, zBack - 0.8]}
+        rotation={FLAT}
+        anchorX="left"
+        anchorY="bottom"
+      >
+        Domain
       </Text>
 
       {domains.map((domain, lane) => (

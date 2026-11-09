@@ -1,3 +1,11 @@
+import type { AtlasMetric } from "./types";
+
+/** The height axis's title: on the plot's back wall and in the legend under it. */
+export const AXIS_TITLE: Record<AtlasMetric, string> = {
+  compute: "Training compute, FLOP, log scale",
+  parameters: "Parameters, log scale",
+};
+
 const NO_COMPUTE = "No estimate published";
 const NO_PARAMETERS = "No count published";
 

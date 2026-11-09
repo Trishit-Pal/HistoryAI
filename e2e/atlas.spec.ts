@@ -114,6 +114,34 @@ test("next model focuses a model, and the view buttons and reset work without er
   expect(errors).toEqual([]);
 });
 
+test("the plot says how to move around and how to read it, and its view buttons keep the arrow keys", async ({ page }) => {
+  await page.goto("/atlas");
+  const webgl = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  });
+  test.skip(!webgl, "No WebGL in this browser.");
+
+  await expect(page.locator("#atlas-keys-hint")).toBeVisible();
+  await expect(page.locator("#atlas-keys-hint")).toContainText("Drag to turn the plot");
+  await expect(page.getByRole("region", { name: "Axes" })).toContainText("Training compute, FLOP, log scale");
+  await expect(page.getByRole("region", { name: "Domains" })).toContainText("Language");
+  await expect(page.getByRole("region", { name: "Marks" })).toContainText("AI winter");
+
+  await page.getByRole("button", { name: "Parameters", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Axes" })).toContainText("Parameters, log scale");
+
+  // Arrow keys on a view button belong to the button, not to the plot behind it.
+  const front = page.getByRole("button", { name: "Front", exact: true });
+  await front.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page).not.toHaveURL(/#model=/);
+
+  await page.locator(".atlas-canvas").focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/#model=/);
+});
+
 test("without WebGL the same landmarks are still there as a table", async ({ page }) => {
   await page.addInitScript(() => {
     HTMLCanvasElement.prototype.getContext = () => null;
@@ -121,6 +149,9 @@ test("without WebGL the same landmarks are still there as a table", async ({ pag
   await page.goto("/atlas");
   await expect(page.getByText(/cannot draw the 3D view/)).toBeVisible();
   await expect(page.locator("canvas")).toHaveCount(0);
+  // Nothing to move or read without the plot.
+  await expect(page.getByRole("button", { name: "Front", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Axes" })).toHaveCount(0);
   await expect(page.getByRole("table").first().locator("tbody tr")).toHaveCount(FEATURED_COUNT);
 });
 

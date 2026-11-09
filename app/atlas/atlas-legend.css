@@ -1,0 +1,155 @@
+/* The plot column: the canvas, the view buttons on its corner, and how to read it underneath. */
+.atlas-plot {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+  align-content: start;
+}
+
+.atlas-views {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  max-width: calc(100% - 1.5rem);
+}
+
+.atlas-views button {
+  min-height: 40px;
+  padding: 0.35rem 0.75rem;
+  color: var(--atlas-text);
+  background: color-mix(in srgb, var(--atlas-ground) 82%, transparent);
+  border: 1px solid var(--atlas-edge);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.atlas-views button:hover {
+  border-color: var(--atlas-gold);
+}
+
+.atlas-views .atlas-reset {
+  color: var(--atlas-ground);
+  background: var(--atlas-gold);
+  border-color: var(--atlas-gold);
+}
+
+.atlas-views button:focus-visible {
+  outline: 2px solid var(--atlas-gold-soft);
+  outline-offset: 2px;
+}
+
+.atlas-howto {
+  position: absolute;
+  inset: auto 0 0;
+  margin: 0;
+  padding: 1.5rem 1rem 0.75rem;
+  color: var(--atlas-text);
+  background: linear-gradient(to top, var(--atlas-ground) 45%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  pointer-events: none;
+}
+
+.atlas-key {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1rem 1.75rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.atlas-key h2 {
+  margin: 0 0 0.4rem;
+  color: var(--atlas-gold-soft);
+  font-size: 1.05rem;
+}
+
+.atlas-key dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.2rem 0.75rem;
+  margin: 0;
+}
+
+.atlas-key dt {
+  color: var(--atlas-muted);
+}
+
+.atlas-key dd {
+  margin: 0;
+}
+
+.atlas-key ul {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.atlas-key-domains {
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  column-gap: 1.25rem;
+}
+
+.atlas-key li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.atlas-swatch {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--swatch, var(--atlas-gold));
+  transform: translateY(0.05rem);
+}
+
+.atlas-swatch.is-faint {
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-inline: 0.125rem;
+  background: color-mix(in srgb, var(--atlas-gold) 35%, var(--atlas-ground));
+}
+
+.atlas-swatch.is-winter {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--atlas-winter) 35%, var(--atlas-ground));
+  border: 1px solid var(--atlas-winter);
+}
+
+@media (max-width: 62rem) {
+  .atlas-key {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A phone's plot is small: keep the buttons on one row and the how-to to a couple of lines. */
+@media (max-width: 40rem) {
+  .atlas-views {
+    top: 0.5rem;
+    right: 0.5rem;
+    gap: 0.3rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .atlas-views button {
+    min-height: 36px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  .atlas-howto {
+    padding: 1rem 0.6rem 0.5rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+}

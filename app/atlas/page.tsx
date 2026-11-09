@@ -5,6 +5,7 @@ import { landmarkViews } from "../../src/atlas/landmarks";
 import { getAtlas } from "../../src/server/atlas";
 import { getMuseum } from "../../src/server/museum";
 import "./atlas.css";
+import "./atlas-legend.css";
 
 export const metadata: Metadata = {
   title: "The scale of AI · Hall of Eras",
