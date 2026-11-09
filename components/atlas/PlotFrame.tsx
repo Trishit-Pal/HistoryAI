@@ -15,6 +15,11 @@ const TICK_SIZE = 0.7;
 const LANE_SIZE = 0.65;
 // Axis titles sit a step above the ticks, so they read first.
 const TITLE_SIZE = 0.9;
+// Where the titles sit, measured from the grid's edges, clear of the 0.7 ticks at zFront + 0.5 and x = xMin - 0.5.
+const HEIGHT_TITLE_LIFT = 1.5;
+const YEAR_TITLE_OFFSET = 1.6;
+const DOMAIN_TITLE_X = 0.6;
+const DOMAIN_TITLE_Z = -0.8;
 const WINTERS = ERAS.filter((era) => era.mood === "winter" && era.endYear !== null);
 
 function tickLabel(metric: AtlasMetric, value: number): string {
@@ -75,7 +80,7 @@ export function PlotFrame({ metric, domains }: PlotFrameProps) {
         font={LABEL_FONT}
         fontSize={TITLE_SIZE}
         color={ATLAS_PALETTE["gold-soft"]}
-        position={[xMin, WORLD.height + 1.5, zBack]}
+        position={[xMin, WORLD.height + HEIGHT_TITLE_LIFT, zBack]}
         anchorX="left"
         anchorY="bottom"
       >
@@ -86,7 +91,7 @@ export function PlotFrame({ metric, domains }: PlotFrameProps) {
         font={LABEL_FONT}
         fontSize={TITLE_SIZE}
         color={ATLAS_PALETTE["gold-soft"]}
-        position={[(xMin + xMax) / 2, 0.02, zFront + 1.6]}
+        position={[(xMin + xMax) / 2, 0.02, zFront + YEAR_TITLE_OFFSET]}
         rotation={FLAT}
         anchorX="center"
         anchorY="top"
@@ -98,7 +103,7 @@ export function PlotFrame({ metric, domains }: PlotFrameProps) {
         font={LABEL_FONT}
         fontSize={TITLE_SIZE}
         color={ATLAS_PALETTE["gold-soft"]}
-        position={[xMax + 0.6, 0.02, zBack - 0.8]}
+        position={[xMax + DOMAIN_TITLE_X, 0.02, zBack + DOMAIN_TITLE_Z]}
         rotation={FLAT}
         anchorX="left"
         anchorY="bottom"

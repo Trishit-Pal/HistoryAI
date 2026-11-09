@@ -4,6 +4,10 @@ import { eraLayout } from "../../src/museum/eraRooms";
 import { HallTitle, Ink, NextMark, RoomExhibits } from "./roomKit";
 import type { RoomProps } from "./roomProps";
 
+const COUNTER_MIN_WIDTH = 3.6;
+// Room past the outermost plinths on each side, so the counter does not end at an exhibit's edge.
+const COUNTER_OVERHANG = 1.6;
+
 export function ExpertSystemsRoom({
   hall,
   originZ,
@@ -21,8 +25,10 @@ export function ExpertSystemsRoom({
   const counter = spots[0];
   // One counter under every exhibit: it grows from its single-exhibit width to span the whole row.
   const xs = spots.map((spot) => spot.x);
-  const counterWidth = Math.max(3.6, Math.max(...xs) - Math.min(...xs) + 1.6);
-  const counterX = xs.length > 0 ? (Math.max(...xs) + Math.min(...xs)) / 2 : 0;
+  const lo = Math.min(...xs);
+  const hi = Math.max(...xs);
+  const counterWidth = Math.max(COUNTER_MIN_WIDTH, hi - lo + COUNTER_OVERHANG);
+  const counterX = (lo + hi) / 2;
   return (
     <group position={[0, 0, originZ]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -2.2]} onClick={() => onHall(hallIndex)}>

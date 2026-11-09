@@ -59,6 +59,11 @@ describe("rankAt", () => {
     ]);
   });
 
+  it("survives a country with no models", () => {
+    const empty = { country: "Nowhere", lat: 0, lon: 0, labs: [], models: [] };
+    expect(rankAt([empty, snapshot.countries[0]], 2025).map((row) => row.country.country)).toEqual(["France", "Nowhere"]);
+  });
+
   it("counts a model shared by two countries for both", () => {
     const counts = Object.fromEntries(rankAt(snapshot.countries, 2022).map((row) => [row.country.country, row.count]));
     expect(counts).toMatchObject({ Japan: 1, Germany: 1 });

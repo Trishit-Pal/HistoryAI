@@ -16,7 +16,7 @@ export function AtlasHowTo() {
   return (
     <p id="atlas-keys-hint" className="atlas-howto">
       Drag to turn the plot, scroll or pinch to zoom, and select a dot to see its details. With the plot focused, the
-      arrow keys step between models.
+      arrow keys, or [ and ], step between models.
     </p>
   );
 }

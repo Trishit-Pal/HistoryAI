@@ -17,7 +17,7 @@ export function rankAt(countries: readonly GlobeCountry[], year: number): Countr
     .sort(
       (a, b) =>
         b.count - a.count ||
-        a.country.models[0].date.localeCompare(b.country.models[0].date) ||
+        (a.country.models[0]?.date ?? "").localeCompare(b.country.models[0]?.date ?? "") ||
         a.country.country.localeCompare(b.country.country),
     );
 }
