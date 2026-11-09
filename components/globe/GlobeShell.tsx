@@ -8,6 +8,7 @@ import type { GlobeRecord, GlobeSnapshot } from "../../src/globe/types";
 import { hasWebGL, usePrefersReducedMotion } from "../../src/museum/env";
 import { FIRST_YEAR, LAST_YEAR, byYear, countLine, firstYear, flopPower, times, yearLabel } from "./format";
 import { CountryPanel, ModelList } from "./GlobePanel";
+import { GlobeRanking } from "./GlobeRanking";
 import { GlobeTable } from "./GlobeTable";
 
 const GlobeScene = dynamic(() => import("./GlobeScene").then((mod) => mod.GlobeScene), {
@@ -20,7 +21,7 @@ const GlobeScene = dynamic(() => import("./GlobeScene").then((mod) => mod.GlobeS
 });
 
 const SCENE_LABEL =
-  "Globe with a gold column per country; taller means more models trained on at least 10^23 FLOP. The table below lists the same countries.";
+  "Globe with a gold column per country; taller means more models trained on at least 10^23 FLOP. The ranking beside it and the table below list the same countries.";
 
 // One record, labelled as Epoch's estimate and linked to its source; marked when it is below the globe's threshold.
 function RecordFacts({ record, threshold }: { record: GlobeRecord; threshold: number }) {
@@ -142,6 +143,13 @@ export function GlobeShell({ snapshot }: { snapshot: GlobeSnapshot }) {
             </p>
             <Records snapshot={snapshot} year={year} />
           </div>
+          <GlobeRanking
+            countries={snapshot.countries}
+            year={year}
+            threshold={snapshot.threshold}
+            selected={selected}
+            onSelect={select}
+          />
           {country ? <CountryPanel country={country} year={year} onClose={close} /> : null}
         </div>
       </section>

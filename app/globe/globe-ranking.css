@@ -1,0 +1,121 @@
+/* The ranked bars beside the globe, and the same bars in the country table. One linear scale per year:
+   the leader fills the track, so the gaps read at a glance; the number beside each bar carries the value. */
+.globe-bar {
+  display: block;
+  width: calc(var(--share) * 100%);
+  min-width: 2px;
+  height: 0.5rem;
+  background: var(--bp-redline);
+}
+
+.globe-ranking {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.globe-ranking h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.globe-ranking-note {
+  margin: 0.3rem 0 0.6rem;
+  color: var(--bp-chalk-dim);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.globe-ranking ol {
+  min-height: 0;
+  margin: 0;
+  padding: 0 0.25rem 0 0;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-color: var(--bp-chalk-dim) transparent;
+  scrollbar-width: thin;
+}
+
+.globe-ranking button {
+  display: grid;
+  grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) 2.5rem;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 40px;
+  padding: 0.15rem 0;
+  color: var(--bp-chalk);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--bp-chalk-dim) 18%, transparent);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.globe-ranking-name {
+  line-height: 1.25;
+}
+
+.globe-ranking-count {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.globe-ranking button:hover .globe-ranking-name,
+.globe-ranking button[aria-pressed="true"] .globe-ranking-name {
+  color: var(--bp-gold-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--bp-redline);
+  text-underline-offset: 0.25em;
+}
+
+.globe-ranking button[aria-pressed="true"] .globe-bar {
+  background: var(--bp-gold-soft);
+}
+
+.globe-ranking button:focus-visible {
+  outline: 2px solid var(--bp-gold-soft);
+  outline-offset: 2px;
+}
+
+/* With a country open, both share the column: the ranking keeps its top three rows and scrolls,
+   the panel takes the rest. If even that does not fit, the column itself scrolls. */
+.globe-side {
+  overflow-y: auto;
+}
+
+.globe-side .globe-panel {
+  flex: 1 0 14rem;
+}
+
+.globe-side:has(.globe-panel) .globe-ranking {
+  flex: none;
+}
+
+.globe-side:has(.globe-panel) .globe-ranking ol {
+  max-height: 7.75rem;
+}
+
+.globe-table-number {
+  display: inline-block;
+  min-width: 3ch;
+  margin-right: 0.6rem;
+  text-align: right;
+}
+
+.globe-table .globe-bar {
+  display: inline-block;
+  width: calc(var(--share) * min(10rem, 24vw));
+  vertical-align: middle;
+}
+
+@media (max-width: 62rem) {
+  /* Below the globe there is no height cap, so the whole ranking shows. */
+  .globe-ranking ol {
+    overflow-y: visible;
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { hashForModel } from "../../src/atlas/hash";
+import { modelsAt } from "../../src/globe/stats";
 import type { GlobeCountry, GlobeModel } from "../../src/globe/types";
 import { byYear, flopPower } from "./format";
 
@@ -53,7 +54,7 @@ interface CountryPanelProps {
 /** The picked country: a side panel beside the globe on a wide screen, a bottom sheet on a phone. */
 export function CountryPanel({ country, year, onClose }: CountryPanelProps) {
   const heading = useRef<HTMLHeadingElement>(null);
-  const shown = country.models.filter((model) => model.year <= year);
+  const shown = modelsAt(country, year);
   const first = country.models[0]?.year;
   const id = `globe-panel-${country.country.replace(/\W+/g, "-")}`;
 

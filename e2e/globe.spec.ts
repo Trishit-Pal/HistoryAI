@@ -48,7 +48,7 @@ test.describe("with WebGL", () => {
   test("on a phone the country panel is a bottom sheet", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/globe");
-    const opener = page.getByRole("button", { name: "United Kingdom" });
+    const opener = page.locator(".globe-table").getByRole("button", { name: "United Kingdom" });
     await opener.click();
     const panel = page.getByRole("region", { name: "United Kingdom" });
     await expect(panel).toBeVisible();
@@ -103,7 +103,8 @@ test.describe("without WebGL", () => {
     await page.goto("/globe");
     await expect(page.locator("canvas")).toHaveCount(0);
     await expect(page.locator(".globe-canvas")).toBeHidden();
-    await page.getByRole("button", { name: "United States of America" }).click();
+    const usa = page.locator(".globe-table").getByRole("button", { name: "United States of America" });
+    await usa.click();
     const panel = page.getByRole("region", { name: "United States of America" });
     await expect(panel).toBeVisible();
     await expect(panel).toContainText("Epoch AI estimate");
@@ -114,6 +115,34 @@ test.describe("without WebGL", () => {
     expect(await blockingViolations(page)).toEqual([]);
     await panel.getByRole("button", { name: "Close" }).click();
     await expect(panel).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "United States of America" })).toBeFocused();
+    await expect(usa).toBeFocused();
   });
+});
+
+test("the ranking orders countries for the chosen year and picks one", async ({ page }) => {
+  await page.goto("/globe");
+  await expect(page.locator(".globe-canvas canvas")).toHaveCount(1);
+  const ranking = page.getByRole("region", { name: /^Models per country/ });
+  const year = page.getByRole("slider", { name: "Choose a year" });
+
+  await year.fill("2018");
+  await expect(ranking).toHaveCount(0);
+
+  await year.fill("2025");
+  await expect(ranking).toContainText("by the end of 2025");
+  await expect(ranking).toContainText("counts for both");
+  const counts = (await ranking.locator(".globe-ranking-count").allInnerTexts()).map((text) => Number.parseInt(text, 10));
+  expect(counts.length).toBeGreaterThanOrEqual(21);
+  expect(counts).toEqual([...counts].sort((a, b) => b - a));
+
+  // The ranking and the table count the same way.
+  const leader = ranking.getByRole("button").first();
+  const leaderName = (await leader.locator(".globe-ranking-name").innerText()).trim();
+  const tableRow = page.locator(".globe-table tbody tr").first();
+  await expect(tableRow.locator("th")).toHaveText(leaderName);
+  await expect(tableRow.locator(".globe-table-number")).toHaveText(String(counts[0]));
+
+  await leader.click();
+  await expect(leader).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("region", { name: leaderName, exact: true })).toBeVisible();
 });

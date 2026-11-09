@@ -4,6 +4,7 @@ import { Html, useCursor } from "@react-three/drei";
 import { type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CircleGeometry, Color, CylinderGeometry, type InstancedMesh, MathUtils, Matrix4, Quaternion, Vector3 } from "three";
+import { modelsAt } from "../../src/globe/stats";
 import type { GlobeCountry } from "../../src/globe/types";
 import { CHALK_DIM, PALETTE, REDLINE } from "../../src/museum/theme";
 import { latLonToVector } from "./geo";
@@ -33,8 +34,7 @@ export interface ColumnsProps {
 }
 
 function heightFor(country: GlobeCountry, year: number): number {
-  const models = country.models.filter((model) => model.year <= year).length;
-  return HEIGHT_PER_DECADE * Math.log10(1 + models);
+  return HEIGHT_PER_DECADE * Math.log10(1 + modelsAt(country, year).length);
 }
 
 /** One pin per country and one instanced gold column on it; the columns ease to the year's height. */
