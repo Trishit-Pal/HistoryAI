@@ -19,33 +19,39 @@ interface ControlsProps {
   showAll: boolean;
   /** Featured models drawn for the current measure. */
   drawn: number;
-  /** False only once the browser is known to have no 3D view; the view buttons would have nothing to move. */
+  /** False only once the browser is known to have no 3D view; the step buttons would have nothing to move. */
   canView: boolean;
   onMetric: (metric: AtlasMetric) => void;
   onShowAll: (showAll: boolean) => void;
   onCutoff: (year: number) => void;
-  onView: (preset: ViewPresetName) => void;
   /** Move to the previous (-1) or next (1) model, oldest first. */
   onStep: (direction: -1 | 1) => void;
-  onReset: () => void;
 }
 
 const VIEW_LABEL: Record<ViewPresetName, string> = { front: "Front", top: "Top", side: "Side" };
 
-export function AtlasControls({
-  metric,
-  cutoff,
-  totals,
-  showAll,
-  drawn,
-  canView,
-  onMetric,
-  onShowAll,
-  onCutoff,
-  onView,
-  onStep,
-  onReset,
-}: ControlsProps) {
+interface ViewsProps {
+  onView: (preset: ViewPresetName) => void;
+  onReset: () => void;
+}
+
+/** The preset views and the way back, on the plot's corner where a lost visitor looks. */
+export function AtlasViews({ onView, onReset }: ViewsProps) {
+  return (
+    <div className="atlas-views" role="group" aria-label="View from">
+      {(Object.keys(VIEW_PRESETS) as ViewPresetName[]).map((preset) => (
+        <button key={preset} type="button" onClick={() => onView(preset)}>
+          {VIEW_LABEL[preset]}
+        </button>
+      ))}
+      <button type="button" className="atlas-reset" onClick={onReset}>
+        Back to the whole plot
+      </button>
+    </div>
+  );
+}
+
+export function AtlasControls({ metric, cutoff, totals, showAll, drawn, canView, onMetric, onShowAll, onCutoff, onStep }: ControlsProps) {
   return (
     <div className="atlas-controls">
       <fieldset>
@@ -81,30 +87,15 @@ export function AtlasControls({
       <p className="atlas-coverage">{describeCoverage({ metric, totals, showAll, drawn })}</p>
 
       {canView ? (
-        <>
-          <fieldset>
-            <legend>View from</legend>
-            {(Object.keys(VIEW_PRESETS) as ViewPresetName[]).map((preset) => (
-              <button key={preset} type="button" onClick={() => onView(preset)}>
-                {VIEW_LABEL[preset]}
-              </button>
-            ))}
-          </fieldset>
-
-          <fieldset>
-            <legend>Step through models</legend>
-            <button type="button" onClick={() => onStep(-1)}>
-              Previous model
-            </button>
-            <button type="button" onClick={() => onStep(1)}>
-              Next model
-            </button>
-          </fieldset>
-
-          <button type="button" className="atlas-reset" onClick={onReset}>
-            Back to the whole plot
+        <fieldset>
+          <legend>Step through models</legend>
+          <button type="button" onClick={() => onStep(-1)}>
+            Previous model
           </button>
-        </>
+          <button type="button" onClick={() => onStep(1)}>
+            Next model
+          </button>
+        </fieldset>
       ) : null}
     </div>
   );

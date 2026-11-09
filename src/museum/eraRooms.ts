@@ -32,8 +32,14 @@ function firstWinter(ids: readonly string[]): Spot[] {
   ]);
 }
 
+// A row along one counter, centre first when there is only one; the room's walls are at x = ±2.8.
 function expert(ids: readonly string[]): Spot[] {
-  return place(ids, [[0, 0.22, -2.2]]);
+  if (ids.length <= 1) return place(ids, [[0, 0.22, -2.2]]);
+  return place(ids, [
+    [-1.4, 0.22, -2.2],
+    [0, 0.22, -2.2],
+    [1.4, 0.22, -2.2],
+  ]);
 }
 
 function secondWinter(ids: readonly string[]): Spot[] {

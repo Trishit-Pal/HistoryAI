@@ -31,9 +31,8 @@ describe("layoutHalls", () => {
   it("gives every hall with sourced exhibits a one-line summary of at most 110 characters", () => {
     const halls = layoutHalls(ERAS.map((era, index) => node(`n${index}`, 2000, era.id)));
     expect(halls).toHaveLength(ERAS.length + 1);
-    // These eras lost their only exhibits in the November 2026 audit, so nothing backs a summary.
-    const unsourced = ["era_4_expert_systems", "era_5_second_winter"];
-    expect(halls.filter((hall) => !hall.summary).map((hall) => hall.id)).toEqual(unsourced);
+    // Every era now has sourced exhibits; the 1980–1993 rooms reopened with the November 2026 feedback pass.
+    expect(halls.filter((hall) => !hall.summary).map((hall) => hall.id)).toEqual([]);
     for (const hall of halls.filter((item) => item.summary)) {
       expect(hall.summary!.length).toBeGreaterThan(0);
       expect(hall.summary!.length).toBeLessThanOrEqual(110);

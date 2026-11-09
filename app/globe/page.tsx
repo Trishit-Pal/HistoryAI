@@ -4,6 +4,7 @@ import { GlobeShell } from "../../components/globe/GlobeShell";
 import type { GlobeSnapshot } from "../../src/globe/types";
 import "./globe.css";
 import "./globe-panel.css";
+import "./globe-ranking.css";
 
 export const metadata: Metadata = {
   title: "Who builds the frontier · Hall of Eras",

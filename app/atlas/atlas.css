@@ -132,11 +132,6 @@
   border-color: var(--atlas-gold);
 }
 
-.atlas-controls .atlas-reset {
-  justify-self: start;
-  border-color: var(--atlas-gold);
-}
-
 .atlas-year {
   display: grid;
   gap: 0.4rem;

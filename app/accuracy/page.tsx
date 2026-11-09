@@ -22,8 +22,8 @@ export default function AccuracyPage() {
         In November 2026 every exhibit was checked against this rule. Those that met it stayed, some
         with corrected wording or an added primary source. Eight did not and were withdrawn. A
         withdrawn exhibit leaves the halls but stays in the <a href="/changelog">changelog</a>, with
-        &ldquo;Withdrawn&rdquo;, the date and the reason. Two eras, the expert systems boom and the
-        second AI winter, have no confirmed exhibit yet, so they have no hall.
+        &ldquo;Withdrawn&rdquo;, the date and the reason. The expert systems boom and the second AI winter
+        lost their exhibits in that audit and reopened later in November with new ones that meet the rule.
       </p>
       <h2>Two layers</h2>
       <p>

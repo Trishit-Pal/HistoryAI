@@ -1,4 +1,26 @@
-import type { GlobeRecord, GlobeSnapshot } from "./types";
+import type { GlobeCountry, GlobeModel, GlobeRecord, GlobeSnapshot } from "./types";
+
+/** A country's models through the end of `year`: the one count the columns, panel, table and ranking share. */
+export function modelsAt(country: GlobeCountry, year: number): GlobeModel[] {
+  return country.models.filter((model) => model.year <= year);
+}
+
+export interface CountryRank {
+  country: GlobeCountry;
+  count: number;
+}
+
+/** Every country, most models first; ties go to whoever got there first, then by name. A shared model counts for each country. */
+export function rankAt(countries: readonly GlobeCountry[], year: number): CountryRank[] {
+  return countries
+    .map((country) => ({ country, count: modelsAt(country, year).length }))
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        (a.country.models[0]?.date ?? "").localeCompare(b.country.models[0]?.date ?? "") ||
+        a.country.country.localeCompare(b.country.country),
+    );
+}
 
 /** Cumulative counts through the end of `year`. A model in several countries is counted once. */
 export function statsAt(
