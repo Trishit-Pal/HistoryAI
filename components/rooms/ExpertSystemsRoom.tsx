@@ -19,6 +19,10 @@ export function ExpertSystemsRoom({
 }: RoomProps) {
   const spots = eraLayout(hall.id, hall.exhibitIds) ?? [];
   const counter = spots[0];
+  // One counter under every exhibit: it grows from its single-exhibit width to span the whole row.
+  const xs = spots.map((spot) => spot.x);
+  const counterWidth = Math.max(3.6, Math.max(...xs) - Math.min(...xs) + 1.6);
+  const counterX = xs.length > 0 ? (Math.max(...xs) + Math.min(...xs)) / 2 : 0;
   return (
     <group position={[0, 0, originZ]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -2.2]} onClick={() => onHall(hallIndex)}>
@@ -42,8 +46,8 @@ export function ExpertSystemsRoom({
         <Ink tone="wall" />
       </mesh>
       {counter ? (
-        <mesh position={[counter.x, counter.y / 2, counter.z]}>
-          <boxGeometry args={[3.6, counter.y, 0.9]} />
+        <mesh position={[counterX, counter.y / 2, counter.z]}>
+          <boxGeometry args={[counterWidth, counter.y, 0.9]} />
           <Ink tone="stone" />
         </mesh>
       ) : null}

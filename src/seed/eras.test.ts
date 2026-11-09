@@ -164,7 +164,12 @@ describe("era seed", () => {
     expect(halls.some((hall) => hall.mood === "winter")).toBe(true);
     expect(halls.some((hall) => hall.mood === "dense")).toBe(true);
     expect(halls.at(-1)?.id).toBe("provisional");
-    // Both eras lost their only exhibit in the November 2026 audit, so they have no hall.
-    expect(halls.some((hall) => hall.id === "era_4_expert_systems" || hall.id === "era_5_second_winter")).toBe(false);
+    // Both eras reopened with sourced exhibits after the November 2026 audit emptied them.
+    expect(halls.find((hall) => hall.id === "era_4_expert_systems")?.exhibitIds).toEqual([
+      "evt_1980_r1",
+      "evt_1982_fifth_generation",
+      "evt_1986_backprop",
+    ]);
+    expect(halls.find((hall) => hall.id === "era_5_second_winter")?.exhibitIds).toEqual(["evt_1992_fgcs_evaluation"]);
   });
 });

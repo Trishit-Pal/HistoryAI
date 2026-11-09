@@ -81,11 +81,12 @@ function seededHall(id: string): string[] {
   return layoutHalls(nodes).find((hall) => hall.id === id)?.exhibitIds ?? [];
 }
 
-describe("seeded 2017–2026 rooms", () => {
+describe("seeded rooms with several exhibits", () => {
   // A plinth disc is 0.64 in radius, so two exhibits closer than this would overlap.
   const CLEARANCE = 1.3;
 
   it.each([
+    ["era_4_expert_systems", 3, 2.8],
     ["era_8_transformers", 3, 2.1],
     ["era_9_generative", 5, 3.7],
     ["era_10_frontier", 12, 3.1],

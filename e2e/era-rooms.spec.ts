@@ -44,14 +44,19 @@ test("the first era has no previous button and the provisional hall stays reacha
   await expect(page.getByRole("button", { name: "Next era: Provisional hall" })).toBeEnabled();
 });
 
-test("an era with no confirmed exhibit has no room and no band", async ({ page }) => {
-  for (const slug of ["expert-systems", "second-winter"]) {
+test("the 1980–1993 eras have rooms and bands again, between the two winters", async ({ page }) => {
+  const opening = { "expert-systems": "R1 configures VAX computers", "second-winter": "The Fifth Generation project is evaluated" };
+  for (const [slug, title] of Object.entries(opening)) {
     const response = await page.goto(`/rooms/${slug}`);
-    expect(response?.status()).toBe(404);
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
   }
   await page.goto("/");
-  await expect(page.locator("#era-expert-systems, #era-second-winter")).toHaveCount(0);
+  await expect(page.locator("#era-expert-systems")).toHaveCount(1);
+  await expect(page.locator("#era-second-winter")).toHaveCount(1);
   await page.goto("/rooms/first-winter");
+  await expect(page.getByRole("button", { name: "Next era: Expert systems boom" })).toBeVisible();
+  await page.goto("/rooms/second-winter");
   await expect(page.getByRole("button", { name: "Next era: Statistical renaissance" })).toBeVisible();
 });
 

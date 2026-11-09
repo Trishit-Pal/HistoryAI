@@ -1,6 +1,7 @@
 import type { Citation, Confidence, EraId, FieldChange, Figure, Kind, Layer, PublicationState } from "../domain/types";
 import type { ClaimWrite, ExhibitWrite, SourceWrite, SupportLink, Write } from "../store/memory";
 import { MemoryStore } from "../store/memory";
+import { EIGHTIES_NODES } from "./eighties";
 import { ERA0_NODES } from "./era0";
 import { FRONTIER_NODES } from "./frontier";
 import { RECENT_NODES } from "./recent";
@@ -225,6 +226,7 @@ export const SEED_NODES: SeedNode[] = [
     editorialNote:
       "The report is dated July 1972 and was published in 1973. The funding cuts that followed are stated on the Wikipedia page, not in the report.",
   },
+  ...EIGHTIES_NODES,
   {
     id: "evt_1997_deep_blue",
     title: "Deep Blue defeats Kasparov",

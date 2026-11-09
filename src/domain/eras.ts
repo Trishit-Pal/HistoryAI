@@ -29,12 +29,12 @@ export const ERAS: readonly EraDefinition[] = [
     summary: "The Lighthill Report found that no part of the field had produced the major impact then promised.",
   },
   {
-    // No exhibits since the November 2026 audit, so this era has no hall and no summary.
     id: "era_4_expert_systems", slug: "expert-systems", label: "Expert systems boom", startYear: 1980, endYear: 1987, mood: "open",
+    summary: "DEC put the R1 expert system to work, Japan began its Fifth Generation project, and backpropagation appeared.",
   },
   {
-    // No exhibits since the November 2026 audit, so this era has no hall and no summary.
     id: "era_5_second_winter", slug: "second-winter", label: "Second AI winter", startYear: 1987, endYear: 1993, mood: "winter",
+    summary: "Outside evaluators praised the Fifth Generation project's software and doubted the value of its hardware.",
   },
   {
     id: "era_6_statistical", slug: "statistical", label: "Statistical renaissance", startYear: 1993, endYear: 2011, mood: "open",
