@@ -114,8 +114,11 @@
 }
 
 @media (max-width: 62rem) {
-  /* Below the globe there is no height cap, so the whole ranking shows. */
-  .globe-ranking ol {
+  /* Below the globe there is no height cap, and the panel is a bottom sheet over the page,
+     so the whole ranking shows whether or not a country is open. */
+  .globe-ranking ol,
+  .globe-side:has(.globe-panel) .globe-ranking ol {
+    max-height: none;
     overflow-y: visible;
   }
 }

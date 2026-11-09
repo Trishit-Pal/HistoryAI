@@ -176,7 +176,7 @@ export function AtlasShell({ atlas, landmarks, governance }: AtlasShellProps) {
           <div
             className="atlas-canvas"
             role="application"
-            aria-describedby="atlas-keys-hint"
+            aria-describedby={webgl === true ? "atlas-keys-hint" : undefined}
             aria-label={SCENE_LABEL}
             aria-keyshortcuts="ArrowLeft ArrowRight [ ]"
             tabIndex={webgl === true ? 0 : undefined}

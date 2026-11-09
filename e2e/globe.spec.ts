@@ -54,6 +54,10 @@ test.describe("with WebGL", () => {
     await expect(panel).toBeVisible();
     const box = (await panel.boundingBox())!;
     expect(Math.round(box.y + box.height)).toBe(844);
+    // The sheet floats over the page, so the ranking keeps its full height and never paints over the table.
+    const lastRow = (await page.locator(".globe-ranking li").last().boundingBox())!;
+    const countries = (await page.locator(".globe-block").first().boundingBox())!;
+    expect(lastRow.y + lastRow.height).toBeLessThanOrEqual(countries.y);
     await page.keyboard.press("Escape");
     await expect(panel).toHaveCount(0);
     await expect(opener).toBeFocused();
